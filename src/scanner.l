@@ -18,8 +18,14 @@ static void strCat(const char *Text);
 
 %}
 
+delimiters  [,;:\(\)\[\]]
+
 %%
-"(" { TOKEN_CHAR('('); }
+
+{delimiters} {
+    TOKEN_CHAR(*yytext);
+}
+
 \n {
     if (opt_src) {
         printf("%d: %s\n", line_num, buffer);
