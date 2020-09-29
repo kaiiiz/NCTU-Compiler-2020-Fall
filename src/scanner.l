@@ -1,11 +1,12 @@
 %{
 #include <stdint.h>
 
-#define LIST                    strCat(yytext)
-#define TOKEN(t)                { LIST; if (opt_tok) printf("<%s>\n", t); }
-#define TOKEN_CHAR(t)           { LIST; if (opt_tok) printf("<%c>\n", (t)); }
-#define TOKEN_STRING(t, s)    { LIST; if (opt_tok) printf("<%s%s>\n", #t, (s)); }
-#define MAX_LINE_LENG           512
+#define LIST                  strCat(yytext)
+#define TOKEN(t)              { LIST; if (opt_tok) printf("<%s>\n", t); }
+#define TOKEN_CHAR(t)         { LIST; if (opt_tok) printf("<%c>\n", (t)); }
+#define TOKEN_KW(s)           { LIST; if (opt_tok) printf("<KW%s>\n", (s)); }
+#define TOKEN_STRING(t, s)    { LIST; if (opt_tok) printf("<%s: %s>\n", #t, (s)); }
+#define MAX_LINE_LENG         512
 
 uint32_t line_num = 1;
 char buffer[MAX_LINE_LENG];
@@ -18,6 +19,9 @@ static void strCat(const char *Text);
 
 %}
 
+digit       [0-9]
+letter      [_a-zA-Z]
+
 arithmetic  \+|\-|\*|\/|mod
 assignment  :=
 relational  <|<=|<>|>=|>|=
@@ -26,6 +30,7 @@ logical     and|or|not
 delimiters  [,;:\(\)\[\]]
 operators   {arithmetic}|{assignment}|{relational}|{logical}
 keywords    array|begin|boolean|def|do|else|end|false|for|integer|if|of|print|read|real|string|then|to|true|return|var|while
+identifier  {letter}({letter}|{digit})*
 
 %%
 
@@ -38,7 +43,11 @@ keywords    array|begin|boolean|def|do|else|end|false|for|integer|if|of|print|re
 }
 
 {keywords} {
-    TOKEN_STRING(KW, yytext);
+    TOKEN_KW(yytext);
+}
+
+{identifier} {
+    TOKEN_STRING(id, yytext);
 }
 
 \n {
