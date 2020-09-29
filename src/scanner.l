@@ -1,11 +1,11 @@
 %{
 #include <stdint.h>
 
-#define LIST                strCat(yytext)
-#define TOKEN(t)            { LIST; if (opt_tok) printf("<%s>\n", #t); }
-#define TOKEN_CHAR(t)       { LIST; if (opt_tok) printf("<%c>\n", (t)); }
-#define TOKEN_STRING(t, s)  { LIST; if (opt_tok) printf("<%s: %s>\n", #t, (s)); }
-#define MAX_LINE_LENG       512
+#define LIST                    strCat(yytext)
+#define TOKEN(t)                { LIST; if (opt_tok) printf("<%s>\n", t); }
+#define TOKEN_CHAR(t)           { LIST; if (opt_tok) printf("<%c>\n", (t)); }
+#define TOKEN_STRING(t, s)    { LIST; if (opt_tok) printf("<%s: %s>\n", #t, (s)); }
+#define MAX_LINE_LENG           512
 
 uint32_t line_num = 1;
 char buffer[MAX_LINE_LENG];
@@ -18,12 +18,22 @@ static void strCat(const char *Text);
 
 %}
 
+arithmetic  \+|\-|\*|\/|mod
+assignment  :=
+relational  <|<=|<>|>=|>|=
+logical     and|or|not
+
 delimiters  [,;:\(\)\[\]]
+operators   {arithmetic}|{assignment}|{relational}|{logical}
 
 %%
 
 {delimiters} {
     TOKEN_CHAR(*yytext);
+}
+
+{operators} {
+    TOKEN(yytext);
 }
 
 \n {
