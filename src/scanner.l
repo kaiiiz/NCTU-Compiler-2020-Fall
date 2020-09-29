@@ -4,7 +4,7 @@
 #define LIST                    strCat(yytext)
 #define TOKEN(t)                { LIST; if (opt_tok) printf("<%s>\n", t); }
 #define TOKEN_CHAR(t)           { LIST; if (opt_tok) printf("<%c>\n", (t)); }
-#define TOKEN_STRING(t, s)    { LIST; if (opt_tok) printf("<%s: %s>\n", #t, (s)); }
+#define TOKEN_STRING(t, s)    { LIST; if (opt_tok) printf("<%s%s>\n", #t, (s)); }
 #define MAX_LINE_LENG           512
 
 uint32_t line_num = 1;
@@ -25,6 +25,7 @@ logical     and|or|not
 
 delimiters  [,;:\(\)\[\]]
 operators   {arithmetic}|{assignment}|{relational}|{logical}
+keywords    array|begin|boolean|def|do|else|end|false|for|integer|if|of|print|read|real|string|then|to|true|return|var|while
 
 %%
 
@@ -34,6 +35,10 @@ operators   {arithmetic}|{assignment}|{relational}|{logical}
 
 {operators} {
     TOKEN(yytext);
+}
+
+{keywords} {
+    TOKEN_STRING(KW, yytext);
 }
 
 \n {
