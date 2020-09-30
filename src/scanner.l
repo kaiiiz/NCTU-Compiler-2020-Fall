@@ -43,10 +43,23 @@ whitespace      [[:space:]]
 comment_inline  \/\/.*$
 comment_blk_beg \/\*
 comment_blk_end \*\/
+pseudo_comment  \/\/&[A-Z][+-].*$
 
 %x COMMENT
 
 %%
+
+{pseudo_comment} {
+    switch (yytext[3]) {
+        case 'T':
+            opt_tok = (yytext[4] == '+') ? 1 : 0;
+            break;
+        case 'S':
+            opt_src = (yytext[4] == '+') ? 1 : 0;
+            break;
+    }
+    LIST;
+}
 
 {comment_inline} {
     LIST;
