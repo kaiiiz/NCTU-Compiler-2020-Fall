@@ -33,11 +33,11 @@ operators       {arithmetic}|{assignment}|{relational}|{logical}
 keywords        array|begin|boolean|def|do|else|end|false|for|integer|if|of|print|read|real|string|then|to|true|return|var|while
 identifier      {letter}({letter}|{digit})*
 positive_int    {nonzero_digit}{digit}*
-integer         {positive_int}|0
+dec_integer     {positive_int}|0
 oct_integer     0{digit}+
 float_frac      {digit}*{nonzero_digit}|0
-float           {integer}\.{float_frac}
-scientific      ({float}|{integer})[eE][+-]?{integer}
+float           {dec_integer}\.{float_frac}
+scientific      ({float}|{dec_integer})[eE][+-]?{dec_integer}
 string          \"([\x00-\x09\x0B\x0C\x0E-\x1F\x7F !#-~]|\"\")*\"
 whitespace      [[:space:]]
 comment_inline  \/\/
@@ -121,8 +121,8 @@ pseudo_commment \/\/&[A-Z][+-]
     TOKEN_STRING(id, yytext);
 }
 
- /* For case: one or more 0 before float or scientific */
-0+({float}|{scientific}) {
+ /* For case: one or more 0 before float */
+0+({float}) {
     char* first_nonzero = yytext;
     while (*first_nonzero == '0') first_nonzero++;
     if (*first_nonzero == '.') first_nonzero--; // 0.xxx
@@ -150,7 +150,7 @@ pseudo_commment \/\/&[A-Z][+-]
     TOKEN_STRING(float, yytext);
 }
 
-{integer} {
+{dec_integer} {
     TOKEN_STRING(integer, yytext);
 }
 
