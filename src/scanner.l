@@ -40,16 +40,17 @@ float           {integer}\.{float_frac}
 scientific      ({float}|{integer})[eE][+-]?{integer}
 string          \"([\x00-\x09\x0B\x0C\x0E-\x1F\x7F !#-~]|\"\")*\"
 whitespace      [[:space:]]
-comment_inline  \/\/.*$
+comment_inline  \/\/
 comment_blk_beg \/\*
 comment_blk_end \*\/
-pseudo_comment  \/\/&[A-Z][+-].*$
+pseudo_commment \/\/&[A-Z][+-]
 
-%x COMMENT
+%x COMMENT_BLK
+%x COMMENT_INL
 
 %%
 
-{pseudo_comment} {
+{pseudo_commment} {
     switch (yytext[3]) {
         case 'T':
             opt_tok = (yytext[4] == '+') ? 1 : 0;
@@ -59,23 +60,39 @@ pseudo_comment  \/\/&[A-Z][+-].*$
             break;
     }
     LIST;
+    BEGIN(COMMENT_INL);
 }
 
 {comment_inline} {
     LIST;
+    BEGIN(COMMENT_INL);
+}
+
+<COMMENT_INL>. {
+    LIST;
+}
+
+<COMMENT_INL>\n {
+    if (opt_src) {
+        printf("%d: %s\n", line_num, buffer);
+    }
+    ++line_num;
+    buffer[0] = '\0';
+    buffer_ptr = buffer;
+    BEGIN(INITIAL);
 }
 
 {comment_blk_beg} {
     LIST;
-    BEGIN(COMMENT);
+    BEGIN(COMMENT_BLK);
 }
 
-<COMMENT>{comment_blk_end} {
+<COMMENT_BLK>{comment_blk_end} {
     LIST;
     BEGIN(INITIAL);
 }
 
-<COMMENT>\n {
+<COMMENT_BLK>\n {
     if (opt_src) {
         printf("%d: %s\n", line_num, buffer);
     }
@@ -84,7 +101,7 @@ pseudo_comment  \/\/&[A-Z][+-].*$
     buffer_ptr = buffer;
 }
 
-<COMMENT>. {
+<COMMENT_BLK>. {
     LIST;
 }
 
