@@ -21,7 +21,7 @@ static void strCat(const char *Text);
 
 digit           [0-9]
 nonzero_digit   [1-9]
-letter          [_a-zA-Z]
+letter          [a-zA-Z]
 
 arithmetic      \+|\-|\*|\/|mod
 assignment      :=
