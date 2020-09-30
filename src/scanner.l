@@ -34,7 +34,7 @@ keywords        array|begin|boolean|def|do|else|end|false|for|integer|if|of|prin
 identifier      {letter}({letter}|{digit})*
 positive_int    {nonzero_digit}{digit}*
 dec_integer     {positive_int}|0
-oct_integer     0{digit}+
+oct_integer     0[0-7]+
 float_frac      {digit}*{nonzero_digit}|0
 float           {dec_integer}\.{float_frac}
 scientific      ({float}|{dec_integer})[eE][+-]?{dec_integer}
@@ -119,27 +119,6 @@ pseudo_commment \/\/&[A-Z][+-]
 
 {identifier} {
     TOKEN_STRING(id, yytext);
-}
-
- /* For case: one or more 0 before float */
-0+({float}) {
-    char* first_nonzero = yytext;
-    while (*first_nonzero == '0') first_nonzero++;
-    if (*first_nonzero == '.') first_nonzero--; // 0.xxx
-
-    int zero_len = first_nonzero - yytext;
-    yyless(zero_len);
-
-    char zeros[zero_len + 1];
-    strncpy(zeros, yytext, zero_len);
-    zeros[zero_len] = '\0';
-
-    if (zero_len == 1) {
-        TOKEN_STRING(integer, zeros);
-    }
-    else {
-        TOKEN_STRING(oct_integer, zeros);
-    }
 }
 
 {scientific} {
