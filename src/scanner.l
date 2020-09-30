@@ -145,6 +145,7 @@ pseudo_commment \/\/&[A-Z][+-]
     while (max_str_len--) {
         if (*ptr == '"' && *(ptr + 1) == '"') {
             ptr++;
+            max_str_len--;
         }
         str[idx++] = *ptr++; 
     }
