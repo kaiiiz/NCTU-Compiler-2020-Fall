@@ -37,6 +37,7 @@ integer         {positive_int}|0
 oct_integer     0{digit}+
 float_frac      {digit}*{nonzero_digit}|0
 float           {integer}\.{float_frac}
+scientific      ({float}|{integer})[eE][+-]?{integer}
 
 %%
 
@@ -56,8 +57,8 @@ float           {integer}\.{float_frac}
     TOKEN_STRING(id, yytext);
 }
 
- /* For case: one or more 0 before float */
-0+{float} {
+ /* For case: one or more 0 before float or scientific */
+0+({float}|{scientific}) {
     char* first_nonzero = yytext;
     while (*first_nonzero == '0') first_nonzero++;
     if (*first_nonzero == '.') first_nonzero--; // 0.xxx
@@ -75,6 +76,10 @@ float           {integer}\.{float_frac}
     else {
         TOKEN_STRING(oct_integer, zeros);
     }
+}
+
+{scientific} {
+    TOKEN_STRING(scientific, yytext);
 }
 
 {float} {
