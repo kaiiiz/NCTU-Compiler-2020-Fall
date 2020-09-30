@@ -39,6 +39,7 @@ float_frac      {digit}*{nonzero_digit}|0
 float           {integer}\.{float_frac}
 scientific      ({float}|{integer})[eE][+-]?{integer}
 string          \"([\x00-\x09\x0B\x0C\x0E-\x1F\x7F !#-~]|\"\")*\"
+whitespace      [[:space:]]
 
 %%
 
@@ -117,6 +118,10 @@ string          \"([\x00-\x09\x0B\x0C\x0E-\x1F\x7F !#-~]|\"\")*\"
     ++line_num;
     buffer[0] = '\0';
     buffer_ptr = buffer;
+}
+
+{whitespace} {
+    LIST;
 }
 
     /* Catch the character which is not accepted by rules above */
