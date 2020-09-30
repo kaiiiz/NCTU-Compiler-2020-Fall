@@ -38,6 +38,7 @@ oct_integer     0{digit}+
 float_frac      {digit}*{nonzero_digit}|0
 float           {integer}\.{float_frac}
 scientific      ({float}|{integer})[eE][+-]?{integer}
+string          \"([\x00-\x09\x0B\x0C\x0E-\x1F\x7F !#-~]|\"\")*\"
 
 %%
 
@@ -92,6 +93,21 @@ scientific      ({float}|{integer})[eE][+-]?{integer}
 
 {oct_integer} {
     TOKEN_STRING(oct_integer, yytext);
+}
+
+{string} {
+    int max_str_len = strlen(yytext) - 2;
+    int idx = 0;
+    char str[max_str_len + 1];
+    char *ptr = yytext + 1;
+    while (max_str_len--) {
+        if (*ptr == '"' && *(ptr + 1) == '"') {
+            ptr++;
+        }
+        str[idx++] = *ptr++; 
+    }
+    str[idx] = '\0';
+    TOKEN_STRING(string, str);
 }
 
 \n {
