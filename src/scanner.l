@@ -40,8 +40,40 @@ float           {integer}\.{float_frac}
 scientific      ({float}|{integer})[eE][+-]?{integer}
 string          \"([\x00-\x09\x0B\x0C\x0E-\x1F\x7F !#-~]|\"\")*\"
 whitespace      [[:space:]]
+comment_inline  \/\/.*$
+comment_blk_beg \/\*
+comment_blk_end \*\/
+
+%x COMMENT
 
 %%
+
+{comment_inline} {
+    LIST;
+}
+
+{comment_blk_beg} {
+    LIST;
+    BEGIN(COMMENT);
+}
+
+<COMMENT>{comment_blk_end} {
+    LIST;
+    BEGIN(INITIAL);
+}
+
+<COMMENT>\n {
+    if (opt_src) {
+        printf("%d: %s\n", line_num, buffer);
+    }
+    ++line_num;
+    buffer[0] = '\0';
+    buffer_ptr = buffer;
+}
+
+<COMMENT>. {
+    LIST;
+}
 
 {delimiters} {
     TOKEN_CHAR(*yytext);
