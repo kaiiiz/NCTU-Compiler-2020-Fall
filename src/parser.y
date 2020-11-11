@@ -60,12 +60,14 @@ static void yyerror(const char *msg);
 %token OCT_INT
 %token STR
 
-%left OP_AND OP_OR OP_NOT
+%left OP_AND OP_OR
+%right OP_NOT
 %left OP_L OP_LE OP_LG OP_GE OP_G OP_EQ
 %left OP_MIN
 %left OP_ADD
 %left OP_DIV
 %left OP_MUT
+%right UNARY_MIN
 
 %%
 
@@ -127,7 +129,6 @@ stmt            : simple_stmt
                 | compound_stmt
                 ;
 simple_stmt     : var_ref OP_ASSIGN expr DELIM_SCLN
-                | KW_PRINT var_ref DELIM_SCLN
                 | KW_PRINT expr DELIM_SCLN
                 | KW_READ var_ref DELIM_SCLN
                 ;
@@ -163,7 +164,7 @@ expr            : literal_const
                 | expr OP_MUT expr
                 | expr OP_DIV expr
                 | expr OP_MIN expr
-                | OP_MIN expr %prec OP_MUT
+                | OP_MIN expr %prec UNARY_MIN
                 | expr OP_L expr
                 | expr OP_LE expr
                 | expr OP_LG expr
@@ -187,14 +188,10 @@ literal_const   : real_const
                 ;
 real_const      : SCI
                 | FLOAT
-                | OP_MIN SCI
-                | OP_MIN FLOAT
                 | int_const
                 ;
 int_const       : DEC_INT
                 | OCT_INT
-                | OP_MIN DEC_INT
-                | OP_MIN OCT_INT
                 ;
 epsilon         :
                 ;

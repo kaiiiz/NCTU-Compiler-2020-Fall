@@ -94,7 +94,8 @@ extern int yydebug;
     FLOAT = 300,
     DEC_INT = 301,
     OCT_INT = 302,
-    STR = 303
+    STR = 303,
+    UNARY_MIN = 304
   };
 #endif
 
