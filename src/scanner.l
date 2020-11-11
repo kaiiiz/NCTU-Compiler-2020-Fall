@@ -29,7 +29,6 @@ relational      <|<=|<>|>=|>|=
 logical         and|or|not
 
 operators       {arithmetic}|{relational}|{logical}
-keywords        def|do|else|for|if|then|to|return|while
 scalar_type     integer|real|string|boolean
 identifier      {letter}({letter}|{digit})*
 positive_int    {nonzero_digit}{digit}*
@@ -148,7 +147,6 @@ pseudo_commment \/\/&[A-Z][+-]
 
 {operators} {
     TOKEN(yytext);
-    return OP;
 }
 
 := {
@@ -165,14 +163,54 @@ pseudo_commment \/\/&[A-Z][+-]
 
  /* KEYWORD */
 
-{keywords} {
-    TOKEN_KW(yytext);
-    return KW;
-}
-
 {scalar_type} {
     TOKEN_KW(yytext);
     return KW_SCALAR_T;
+}
+
+def {
+    TOKEN_KW(yytext);
+    return KW_DEF;
+}
+
+do {
+    TOKEN_KW(yytext);
+    return KW_DO;
+}
+
+for {
+    TOKEN_KW(yytext);
+    return KW_FOR;
+}
+
+to {
+    TOKEN_KW(yytext);
+    return KW_TO;
+}
+
+return {
+    TOKEN_KW(yytext);
+    return KW_RET;
+}
+
+while {
+    TOKEN_KW(yytext);
+    return KW_WHILE;
+}
+
+if {
+    TOKEN_KW(yytext);
+    return KW_IF;
+}
+
+then {
+    TOKEN_KW(yytext);
+    return KW_THEN;
+}
+
+else {
+    TOKEN_KW(yytext);
+    return KW_ELSE;
 }
 
 read {
