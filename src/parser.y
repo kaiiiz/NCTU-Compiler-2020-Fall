@@ -13,14 +13,16 @@ extern int yylex(void);
 static void yyerror(const char *msg);
 %}
 
-%token DELIM
 %token DELIM_SCLN
 %token DELIM_CLN
 %token DELIM_COMMA
 %token DELIM_PTHS_L
 %token DELIM_PTHS_R
+%token DELIM_BRKT_L
+%token DELIM_BRKT_R
 %token OP
 %token OP_NEG
+%token OP_ASSIGN
 %token KW
 %token KW_TRUE
 %token KW_FALSE
@@ -29,6 +31,9 @@ static void yyerror(const char *msg);
 %token KW_ARR
 %token KW_VAR
 %token KW_OF
+%token KW_BEGIN
+%token KW_PRINT
+%token KW_READ
 %token ID
 %token SCI
 %token FLOAT
@@ -38,7 +43,7 @@ static void yyerror(const char *msg);
 
 %%
 
-program         : ID DELIM_SCLN vc_decl_list_ep f_decl_list_ep KW_END
+program         : ID DELIM_SCLN vc_decl_list_ep f_decl_list_ep compound_stmt KW_END
                 ;
 vc_decl_list_ep : epsilon
                 | vc_decl_list
@@ -70,6 +75,32 @@ var_decl        : KW_VAR id_list DELIM_CLN KW_SCALAR_T DELIM_SCLN
                 | KW_VAR id_list DELIM_CLN KW_ARR pos_int_const KW_OF KW_SCALAR_T DELIM_SCLN
                 ;
 const_decl      : KW_VAR id_list DELIM_CLN literal_const DELIM_SCLN
+                ;
+compound_stmt   : KW_BEGIN vc_decl_list_ep stmt_list_ep KW_END
+                ;
+stmt_list_ep    : epsilon
+                | stmt_list
+                ;
+stmt_list       : stmt
+                | stmt_list stmt
+                ;
+stmt            : simple_stmt
+                ;
+simple_stmt     : var_ref OP_ASSIGN expr DELIM_SCLN
+                | KW_PRINT var_ref DELIM_SCLN
+                | KW_PRINT expr DELIM_SCLN
+                | KW_READ var_ref DELIM_SCLN
+                ;
+var_ref         : ID
+                | ID arr_ref_list
+                ;
+arr_ref_list    : arr_ref
+                | arr_ref_list arr_ref
+                ;
+arr_ref         : DELIM_BRKT_L expr DELIM_BRKT_R
+                ;
+expr            : literal_const
+                | var_ref
                 ;
 id_list         : ID
                 | ID DELIM_COMMA id_list

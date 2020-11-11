@@ -25,13 +25,11 @@ nonzero_digit   [1-9]
 letter          [a-zA-Z]
 
 arithmetic      \+|\*|\/|mod
-assignment      :=
 relational      <|<=|<>|>=|>|=
 logical         and|or|not
 
-delimiters      [\[\]]
-operators       {arithmetic}|{assignment}|{relational}|{logical}
-keywords        begin|def|do|else|for|if|print|read|then|to|return|while
+operators       {arithmetic}|{relational}|{logical}
+keywords        def|do|else|for|if|then|to|return|while
 scalar_type     integer|real|string|boolean
 identifier      {letter}({letter}|{digit})*
 positive_int    {nonzero_digit}{digit}*
@@ -134,9 +132,14 @@ pseudo_commment \/\/&[A-Z][+-]
     return DELIM_PTHS_R;
 }
 
-{delimiters} {
+\[ {
     TOKEN_CHAR(*yytext);
-    return DELIM;
+    return DELIM_BRKT_L;
+}
+
+\] {
+    TOKEN_CHAR(*yytext);
+    return DELIM_BRKT_R;
 }
 
  /* -------- */
@@ -146,6 +149,11 @@ pseudo_commment \/\/&[A-Z][+-]
 {operators} {
     TOKEN(yytext);
     return OP;
+}
+
+:= {
+    TOKEN(yytext);
+    return OP_ASSIGN;
 }
 
 \- {
@@ -165,6 +173,16 @@ pseudo_commment \/\/&[A-Z][+-]
 {scalar_type} {
     TOKEN_KW(yytext);
     return KW_SCALAR_T;
+}
+
+read {
+    TOKEN_KW(yytext);
+    return KW_READ;
+}
+
+print {
+    TOKEN_KW(yytext);
+    return KW_PRINT;
 }
 
 true {
@@ -190,6 +208,11 @@ array {
 var {
     TOKEN_KW(yytext);
     return KW_VAR;
+}
+
+begin {
+    TOKEN_KW(yytext);
+    return KW_BEGIN;
 }
 
 end {
