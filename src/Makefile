@@ -16,8 +16,11 @@ OBJS := $(OBJS:=.o)
 
 all: $(EXEC)
 
+parser.tab.h: parser.y
+	$(YACC) -d parser.y
+
 # Static pattern rule
-$(SCANNER).c: %.c: %.l
+$(SCANNER).c: %.c: %.l parser.tab.h
 	$(LEX) -o $@ $<
 
 $(PARSER).c: %.c: %.y

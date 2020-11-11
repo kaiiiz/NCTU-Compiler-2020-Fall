@@ -17,6 +17,8 @@ static void yyerror(const char *msg);
 %token DELIM_SCLN
 %token DELIM_CLN
 %token DELIM_COMMA
+%token DELIM_PTHS_L
+%token DELIM_PTHS_R
 %token OP
 %token OP_NEG
 %token KW
@@ -36,16 +38,33 @@ static void yyerror(const char *msg);
 
 %%
 
-program         : ID DELIM_SCLN decl_list_ep KW_END
+program         : ID DELIM_SCLN vc_decl_list_ep f_decl_list_ep KW_END
                 ;
-decl_list_ep    : epsilon
-                | decl_list
+vc_decl_list_ep : epsilon
+                | vc_decl_list
                 ;
-decl_list       : decl
-                | decl_list decl
+vc_decl_list    : vc_decl
+                | vc_decl_list vc_decl
                 ;
-decl            : var_decl
+vc_decl         : var_decl
                 | const_decl
+                ;
+f_decl_list_ep  : epsilon
+                | f_decl_list
+                ;
+f_decl_list     : func_decl
+                | f_decl_list func_decl
+                ;
+func_decl       : ID DELIM_PTHS_L arg_list_ep DELIM_PTHS_R DELIM_CLN KW_SCALAR_T DELIM_SCLN
+                | ID DELIM_PTHS_L arg_list_ep DELIM_PTHS_R DELIM_SCLN
+                ;
+arg_list_ep     : epsilon
+                | arg_list
+                ;
+arg_list        : arg
+                | arg_list DELIM_SCLN arg
+                ;
+arg             : id_list DELIM_CLN KW_SCALAR_T
                 ;
 var_decl        : KW_VAR id_list DELIM_CLN KW_SCALAR_T DELIM_SCLN
                 | KW_VAR id_list DELIM_CLN KW_ARR pos_int_const KW_OF KW_SCALAR_T DELIM_SCLN

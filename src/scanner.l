@@ -29,7 +29,7 @@ assignment      :=
 relational      <|<=|<>|>=|>|=
 logical         and|or|not
 
-delimiters      [\(\)\[\]]
+delimiters      [\[\]]
 operators       {arithmetic}|{assignment}|{relational}|{logical}
 keywords        begin|def|do|else|for|if|print|read|then|to|return|while
 scalar_type     integer|real|string|boolean
@@ -122,6 +122,16 @@ pseudo_commment \/\/&[A-Z][+-]
 , {
     TOKEN_CHAR(*yytext);
     return DELIM_COMMA;
+}
+
+\( {
+    TOKEN_CHAR(*yytext);
+    return DELIM_PTHS_L;
+}
+
+\) {
+    TOKEN_CHAR(*yytext);
+    return DELIM_PTHS_R;
 }
 
 {delimiters} {
