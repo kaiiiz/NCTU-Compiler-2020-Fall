@@ -1,148 +1,169 @@
 %{
 #include <stdint.h>
 
-#include "parser.h"
-
-#define LIST                strCat(yytext)
-#define TOKEN(t)            { LIST; if (opt_tok) printf("<%s>\n", #t); }
-#define TOKEN_CHAR(t)       { LIST; if (opt_tok) printf("<%c>\n", (t)); }
-#define TOKEN_STRING(t, s)  { LIST; if (opt_tok) printf("<%s: %s>\n", #t, (s)); }
-#define MAX_LINE_LENG       512
+#define LIST                  strCat(yytext)
+#define TOKEN(t)              { LIST; if (opt_tok) printf("<%s>\n", t); }
+#define TOKEN_CHAR(t)         { LIST; if (opt_tok) printf("<%c>\n", (t)); }
+#define TOKEN_KW(s)           { LIST; if (opt_tok) printf("<KW%s>\n", (s)); }
+#define TOKEN_STRING(t, s)    { LIST; if (opt_tok) printf("<%s: %s>\n", #t, (s)); }
+#define MAX_LINE_LENG         512
 
 uint32_t line_num = 1;
 char buffer[MAX_LINE_LENG];
 
 static int32_t opt_src = 1;
 static int32_t opt_tok = 1;
-static char string_literal[MAX_LINE_LENG];
 static char *buffer_ptr = buffer;
 
 static void strCat(const char *Text);
 
 %}
 
-integer 0|[1-9][0-9]*
-float {integer}\.(0|[0-9]*[1-9])
+digit           [0-9]
+nonzero_digit   [1-9]
+letter          [a-zA-Z]
 
-%x CCOMMENT
+arithmetic      \+|\-|\*|\/|mod
+assignment      :=
+relational      <|<=|<>|>=|>|=
+logical         and|or|not
+
+delimiters      [,;:\(\)\[\]]
+operators       {arithmetic}|{assignment}|{relational}|{logical}
+keywords        array|begin|boolean|def|do|else|end|false|for|integer|if|of|print|read|real|string|then|to|true|return|var|while
+identifier      {letter}({letter}|{digit})*
+positive_int    {nonzero_digit}{digit}*
+dec_integer     {positive_int}|0
+oct_integer     0[0-7]+
+float_frac      {digit}*{nonzero_digit}|0
+float           {dec_integer}\.{float_frac}
+scientific      ({float}|{dec_integer})[eE][+-]?{dec_integer}
+string          \"([\x00-\x09\x0B\x0C\x0E-\x1F\x7F !#-~]|\"\")*\"
+whitespace      [[:space:]]
+comment_inline  \/\/
+comment_blk_beg \/\*
+comment_blk_end \*\/
+pseudo_commment \/\/&[A-Z][+-]
+
+%x COMMENT_BLK
+%x COMMENT_INL
 
 %%
-    /* Delimiter */
-"," { TOKEN_CHAR(','); }
-";" { TOKEN_CHAR(';'); }
-":" { TOKEN_CHAR(':'); }
-"(" { TOKEN_CHAR('('); }
-")" { TOKEN_CHAR(')'); }
-"[" { TOKEN_CHAR('['); }
-"]" { TOKEN_CHAR(']'); }
 
-    /* Operator */
-"+"   { TOKEN_CHAR('+'); }
-"-"   { TOKEN_CHAR('-'); }
-"*"   { TOKEN_CHAR('*'); }
-"/"   { TOKEN_CHAR('/'); }
-"mod" { TOKEN(mod); }
-":="  { TOKEN(:=); }
-"<"   { TOKEN_CHAR('<'); }
-"<="  { TOKEN(<=); }
-"<>"  { TOKEN(<>); }
-">="  { TOKEN(>=); }
-">"   { TOKEN_CHAR('>'); }
-"="   { TOKEN_CHAR('='); }
-"and" { TOKEN(and); }
-"or"  { TOKEN(or); }
-"not" { TOKEN(not); }
-
-    /* Keyword */
-"array"   { TOKEN(KWarray); }
-"begin"   { TOKEN(KWbegin); }
-"boolean" { TOKEN(KWboolean); }
-"def"     { TOKEN(KWdef); }
-"do"      { TOKEN(KWdo); }
-"else"    { TOKEN(KWelse); }
-"end"     { TOKEN(KWend); }
-"false"   { TOKEN(KWfalse); }
-"for"     { TOKEN(KWfor); }
-"integer" { TOKEN(KWinteger); }
-"if"      { TOKEN(KWif); }
-"of"      { TOKEN(KWof); }
-"print"   { TOKEN(KWprint); }
-"read"    { TOKEN(KWread); }
-"real"    { TOKEN(KWreal); }
-"string"  { TOKEN(KWstring); }
-"then"    { TOKEN(KWthen); }
-"to"      { TOKEN(KWto); }
-"true"    { TOKEN(KWtrue); }
-"return"  { TOKEN(KWreturn); }
-"var"     { TOKEN(KWvar); }
-"while"   { TOKEN(KWwhile); }
-
-    /* Identifier */
-[a-zA-Z][a-zA-Z0-9]* { TOKEN_STRING(id, yytext); }
-
-    /* Integer (decimal/octal) */
-{integer} { TOKEN_STRING(integer, yytext); }
-0[0-7]+   { TOKEN_STRING(oct_integer, yytext); }
-
-    /* Floating-Point */
-{float} { TOKEN_STRING(float, yytext); }
-
-    /* Scientific Notation [Ee][+-]?[0-9]+ */
-({integer}|{float})[Ee][+-]?({integer}) { TOKEN_STRING(scientific, yytext); }
-
-    /* String */
-\"([^"\n]|\"\")*\" {
-    char *yyt_ptr = yytext;
-    char *str_ptr = string_literal;
-
-    /* Condition guard of the end of string literal
-       Check only when *yyt_ptr == '"' */
-    while (*(yyt_ptr + 1) != '\0') {
-        ++yyt_ptr;
-
-        /* Handle the situation of double quotes */
-        if (*yyt_ptr == '"' && *(yyt_ptr + 1) != '\0')
-            *str_ptr++ = *yyt_ptr++;
-
-        while (*yyt_ptr != '"')
-            *str_ptr++ = *yyt_ptr++;
+{pseudo_commment} {
+    switch (yytext[3]) {
+        case 'T':
+            opt_tok = (yytext[4] == '+') ? 1 : 0;
+            break;
+        case 'S':
+            opt_src = (yytext[4] == '+') ? 1 : 0;
+            break;
     }
-    *str_ptr = '\0';
-    TOKEN_STRING(string, string_literal);
-}
-    /* Whitespace */
-[ \t]+ { LIST; }
-
-    /* Pseudocomment */
-"//&"[ST][+-].* {
     LIST;
-    char option = yytext[3];
-    switch (option) {
-    case 'S':
-        opt_src = (yytext[4] == '+') ? 1 : 0;
-        break;
-    case 'T':
-        opt_tok = (yytext[4] == '+') ? 1 : 0;
-        break;
-    }
+    BEGIN(COMMENT_INL);
 }
 
-    /* C++ Style Comment */
-"//".* { LIST; }
+{comment_inline} {
+    LIST;
+    BEGIN(COMMENT_INL);
+}
 
-    /* C Style Comment */
-"/*"           { LIST; BEGIN(CCOMMENT); }
-<CCOMMENT>"*/" { LIST; BEGIN(INITIAL); }
-<CCOMMENT>.    { LIST; }
+<COMMENT_INL>. {
+    LIST;
+}
 
-    /* Newline */
-<INITIAL,CCOMMENT>\n {
+<COMMENT_INL>\n {
     if (opt_src) {
         printf("%d: %s\n", line_num, buffer);
     }
     ++line_num;
     buffer[0] = '\0';
     buffer_ptr = buffer;
+    BEGIN(INITIAL);
+}
+
+{comment_blk_beg} {
+    LIST;
+    BEGIN(COMMENT_BLK);
+}
+
+<COMMENT_BLK>{comment_blk_end} {
+    LIST;
+    BEGIN(INITIAL);
+}
+
+<COMMENT_BLK>\n {
+    if (opt_src) {
+        printf("%d: %s\n", line_num, buffer);
+    }
+    ++line_num;
+    buffer[0] = '\0';
+    buffer_ptr = buffer;
+}
+
+<COMMENT_BLK>. {
+    LIST;
+}
+
+{delimiters} {
+    TOKEN_CHAR(*yytext);
+}
+
+{operators} {
+    TOKEN(yytext);
+}
+
+{keywords} {
+    TOKEN_KW(yytext);
+}
+
+{identifier} {
+    TOKEN_STRING(id, yytext);
+}
+
+{scientific} {
+    TOKEN_STRING(scientific, yytext);
+}
+
+{float} {
+    TOKEN_STRING(float, yytext);
+}
+
+{dec_integer} {
+    TOKEN_STRING(integer, yytext);
+}
+
+{oct_integer} {
+    TOKEN_STRING(oct_integer, yytext);
+}
+
+{string} {
+    int max_str_len = strlen(yytext) - 2;
+    int idx = 0;
+    char str[max_str_len + 1];
+    char *ptr = yytext + 1;
+    while (max_str_len--) {
+        if (*ptr == '"' && *(ptr + 1) == '"') {
+            ptr++;
+            max_str_len--;
+        }
+        str[idx++] = *ptr++; 
+    }
+    str[idx] = '\0';
+    TOKEN_STRING(string, str);
+}
+
+\n {
+    if (opt_src) {
+        printf("%d: %s\n", line_num, buffer);
+    }
+    ++line_num;
+    buffer[0] = '\0';
+    buffer_ptr = buffer;
+}
+
+{whitespace} {
+    LIST;
 }
 
     /* Catch the character which is not accepted by rules above */
@@ -158,4 +179,21 @@ static void strCat(const char *Text) {
         *buffer_ptr++ = *Text++;
     }
     *buffer_ptr = '\0';
+}
+
+int main(int argc, const char **argv) {
+    if (argc != 2) {
+        fprintf(stderr, "Usage: ./scanner [filename]\n");
+        exit(-1);
+    }
+
+    yyin = fopen(argv[1], "r");
+    if (yyin == NULL) {
+        fprintf(stderr, "Open file error\n");
+        exit(-1);
+    }
+
+    yylex();
+
+    return 0;
 }
