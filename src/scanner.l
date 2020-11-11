@@ -24,11 +24,6 @@ digit           [0-9]
 nonzero_digit   [1-9]
 letter          [a-zA-Z]
 
-arithmetic      \+|\*|\/|mod
-relational      <|<=|<>|>=|>|=
-logical         and|or|not
-
-operators       {arithmetic}|{relational}|{logical}
 scalar_type     integer|real|string|boolean
 identifier      {letter}({letter}|{digit})*
 positive_int    {nonzero_digit}{digit}*
@@ -145,8 +140,19 @@ pseudo_commment \/\/&[A-Z][+-]
 
  /* OPERATOR */
 
-{operators} {
+\+ {
     TOKEN(yytext);
+    return OP_ADD;
+}
+
+\* {
+    TOKEN(yytext);
+    return OP_MUT;
+}
+
+\/|mod {
+    TOKEN(yytext);
+    return OP_DIV;
 }
 
 := {
@@ -156,7 +162,52 @@ pseudo_commment \/\/&[A-Z][+-]
 
 \- {
     TOKEN(yytext);
-    return OP_NEG;
+    return OP_MIN;
+}
+
+\< {
+    TOKEN(yytext);
+    return OP_L;
+}
+
+\<= {
+    TOKEN(yytext);
+    return OP_LE;
+}
+
+\<> {
+    TOKEN(yytext);
+    return OP_LG;
+}
+
+>= {
+    TOKEN(yytext);
+    return OP_GE;
+}
+
+> {
+    TOKEN(yytext);
+    return OP_G;
+}
+
+= {
+    TOKEN(yytext);
+    return OP_EQ;
+}
+
+and {
+    TOKEN(yytext);
+    return OP_AND;
+}
+
+or {
+    TOKEN(yytext);
+    return OP_OR;
+}
+
+not {
+    TOKEN(yytext);
+    return OP_NOT;
 }
 
  /* -------- */
