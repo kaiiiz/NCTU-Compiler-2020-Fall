@@ -1,5 +1,6 @@
 %{
 #include <stdint.h>
+#include "parser.tab.h"
 
 #define LIST                  strCat(yytext)
 #define TOKEN(t)              { LIST; if (opt_tok) printf("<%s>\n", t); }
@@ -23,14 +24,15 @@ digit           [0-9]
 nonzero_digit   [1-9]
 letter          [a-zA-Z]
 
-arithmetic      \+|\-|\*|\/|mod
+arithmetic      \+|\*|\/|mod
 assignment      :=
 relational      <|<=|<>|>=|>|=
 logical         and|or|not
 
-delimiters      [,;:\(\)\[\]]
+delimiters      [\(\)\[\]]
 operators       {arithmetic}|{assignment}|{relational}|{logical}
-keywords        array|begin|boolean|def|do|else|end|false|for|integer|if|of|print|read|real|string|then|to|true|return|var|while
+keywords        begin|def|do|else|for|if|print|read|then|to|return|while
+scalar_type     integer|real|string|boolean
 identifier      {letter}({letter}|{digit})*
 positive_int    {nonzero_digit}{digit}*
 dec_integer     {positive_int}|0
@@ -105,36 +107,111 @@ pseudo_commment \/\/&[A-Z][+-]
     LIST;
 }
 
+ /* DELIMITER */
+
+; {
+    TOKEN_CHAR(*yytext);
+    return DELIM_SCLN;
+}
+
+: {
+    TOKEN_CHAR(*yytext);
+    return DELIM_CLN;
+}
+
+, {
+    TOKEN_CHAR(*yytext);
+    return DELIM_COMMA;
+}
+
 {delimiters} {
     TOKEN_CHAR(*yytext);
+    return DELIM;
 }
+
+ /* -------- */
+
+ /* OPERATOR */
 
 {operators} {
     TOKEN(yytext);
+    return OP;
 }
+
+\- {
+    TOKEN(yytext);
+    return OP_NEG;
+}
+
+ /* -------- */
+
+ /* KEYWORD */
 
 {keywords} {
     TOKEN_KW(yytext);
+    return KW;
 }
+
+{scalar_type} {
+    TOKEN_KW(yytext);
+    return KW_SCALAR_T;
+}
+
+true {
+    TOKEN_KW(yytext);
+    return KW_TRUE;
+}
+
+false {
+    TOKEN_KW(yytext);
+    return KW_FALSE;
+}
+
+of {
+    TOKEN_KW(yytext);
+    return KW_OF;
+}
+
+array {
+    TOKEN_KW(yytext);
+    return KW_ARR;
+}
+
+var {
+    TOKEN_KW(yytext);
+    return KW_VAR;
+}
+
+end {
+    TOKEN_KW(yytext);
+    return KW_END;
+}
+
+ /* ------ */
 
 {identifier} {
     TOKEN_STRING(id, yytext);
+    return ID;
 }
 
 {scientific} {
     TOKEN_STRING(scientific, yytext);
+    return SCI;
 }
 
 {float} {
     TOKEN_STRING(float, yytext);
+    return FLOAT;
 }
 
 {dec_integer} {
     TOKEN_STRING(integer, yytext);
+    return DEC_INT;
 }
 
 {oct_integer} {
     TOKEN_STRING(oct_integer, yytext);
+    return OCT_INT;
 }
 
 {string} {
@@ -151,6 +228,7 @@ pseudo_commment \/\/&[A-Z][+-]
     }
     str[idx] = '\0';
     TOKEN_STRING(string, str);
+    return STR;
 }
 
 \n {
@@ -181,7 +259,7 @@ static void strCat(const char *Text) {
     *buffer_ptr = '\0';
 }
 
-int main(int argc, const char **argv) {
+/* int main(int argc, const char **argv) {
     if (argc != 2) {
         fprintf(stderr, "Usage: ./scanner [filename]\n");
         exit(-1);
@@ -196,4 +274,4 @@ int main(int argc, const char **argv) {
     yylex();
 
     return 0;
-}
+} */
