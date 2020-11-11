@@ -1,6 +1,6 @@
 %{
 #include <stdint.h>
-#include "parser.tab.h"
+#include "parser.h"
 
 #define LIST                  strCat(yytext)
 #define TOKEN(t)              { LIST; if (opt_tok) printf("<%s>\n", t); }
