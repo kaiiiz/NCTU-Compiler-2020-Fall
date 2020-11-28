@@ -1,3 +1,5 @@
+.vscode
+
 parser.output
 parser.h
 parser.c*
