@@ -6,7 +6,7 @@
 class ProgramNode : public AstNode {
   public:
     ProgramNode(const uint32_t line, const uint32_t col,
-                const char *p_name
+                const std::string p_name
                 /* TODO: return type, declarations, functions,
                  *       compound statement */);
     ~ProgramNode() = default;

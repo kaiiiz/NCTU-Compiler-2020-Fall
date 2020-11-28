@@ -86,7 +86,7 @@ float {integer}\.(0|[0-9]*[1-9])
     /* Identifier */
 [a-zA-Z][a-zA-Z0-9]* {
     TOKEN_STRING(id, yytext);
-    return yy::parser::make_ID(loc);
+    return yy::parser::make_ID(yytext, loc);
 }
 
     /* Integer (decimal/octal) */

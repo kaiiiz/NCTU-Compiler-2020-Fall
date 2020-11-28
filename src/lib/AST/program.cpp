@@ -1,8 +1,9 @@
 #include "AST/program.hpp"
+#include <iostream>
 
 // TODO
 ProgramNode::ProgramNode(const uint32_t line, const uint32_t col,
-                         const char *p_name)
+                         const std::string p_name)
     : AstNode{line, col}, name(p_name) {}
 
 // visitor pattern version: const char *ProgramNode::getNameCString() const { return name.c_str(); }

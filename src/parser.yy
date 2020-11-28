@@ -49,8 +49,6 @@
 
 /* Declared by scanner.l */
 extern char *yytext;
-
-// static AstNode *root;
 }
 
 %token EOF_ 0 "end of file";
@@ -71,7 +69,8 @@ extern char *yytext;
 %right UNARY_MINUS
 
     /* Keyword */
-%token ARRAY BOOLEAN INTEGER REAL STRING
+%token ARRAY BOOLEAN INTEGER REAL
+%token STRING
 %token END BEGIN_ /* Use BEGIN_ since BEGIN is a keyword in lex */
 %token DO ELSE FOR IF THEN WHILE
 %token DEF OF TO RETURN VAR
@@ -79,12 +78,15 @@ extern char *yytext;
 %token PRINT READ
 
     /* Identifier */
-%token ID
+%token <std::string> ID "id"
 
     /* Literal */
 %token INT_LITERAL
 %token REAL_LITERAL
 %token STRING_LITERAL
+
+
+%type <std::string> ProgramName
 
 %%
     /*
@@ -97,6 +99,7 @@ Program:
     DeclarationList FunctionList CompoundStatement
     /* End of ProgramBody */
     END {
+        drv.root = std::make_shared<ProgramNode>(@1.begin.line, @1.begin.column, $1);
     }
 ;
 
@@ -415,9 +418,9 @@ int main(int argc, const char *argv[]) {
     driver drv;
     drv.parse(argv[1]);
 
-    /* if (argc >= 3 && strcmp(argv[2], "--dump-ast") == 0) {
-        root->print();
-    } */
+    if (argc >= 3 && strcmp(argv[2], "--dump-ast") == 0) {
+        drv.root->print();
+    }
 
     printf("\n"
            "|--------------------------------|\n"
