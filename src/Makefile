@@ -14,8 +14,12 @@ AST := $(shell find $(ASTDIR) -name '*.cpp')
 VISITORDIR = lib/visitor/
 VISITOR := $(shell find $(VISITORDIR) -name '*.cpp')
 
+DRIVERDIR = lib/driver/
+DRIVER := $(shell find $(DRIVERDIR) -name '*.cpp')
+
 SRC := $(AST) \
-	   $(VISITOR)
+	   $(VISITOR) \
+	   $(DRIVER)
 
 EXEC = $(PARSER)
 OBJS = $(PARSER:=.cpp) \
@@ -29,11 +33,11 @@ OBJS := $(OBJS:%.cpp=%.o)
 all: $(EXEC)
 
 # Static pattern rule
-$(SCANNER).cpp: %.cpp: %.l
+$(SCANNER).cpp: %.cpp: %.ll
 	$(LEX) -o $@ $<
 
-$(PARSER).cpp: %.cpp: %.y
-	$(YACC) -o $@ --defines=parser.h -v $<
+$(PARSER).cpp: %.cpp: %.yy
+	$(YACC) -o $@ --defines=parser.hh -v $<
 
 %.o: %.cpp
 	$(CC) -o $@ $(CFLAGS) $(INCLUDE) -c -MMD $<
@@ -42,7 +46,7 @@ $(EXEC): $(OBJS)
 	$(CC) -o $@ $^ $(LIBS) $(INCLUDE)
 
 clean:
-	$(RM) $(DEPS) $(SCANNER:=.cpp) $(PARSER:=.cpp) $(PARSER:=.h) $(OBJS) $(EXEC)
+	$(RM) $(DEPS) $(SCANNER:=.cpp) $(PARSER:=.cpp) $(PARSER:=.hh) $(OBJS) $(EXEC)
 
 test:
 	./unittests/test.sh

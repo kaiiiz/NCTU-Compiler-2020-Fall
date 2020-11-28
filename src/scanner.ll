@@ -2,7 +2,7 @@
 #include <stdint.h>
 #include <string.h>
 
-#include "parser.h"
+#include "parser.hh"
 
 #define YY_USER_ACTION \
     yylloc.first_line = line_num; \
