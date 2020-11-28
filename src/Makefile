@@ -3,7 +3,7 @@ LEX = flex
 YACC = bison
 CFLAGS = -Wall -std=gnu++11 -g
 LIBS = -lfl -ly
-INCLUDE = -Iinclude
+INCLUDE = -Iinclude -I.
 
 SCANNER = scanner
 PARSER = parser

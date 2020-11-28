@@ -1,4 +1,26 @@
-%{
+%skeleton "lalr1.cc" /* -*- C++ -*- */
+%require "3.0.4"
+
+%locations
+%define api.token.raw
+%define api.token.constructor
+%define api.value.type variant
+%define parse.assert
+%define parse.trace
+%define parse.error verbose
+
+%code requires {
+    class driver;
+}
+
+%param { driver& drv }
+%initial-action {
+    @$.begin.filename = @$.end.filename = &drv.file; // Initialize the initial location.
+};
+
+%code {
+#include "driver/driver.hpp"
+
 #include "AST/ast.hpp"
 #include "AST/program.hpp"
 #include "AST/decl.hpp"
@@ -25,42 +47,13 @@
 #include <cstdio>
 #include <cstring>
 
-#define YYLTYPE yyltype
-
-typedef struct YYLTYPE {
-    uint32_t first_line;
-    uint32_t first_column;
-    uint32_t last_line;
-    uint32_t last_column;
-} yyltype;
-
 /* Declared by scanner.l */
-extern uint32_t line_num;
-extern char buffer[512];
-extern FILE *yyin;
 extern char *yytext;
-/* End */
 
-static AstNode *root;
-
-extern "C" int yylex(void);
-static void yyerror(const char *msg);
-extern int yylex_destroy(void);
-%}
-
-%code requires {
-    class AstNode;
+// static AstNode *root;
 }
 
-    /* For yylval */
-%union {
-    /* basic semantic value */
-    char *identifier;
-
-    AstNode *node;
-};
-
-%type <identifier> ProgramName ID
+%token EOF_ 0 "end of file";
 
     /* Delimiter */
 %token COMMA SEMICOLON COLON
@@ -104,10 +97,6 @@ Program:
     DeclarationList FunctionList CompoundStatement
     /* End of ProgramBody */
     END {
-        root = new ProgramNode(@1.first_line, @1.first_column,
-                               $1);
-
-        free($1);
     }
 ;
 
@@ -413,18 +402,8 @@ Epsilon:
 ;
 %%
 
-void yyerror(const char *msg) {
-    fprintf(stderr,
-            "\n"
-            "|-----------------------------------------------------------------"
-            "---------\n"
-            "| Error found in Line #%d: %s\n"
-            "|\n"
-            "| Unmatched token: %s\n"
-            "|-----------------------------------------------------------------"
-            "---------\n",
-            line_num, buffer, yytext);
-    exit(-1);
+void yy::parser::error(const location_type &l, const std::string &m) {
+    drv.error(l, m, yytext);
 }
 
 int main(int argc, const char *argv[]) {
@@ -433,22 +412,17 @@ int main(int argc, const char *argv[]) {
         exit(-1);
     }
 
-    yyin = fopen(argv[1], "r");
-    assert(yyin != NULL && "fopen() fails.");
+    driver drv;
+    drv.parse(argv[1]);
 
-    yyparse();
-
-    if (argc >= 3 && strcmp(argv[2], "--dump-ast") == 0) {
+    /* if (argc >= 3 && strcmp(argv[2], "--dump-ast") == 0) {
         root->print();
-    }
+    } */
 
     printf("\n"
            "|--------------------------------|\n"
            "|  There is no syntactic error!  |\n"
            "|--------------------------------|\n");
 
-    delete root;
-    fclose(yyin);
-    yylex_destroy();
     return 0;
 }

@@ -1,36 +1,23 @@
-%{
-#include <stdint.h>
-#include <string.h>
+%{ /* -*- C++ -*- */
+#include <string>
 
 #include "parser.hh"
+#include "driver/driver.hpp"
 
-#define YY_USER_ACTION \
-    yylloc.first_line = line_num; \
-    yylloc.first_column = col_num; \
-    col_num += yyleng;
+#define LIST                drv.scan_list(yytext)
+#define TOKEN(t)            { LIST; if (drv.opt_tok) printf("<%s>\n", #t); }
+#define TOKEN_CHAR(t)       { LIST; if (drv.opt_tok) printf("<%c>\n", (t)); }
+#define TOKEN_STRING(t, s)  { LIST; if (drv.opt_tok) printf("<%s: %s>\n", #t, (s)); }
 
-#define LIST                strCat(yytext)
-#define TOKEN(t)            { LIST; if (opt_tok) printf("<%s>\n", #t); }
-#define TOKEN_CHAR(t)       { LIST; if (opt_tok) printf("<%c>\n", (t)); }
-#define TOKEN_STRING(t, s)  { LIST; if (opt_tok) printf("<%s: %s>\n", #t, (s)); }
-#define MAX_LINE_LENG       512
-#define MAX_ID_LENG         32
-
-// prevent undefined reference error in newer version of flex
-extern "C" int yylex(void);
-
-uint32_t line_num = 1;
-uint32_t col_num = 1;
-char buffer[MAX_LINE_LENG];
-
-static int32_t opt_src = 1;
-static int32_t opt_tok = 1;
-static char string_literal[MAX_LINE_LENG];
-static char *buffer_ptr = buffer;
-
-static void strCat(const char *Text);
-
+extern driver drv;
 %}
+
+%{
+  // Code run each time a pattern is matched.
+  #define YY_USER_ACTION      loc.columns(yyleng);
+%}
+
+%option noyywrap nounput noinput
 
 integer 0|[1-9][0-9]*
 float {integer}\.(0|[0-9]*[1-9])
@@ -38,108 +25,110 @@ float {integer}\.(0|[0-9]*[1-9])
 %x CCOMMENT
 
 %%
+
+%{
+  // A handy shortcut to the location held by the driver.
+  yy::location &loc = drv.location;
+  // Code run each time yylex is called.
+  loc.step();
+%}
+
     /* Delimiter */
-"," { TOKEN_CHAR(','); return COMMA; }
-";" { TOKEN_CHAR(';'); return SEMICOLON; }
-":" { TOKEN_CHAR(':'); return COLON; }
-"(" { TOKEN_CHAR('('); return L_PARENTHESIS; }
-")" { TOKEN_CHAR(')'); return R_PARENTHESIS; }
-"[" { TOKEN_CHAR('['); return L_BRACKET; }
-"]" { TOKEN_CHAR(']'); return R_BRACKET; }
+"," { TOKEN_CHAR(','); return yy::parser::make_COMMA(loc); }
+";" { TOKEN_CHAR(';'); return yy::parser::make_SEMICOLON(loc); }
+":" { TOKEN_CHAR(':'); return yy::parser::make_COLON(loc); }
+"(" { TOKEN_CHAR('('); return yy::parser::make_L_PARENTHESIS(loc); }
+")" { TOKEN_CHAR(')'); return yy::parser::make_R_PARENTHESIS(loc); }
+"[" { TOKEN_CHAR('['); return yy::parser::make_L_BRACKET(loc); }
+"]" { TOKEN_CHAR(']'); return yy::parser::make_R_BRACKET(loc); }
 
     /* Operator */
-"+"   { TOKEN_CHAR('+'); return PLUS; }
-"-"   { TOKEN_CHAR('-'); return MINUS; }
-"*"   { TOKEN_CHAR('*'); return MULTIPLY; }
-"/"   { TOKEN_CHAR('/'); return DIVIDE; }
-"mod" { TOKEN(mod);      return MOD; }
-":="  { TOKEN(:=);       return ASSIGN; }
-"<"   { TOKEN_CHAR('<'); return LESS; }
-"<="  { TOKEN(<=);       return LESS_OR_EQUAL; }
-"<>"  { TOKEN(<>);       return NOT_EQUAL; }
-">="  { TOKEN(>=);       return GREATER_OR_EQUAL; }
-">"   { TOKEN_CHAR('>'); return GREATER; }
-"="   { TOKEN_CHAR('='); return EQUAL; }
-"and" { TOKEN(and);      return AND; }
-"or"  { TOKEN(or);       return OR; }
-"not" { TOKEN(not);      return NOT; }
+"+"   { TOKEN_CHAR('+'); return yy::parser::make_PLUS(loc); }
+"-"   { TOKEN_CHAR('-'); return yy::parser::make_MINUS(loc); }
+"*"   { TOKEN_CHAR('*'); return yy::parser::make_MULTIPLY(loc); }
+"/"   { TOKEN_CHAR('/'); return yy::parser::make_DIVIDE(loc); }
+"mod" { TOKEN(mod);      return yy::parser::make_MOD(loc); }
+":="  { TOKEN(:=);       return yy::parser::make_ASSIGN(loc); }
+"<"   { TOKEN_CHAR('<'); return yy::parser::make_LESS(loc); }
+"<="  { TOKEN(<=);       return yy::parser::make_LESS_OR_EQUAL(loc); }
+"<>"  { TOKEN(<>);       return yy::parser::make_NOT_EQUAL(loc); }
+">="  { TOKEN(>=);       return yy::parser::make_GREATER_OR_EQUAL(loc); }
+">"   { TOKEN_CHAR('>'); return yy::parser::make_GREATER(loc); }
+"="   { TOKEN_CHAR('='); return yy::parser::make_EQUAL(loc); }
+"and" { TOKEN(and);      return yy::parser::make_AND(loc); }
+"or"  { TOKEN(or);       return yy::parser::make_OR(loc); }
+"not" { TOKEN(not);      return yy::parser::make_NOT(loc); }
 
     /* Keyword */
-"array"   { TOKEN(KWarray);   return ARRAY; }
-"begin"   { TOKEN(KWbegin);   return BEGIN_; }
-"boolean" { TOKEN(KWboolean); return BOOLEAN; }
-"def"     { TOKEN(KWdef);     return DEF; }
-"do"      { TOKEN(KWdo);      return DO; }
-"else"    { TOKEN(KWelse);    return ELSE; }
-"end"     { TOKEN(KWend);     return END; }
-"false"   { TOKEN(KWfalse);   return FALSE; }
-"for"     { TOKEN(KWfor);     return FOR; }
-"integer" { TOKEN(KWinteger); return INTEGER; }
-"if"      { TOKEN(KWif);      return IF; }
-"of"      { TOKEN(KWof);      return OF; }
-"print"   { TOKEN(KWprint);   return PRINT; }
-"read"    { TOKEN(KWread);    return READ; }
-"real"    { TOKEN(KWreal);    return REAL; }
-"string"  { TOKEN(KWstring);  return STRING; }
-"then"    { TOKEN(KWthen);    return THEN; }
-"to"      { TOKEN(KWto);      return TO; }
-"true"    { TOKEN(KWtrue);    return TRUE; }
-"return"  { TOKEN(KWreturn);  return RETURN; }
-"var"     { TOKEN(KWvar);     return VAR; }
-"while"   { TOKEN(KWwhile);   return WHILE; }
+"array"   { TOKEN(KWarray);   return yy::parser::make_ARRAY(loc); }
+"begin"   { TOKEN(KWbegin);   return yy::parser::make_BEGIN_(loc); }
+"boolean" { TOKEN(KWboolean); return yy::parser::make_BOOLEAN(loc); }
+"def"     { TOKEN(KWdef);     return yy::parser::make_DEF(loc); }
+"do"      { TOKEN(KWdo);      return yy::parser::make_DO(loc); }
+"else"    { TOKEN(KWelse);    return yy::parser::make_ELSE(loc); }
+"end"     { TOKEN(KWend);     return yy::parser::make_END(loc); }
+"false"   { TOKEN(KWfalse);   return yy::parser::make_FALSE(loc); }
+"for"     { TOKEN(KWfor);     return yy::parser::make_FOR(loc); }
+"integer" { TOKEN(KWinteger); return yy::parser::make_INTEGER(loc); }
+"if"      { TOKEN(KWif);      return yy::parser::make_IF(loc); }
+"of"      { TOKEN(KWof);      return yy::parser::make_OF(loc); }
+"print"   { TOKEN(KWprint);   return yy::parser::make_PRINT(loc); }
+"read"    { TOKEN(KWread);    return yy::parser::make_READ(loc); }
+"real"    { TOKEN(KWreal);    return yy::parser::make_REAL(loc); }
+"string"  { TOKEN(KWstring);  return yy::parser::make_STRING(loc); }
+"then"    { TOKEN(KWthen);    return yy::parser::make_THEN(loc); }
+"to"      { TOKEN(KWto);      return yy::parser::make_TO(loc); }
+"true"    { TOKEN(KWtrue);    return yy::parser::make_TRUE(loc); }
+"return"  { TOKEN(KWreturn);  return yy::parser::make_RETURN(loc); }
+"var"     { TOKEN(KWvar);     return yy::parser::make_VAR(loc); }
+"while"   { TOKEN(KWwhile);   return yy::parser::make_WHILE(loc); }
 
     /* Identifier */
 [a-zA-Z][a-zA-Z0-9]* {
     TOKEN_STRING(id, yytext);
-    yylval.identifier = strndup(yytext, MAX_ID_LENG);
-    return ID;
+    return yy::parser::make_ID(loc);
 }
 
     /* Integer (decimal/octal) */
 {integer} {
     TOKEN_STRING(integer, yytext);
-    return INT_LITERAL;
+    return yy::parser::make_INT_LITERAL(loc);
 }
 0[0-7]+   {
     TOKEN_STRING(oct_integer, yytext);
-    return INT_LITERAL;
+    return yy::parser::make_INT_LITERAL(loc);
 }
 
     /* Floating-Point */
 {float} {
     TOKEN_STRING(float, yytext);
-    return REAL_LITERAL;
+    return yy::parser::make_REAL_LITERAL(loc);
 }
 
     /* Scientific Notation [Ee][+-]?[0-9]+ */
 ({integer}|{float})[Ee][+-]?({integer}) {
     TOKEN_STRING(scientific, yytext);
-    return REAL_LITERAL;
+    return yy::parser::make_REAL_LITERAL(loc);
 }
 
     /* String */
 \"([^"\n]|\"\")*\" {
-    char *yyt_ptr = yytext;
-    char *str_ptr = string_literal;
-
-    /* Condition guard of the end of string literal
-       Check only when *yyt_ptr == '"' */
-    while (*(yyt_ptr + 1) != '\0') {
-        ++yyt_ptr;
-
-        /* Handle the situation of double quotes */
-        if (*yyt_ptr == '"' && *(yyt_ptr + 1) != '\0')
-            *str_ptr++ = *yyt_ptr++;
-
-        while (*yyt_ptr != '"')
-            *str_ptr++ = *yyt_ptr++;
+    std::string string_literal(yytext + 1, strlen(yytext) - 2);
+    size_t idx = 0;
+    while (true) {
+        idx = string_literal.find("\"\"", idx);
+        if (idx == std::string::npos) break;
+        string_literal.erase(idx, 2);
+        string_literal.insert(idx, "\"");
     }
-    *str_ptr = '\0';
-    TOKEN_STRING(string, string_literal);
-    return STRING_LITERAL;
+    TOKEN_STRING(string, string_literal.c_str());
+    return yy::parser::make_STRING_LITERAL(loc);
 }
     /* Whitespace */
-[ \t]+ { LIST; }
+[ \t]+ {
+    LIST;
+    loc.step();
+}
 
     /* Pseudocomment */
 "//&"[ST][+-].* {
@@ -147,10 +136,10 @@ float {integer}\.(0|[0-9]*[1-9])
     char option = yytext[3];
     switch (option) {
     case 'S':
-        opt_src = (yytext[4] == '+') ? 1 : 0;
+        drv.opt_src = (yytext[4] == '+') ? 1 : 0;
         break;
     case 'T':
-        opt_tok = (yytext[4] == '+') ? 1 : 0;
+        drv.opt_tok = (yytext[4] == '+') ? 1 : 0;
         break;
     }
 }
@@ -165,26 +154,39 @@ float {integer}\.(0|[0-9]*[1-9])
 
     /* Newline */
 <INITIAL,CCOMMENT>\n {
-    if (opt_src) {
-        printf("%d: %s\n", line_num, buffer);
+    if (drv.opt_src) {
+        std::cout << loc.begin.line << ": " << drv.buf << std::endl;
     }
-    ++line_num;
-    col_num = 1;
-    buffer[0] = '\0';
-    buffer_ptr = buffer;
+    loc.lines();
+    loc.step();
+    drv.clear_buf();
 }
 
     /* Catch the character which is not accepted by rules above */
 . {
-    printf("Error at line %d: bad character \"%s\"\n", line_num, yytext);
+    printf("Error at line %d: bad character \"%s\"\n", loc.begin.line, yytext);
     exit(-1);
 }
 
+<<EOF>>    { return yy::parser::make_EOF_(loc); };
+
 %%
 
-static void strCat(const char *Text) {
-    while (*Text) {
-        *buffer_ptr++ = *Text++;
+void driver::scan_begin() {
+    if (!(yyin = fopen(file.c_str(), "r"))) {
+        std::cerr << "Open file error" << std::endl;
+        exit(EXIT_FAILURE);
     }
-    *buffer_ptr = '\0';
+}
+
+void driver::scan_list(std::string str) {
+    buf += str;
+}
+
+void driver::clear_buf() {
+    buf.clear();
+}
+
+void driver::scan_end() {
+    fclose(yyin);
 }
