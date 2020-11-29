@@ -1,4 +1,4 @@
-#include "AST/FunctionInvocation.hpp"
+#include "AST/statement/FunctionInvocation.hpp"
 
 // TODO
 FunctionInvocationNode::FunctionInvocationNode(const uint32_t line,

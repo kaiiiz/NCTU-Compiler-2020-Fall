@@ -1,4 +1,4 @@
-#include "AST/if.hpp"
+#include "AST/statement/if.hpp"
 
 // TODO
 IfNode::IfNode(const uint32_t line, const uint32_t col)

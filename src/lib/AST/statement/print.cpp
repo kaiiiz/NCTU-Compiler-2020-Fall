@@ -1,4 +1,4 @@
-#include "AST/print.hpp"
+#include "AST/statement/print.hpp"
 
 // TODO
 PrintNode::PrintNode(const uint32_t line, const uint32_t col)

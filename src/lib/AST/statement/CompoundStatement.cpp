@@ -1,4 +1,4 @@
-#include "AST/CompoundStatement.hpp"
+#include "AST/statement/CompoundStatement.hpp"
 
 // TODO
 CompoundStatementNode::CompoundStatementNode(const uint32_t line,

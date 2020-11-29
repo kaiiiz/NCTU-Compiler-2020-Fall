@@ -1,4 +1,4 @@
-#include "AST/while.hpp"
+#include "AST/statement/while.hpp"
 
 // TODO
 WhileNode::WhileNode(const uint32_t line, const uint32_t col)

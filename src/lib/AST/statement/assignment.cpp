@@ -1,4 +1,4 @@
-#include "AST/assignment.hpp"
+#include "AST/statement/assignment.hpp"
 
 // TODO
 AssignmentNode::AssignmentNode(const uint32_t line, const uint32_t col)
