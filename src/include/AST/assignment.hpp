@@ -9,8 +9,6 @@ class AssignmentNode : public AstNode {
                    /* TODO: variable reference, expression */);
     ~AssignmentNode() = default;
 
-    void print() override;
-
   private:
     // TODO: variable reference, expression
 };

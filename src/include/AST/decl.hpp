@@ -15,8 +15,6 @@ class DeclNode : public AstNode {
 
     ~DeclNode() = default;
 
-    void print() override;
-
   private:
     // TODO: variables
 };

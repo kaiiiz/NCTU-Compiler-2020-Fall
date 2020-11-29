@@ -9,8 +9,6 @@ class ReturnNode : public AstNode {
                /* TODO: expression */);
     ~ReturnNode() = default;
 
-    void print() override;
-
   private:
     // TODO: expression
 };

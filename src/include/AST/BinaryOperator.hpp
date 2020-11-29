@@ -11,8 +11,6 @@ class BinaryOperatorNode : public ExpressionNode {
                        /* TODO: operator, expressions */);
     ~BinaryOperatorNode() = default;
 
-    void print() override;
-
   private:
     // TODO: operator, expressions
 };

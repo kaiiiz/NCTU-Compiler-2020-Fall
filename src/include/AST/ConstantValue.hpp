@@ -9,8 +9,6 @@ class ConstantValueNode : public ExpressionNode {
                       /* TODO: constant value */);
     ~ConstantValueNode() = default;
 
-    void print() override;
-
   private:
     // TODO: constant value
 };

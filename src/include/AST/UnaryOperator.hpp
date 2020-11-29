@@ -9,8 +9,6 @@ class UnaryOperatorNode : public ExpressionNode {
                       /* TODO: operator, expression */);
     ~UnaryOperatorNode() = default;
 
-    void print() override;
-
   private:
     // TODO: operator, expression
 };

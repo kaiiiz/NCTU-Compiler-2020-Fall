@@ -6,6 +6,8 @@
 
 #include "AST/ast.hpp"
 
+class AstDumper;
+
 class ProgramNode : public AstNode {
   public:
     ProgramNode(const uint32_t line, const uint32_t col,
@@ -15,9 +17,8 @@ class ProgramNode : public AstNode {
                 const std::shared_ptr<AstNode> compound_stmt);
     ~ProgramNode() = default;
 
-    // visitor pattern version: const char *getNameCString() const; 
-
-    void print() override;
+    void dump(AstDumper &dp) override;
+    const char *getProgramName();
 
   private:
     const std::string name;

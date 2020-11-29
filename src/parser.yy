@@ -21,6 +21,7 @@
 %code {
 #include "driver/driver.hpp"
 
+#include "AST/AstDumper.hpp"
 #include "AST/ast.hpp"
 #include "AST/program.hpp"
 #include "AST/decl.hpp"
@@ -422,7 +423,8 @@ int main(int argc, const char *argv[]) {
     drv.parse(argv[1]);
 
     if (argc >= 3 && strcmp(argv[2], "--dump-ast") == 0) {
-        drv.root->print();
+        AstDumper dp;
+        drv.root->dump(dp);
     }
 
     printf("\n"

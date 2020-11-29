@@ -9,8 +9,6 @@ class IfNode : public AstNode {
            /* TODO: expression, compound statement, compound statement */);
     ~IfNode() = default;
 
-    void print() override;
-
   private:
     // TODO: expression, compound statement, compound statement
 };

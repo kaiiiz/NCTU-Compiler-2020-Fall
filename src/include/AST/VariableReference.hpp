@@ -13,8 +13,6 @@ class VariableReferenceNode : public ExpressionNode {
     //                       /* TODO: name, expressions */);
     ~VariableReferenceNode() = default;
 
-    void print() override;
-
   private:
     // TODO: variable name, expressions
 };

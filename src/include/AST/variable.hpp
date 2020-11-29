@@ -9,8 +9,6 @@ class VariableNode : public AstNode {
                  /* TODO: variable name, type, constant value */);
     ~VariableNode() = default;
 
-    void print() override;
-
   private:
     // TODO: variable name, type, constant value
 };

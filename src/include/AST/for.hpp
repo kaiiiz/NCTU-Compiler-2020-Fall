@@ -10,8 +10,6 @@ class ForNode : public AstNode {
              *       compound statement */);
     ~ForNode() = default;
 
-    void print() override;
-
   private:
     // TODO: declaration, assignment, expression, compound statement
 };

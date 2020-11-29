@@ -9,8 +9,6 @@ class WhileNode : public AstNode {
               /* TODO: expression, compound statement */);
     ~WhileNode() = default;
 
-    void print() override;
-
   private:
     // TODO: expression, compound statement
 };

@@ -19,9 +19,6 @@
 
 #include <cstdio>
 
-// FIXME: remove this line if you choose to use visitor pattern with this template
-#ifdef I_WANT_TO_USE_VISITOR_PATTERN
-
 void AstDumper::incrementIndentation() {
     m_indentation += m_indentation_stride;
 }
@@ -39,10 +36,10 @@ void AstDumper::visit(ProgramNode &p_program) {
 
     std::printf("program <line: %u, col: %u> %s %s\n",
                 p_program.getLocation().line, p_program.getLocation().col,
-                p_program.getNameCString(), "void");
+                p_program.getProgramName(), "void");
 
     incrementIndentation();
-    p_program.visitChildNodes(*this);
+    // p_program.visitChildNodes(*this);
     decrementIndentation();
 }
 
@@ -53,7 +50,7 @@ void AstDumper::visit(DeclNode &p_decl) {
                 p_decl.getLocation().col);
 
     incrementIndentation();
-    p_decl.visitChildNodes(*this);
+    // p_decl.visitChildNodes(*this);
     decrementIndentation();
 }
 
@@ -66,7 +63,7 @@ void AstDumper::visit(VariableNode &p_variable) {
                 "TODO", "TODO");
 
     incrementIndentation();
-    p_variable.visitChildNodes(*this);
+    // p_variable.visitChildNodes(*this);
     decrementIndentation();
 }
 
@@ -89,7 +86,7 @@ void AstDumper::visit(FunctionNode &p_function) {
                 "TODO", "TODO");
 
     incrementIndentation();
-    p_function.visitChildNodes(*this);
+    // p_function.visitChildNodes(*this);
     decrementIndentation();
 }
 
@@ -101,7 +98,7 @@ void AstDumper::visit(CompoundStatementNode &p_compound_statement) {
                 p_compound_statement.getLocation().col);
 
     incrementIndentation();
-    p_compound_statement.visitChildNodes(*this);
+    // p_compound_statement.visitChildNodes(*this);
     decrementIndentation();
 }
 
@@ -112,7 +109,7 @@ void AstDumper::visit(PrintNode &p_print) {
                 p_print.getLocation().line, p_print.getLocation().col);
 
     incrementIndentation();
-    p_print.visitChildNodes(*this);
+    // p_print.visitChildNodes(*this);
     decrementIndentation();
 }
 
@@ -125,7 +122,7 @@ void AstDumper::visit(BinaryOperatorNode &p_bin_op) {
                 "TODO");
 
     incrementIndentation();
-    p_bin_op.visitChildNodes(*this);
+    // p_bin_op.visitChildNodes(*this);
     decrementIndentation();
 }
 
@@ -138,7 +135,7 @@ void AstDumper::visit(UnaryOperatorNode &p_un_op) {
                 "TODO");
 
     incrementIndentation();
-    p_un_op.visitChildNodes(*this);
+    // p_un_op.visitChildNodes(*this);
     decrementIndentation();
 }
 
@@ -152,7 +149,7 @@ void AstDumper::visit(FunctionInvocationNode &p_func_invocation) {
                 "TODO");
 
     incrementIndentation();
-    p_func_invocation.visitChildNodes(*this);
+    // p_func_invocation.visitChildNodes(*this);
     decrementIndentation();
 }
 
@@ -166,7 +163,7 @@ void AstDumper::visit(VariableReferenceNode &p_variable_ref) {
                 "TODO");
 
     incrementIndentation();
-    p_variable_ref.visitChildNodes(*this);
+    // p_variable_ref.visitChildNodes(*this);
     decrementIndentation();
 }
 
@@ -178,7 +175,7 @@ void AstDumper::visit(AssignmentNode &p_assignment) {
                 p_assignment.getLocation().col);
 
     incrementIndentation();
-    p_assignment.visitChildNodes(*this);
+    // p_assignment.visitChildNodes(*this);
     decrementIndentation();
 }
 
@@ -189,7 +186,7 @@ void AstDumper::visit(ReadNode &p_read) {
                 p_read.getLocation().line, p_read.getLocation().col);
 
     incrementIndentation();
-    p_read.visitChildNodes(*this);
+    // p_read.visitChildNodes(*this);
     decrementIndentation();
 }
 
@@ -200,7 +197,7 @@ void AstDumper::visit(IfNode &p_if) {
                 p_if.getLocation().col);
 
     incrementIndentation();
-    p_if.visitChildNodes(*this);
+    // p_if.visitChildNodes(*this);
     decrementIndentation();
 }
 
@@ -211,7 +208,7 @@ void AstDumper::visit(WhileNode &p_while) {
                 p_while.getLocation().line, p_while.getLocation().col);
 
     incrementIndentation();
-    p_while.visitChildNodes(*this);
+    // p_while.visitChildNodes(*this);
     decrementIndentation();
 }
 
@@ -222,7 +219,7 @@ void AstDumper::visit(ForNode &p_for) {
                 p_for.getLocation().col);
 
     incrementIndentation();
-    p_for.visitChildNodes(*this);
+    // p_for.visitChildNodes(*this);
     decrementIndentation();
 }
 
@@ -233,9 +230,6 @@ void AstDumper::visit(ReturnNode &p_return) {
                 p_return.getLocation().line, p_return.getLocation().col);
 
     incrementIndentation();
-    p_return.visitChildNodes(*this);
+    // p_return.visitChildNodes(*this);
     decrementIndentation();
 }
-
-// FIXME: remove this line if you choose to use visitor pattern with this template
-#endif

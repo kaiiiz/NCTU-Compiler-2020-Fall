@@ -9,8 +9,6 @@ class ReadNode : public AstNode {
              /* TODO: variable reference */);
     ~ReadNode() = default;
 
-    void print() override;
-
   private:
     // TODO: variable reference
 };

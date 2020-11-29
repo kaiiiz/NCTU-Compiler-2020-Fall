@@ -9,8 +9,6 @@ class CompoundStatementNode : public AstNode {
                           /* TODO: declarations, statements */);
     ~CompoundStatementNode() = default;
 
-    void print() override;
-
   private:
     // TODO: declarations, statements
 };

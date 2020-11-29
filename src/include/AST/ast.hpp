@@ -4,6 +4,8 @@
 #include <cstdint>
 #include <string>
 
+class AstDumper;
+
 struct Location {
     Location(const uint32_t line, const uint32_t col) : line(line), col(col) {}
 
@@ -16,8 +18,8 @@ class AstNode {
     AstNode(const uint32_t line, const uint32_t col);
     virtual ~AstNode() = 0;
 
+    virtual void dump(AstDumper &dp) = 0;
     const Location &getLocation() const;
-    virtual void print() = 0;
 
   protected:
     const Location location;

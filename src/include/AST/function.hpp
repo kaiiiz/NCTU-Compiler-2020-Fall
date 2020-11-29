@@ -10,8 +10,6 @@ class FunctionNode : public AstNode {
                   *       compound statement (optional) */);
     ~FunctionNode() = default;
 
-    void print() override;
-
   private:
     // TODO: name, declarations, return type, compound statement
 };

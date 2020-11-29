@@ -11,8 +11,6 @@ class FunctionInvocationNode : public ExpressionNode {
 
     const char *getNameCString() const;
 
-    void print() override;
-
   private:
     // TODO: function name, expressions
 };

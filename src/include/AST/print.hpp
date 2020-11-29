@@ -9,8 +9,6 @@ class PrintNode : public AstNode {
               /* TODO: expression */);
     ~PrintNode() = default;
 
-    void print() override;
-
   private:
     // TODO: expression
 };
