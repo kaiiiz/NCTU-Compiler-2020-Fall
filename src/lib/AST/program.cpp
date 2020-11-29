@@ -1,6 +1,7 @@
 #include "AST/AstDumper.hpp"
 #include "AST/program.hpp"
 #include "AST/decl.hpp"
+#include "AST/function.hpp"
 #include "visitor/AstNodeVisitor.hpp"
 
 ProgramNode::ProgramNode(const uint32_t line, const uint32_t col,
@@ -19,9 +20,9 @@ void ProgramNode::dumpChildNodes(AstDumper &dp) {
         decl->dump(dp);
     }
 
-    // for (auto &func : func_list) {
-    //     func->dump(dp);
-    // }
+    for (auto &func : func_list) {
+        func->dump(dp);
+    }
 
     // compound_stmt->dump(dp);
 }

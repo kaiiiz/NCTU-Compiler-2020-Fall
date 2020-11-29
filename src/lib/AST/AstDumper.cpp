@@ -78,13 +78,12 @@ void AstDumper::visit(ConstantValueNode &p_constant_value) {
 void AstDumper::visit(FunctionNode &p_function) {
     outputIndentationSpace(m_indentation);
 
-    // TODO: name, prototype string
     std::printf("function declaration <line: %u, col: %u> %s %s\n",
                 p_function.getLocation().line, p_function.getLocation().col,
-                "TODO", "TODO");
+                p_function.getName().c_str(), p_function.getFuncProtoType().c_str());
 
     incrementIndentation();
-    // p_function.visitChildNodes(*this);
+    p_function.dumpChildNodes(*this);
     decrementIndentation();
 }
 

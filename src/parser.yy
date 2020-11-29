@@ -16,6 +16,7 @@
 #include "type/scalar.hpp"
 #include "type/base.hpp"
 #include "type/array.hpp"
+#include "type/void.hpp"
 
 #include "AST/ast.hpp"
 #include "AST/program.hpp"
@@ -57,6 +58,18 @@ class driver;
 
 /* Declared by scanner.l */
 extern char *yytext;
+
+template <typename T>
+std::vector<std::shared_ptr<VariableNode>> idList2VarNodeList(
+    std::vector<std::shared_ptr<IdNode>> idList, std::shared_ptr<T> type) {
+
+    std::vector<std::shared_ptr<VariableNode>> var_list;
+    for (auto &idnode : idList) {
+        var_list.push_back(std::make_shared<VariableNode>(idnode, type));
+    }
+    return var_list;
+}
+
 }
 
 %token EOF_ 0 "end of file";
@@ -95,17 +108,26 @@ extern char *yytext;
 
 
 %type <std::string> ProgramName;
+%type <std::string> FunctionName;
 %type <std::vector<std::shared_ptr<IdNode>>> IdList;
 %type <std::shared_ptr<DeclNode>> Declaration;
+%type <std::shared_ptr<DeclNode>> FormalArg;
+%type <std::vector<std::shared_ptr<DeclNode>>> FormalArgs;
+%type <std::vector<std::shared_ptr<DeclNode>>> FormalArgList;
 %type <std::vector<std::shared_ptr<DeclNode>>> Declarations;
 %type <std::vector<std::shared_ptr<DeclNode>>> DeclarationList;
 %type <std::shared_ptr<BaseType>> Type;
+%type <std::shared_ptr<BaseType>> ReturnType;
 %type <std::shared_ptr<ScalarType>> ScalarType;
 %type <std::vector<int64_t>> ArrDecl;
 %type <std::shared_ptr<ArrayType>> ArrType;
 %type <bool> NegOrNot;
 %type <std::shared_ptr<ConstantValueNode>> StringAndBoolean;
 %type <std::shared_ptr<ConstantValueNode>> LiteralConstant;
+%type <std::shared_ptr<FunctionNode>> FunctionDeclaration;
+%type <std::shared_ptr<FunctionNode>> Function;
+%type <std::vector<std::shared_ptr<FunctionNode>>> Functions;
+%type <std::vector<std::shared_ptr<FunctionNode>>> FunctionList;
 
 %%
     /*
@@ -118,9 +140,8 @@ Program:
     DeclarationList FunctionList CompoundStatement
     /* End of ProgramBody */
     END {
-        std::vector<std::shared_ptr<FunctionNode>> func_list;
         std::shared_ptr<CompoundStatementNode> compound_stmt;
-        drv.root = std::make_shared<ProgramNode>(@1.begin.line, @1.begin.column, $1, "void", $3, func_list, compound_stmt);
+        drv.root = std::make_shared<ProgramNode>(@1.begin.line, @1.begin.column, $1, "void", $3, $4, compound_stmt);
     }
 ;
 
@@ -141,25 +162,27 @@ Declarations:
 ;
 
 FunctionList:
-    Epsilon
+    Epsilon { $$ = std::vector<std::shared_ptr<FunctionNode>>(); }
     |
-    Functions
+    Functions { $$ = $1; }
 ;
 
 Functions:
-    Function
+    Function { $$ = std::vector<std::shared_ptr<FunctionNode>>{$1}; }
     |
-    Functions Function
+    Functions Function { $1.push_back($2); $$ = $1; }
 ;
 
 Function:
-    FunctionDeclaration
+    FunctionDeclaration { $$ = $1; }
     |
-    FunctionDefinition
+    FunctionDefinition { $$ = nullptr; }
 ;
 
 FunctionDeclaration:
-    FunctionName L_PARENTHESIS FormalArgList R_PARENTHESIS ReturnType SEMICOLON
+    FunctionName L_PARENTHESIS FormalArgList R_PARENTHESIS ReturnType SEMICOLON {
+        $$ = std::make_shared<FunctionNode>(@1.begin.line, @1.begin.column, $1, $3, $5);
+    }
 ;
 
 FunctionDefinition:
@@ -173,19 +196,21 @@ FunctionName:
 ;
 
 FormalArgList:
-    Epsilon
+    Epsilon { $$ = std::vector<std::shared_ptr<DeclNode>>(); }
     |
-    FormalArgs
+    FormalArgs { $$ = $1; }
 ;
 
 FormalArgs:
-    FormalArg
+    FormalArg { $$ = std::vector<std::shared_ptr<DeclNode>>{$1}; }
     |
-    FormalArgs SEMICOLON FormalArg
+    FormalArgs SEMICOLON FormalArg { $1.push_back($3); $$ = $1; }
 ;
 
 FormalArg:
-    IdList COLON Type
+    IdList COLON Type {
+        $$ = std::make_shared<DeclNode>(@$.begin.line, @$.begin.column, idList2VarNodeList<BaseType>($1, $3), $3);
+    }
 ;
 
 IdList:
@@ -202,9 +227,9 @@ IdList:
 ;
 
 ReturnType:
-    COLON ScalarType
+    COLON ScalarType { $$ = std::dynamic_pointer_cast<BaseType>($2); }
     |
-    Epsilon
+    Epsilon { $$ = std::dynamic_pointer_cast<BaseType>(std::make_shared<VoidType>()); }
 ;
 
     /*
@@ -213,19 +238,14 @@ ReturnType:
 
 Declaration:
     VAR IdList COLON Type SEMICOLON {
-        std::vector<std::shared_ptr<VariableNode>> var_list;
-        for (auto &idnode : $2) {
-            var_list.push_back(std::make_shared<VariableNode>(idnode, $4));
-        }
-        $$ = std::make_shared<DeclNode>(@1.begin.line, @1.begin.column, var_list);
+        $$ = std::make_shared<DeclNode>(@1.begin.line, @1.begin.column,
+                            idList2VarNodeList<BaseType>($2, $4), $4);
     }
     |
     VAR IdList COLON LiteralConstant SEMICOLON {
-        std::vector<std::shared_ptr<VariableNode>> var_list;
-        for (auto &idnode : $2) {
-            var_list.push_back(std::make_shared<VariableNode>(idnode, $4));
-        }
-        $$ = std::make_shared<DeclNode>(@1.begin.line, @1.begin.column, var_list);
+        $$ = std::make_shared<DeclNode>(@1.begin.line, @1.begin.column,
+                            idList2VarNodeList<ConstantValueNode>($2, $4),
+                            std::make_shared<ScalarType>($4->getType()));
     }
 ;
 

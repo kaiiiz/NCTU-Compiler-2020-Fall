@@ -13,21 +13,21 @@ class VariableNode;
 
 class DeclNode : public AstNode {
   public:
-    // variable declaration
     DeclNode(const uint32_t line, const uint32_t col,
-             std::vector<std::shared_ptr<VariableNode>> var_list);
-
-    // constant variable declaration
-    //DeclNode(const uint32_t, const uint32_t col
-    //         /* TODO: identifiers, constant */);
+             std::vector<std::shared_ptr<VariableNode>> var_list,
+             std::shared_ptr<BaseType> type);
 
     ~DeclNode() = default;
+
+    std::string getType();
+    int32_t getVarNum();
 
     void dump(AstDumper &dp) override;
     void dumpChildNodes(AstDumper &dp) override;
 
   private:
     std::vector<std::shared_ptr<VariableNode>> var_list;
+    std::shared_ptr<BaseType> type;
 };
 
 #endif
