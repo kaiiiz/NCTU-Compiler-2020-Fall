@@ -1,14 +1,18 @@
 #ifndef __AST_PROGRAM_NODE_H
 #define __AST_PROGRAM_NODE_H
 
+#include <vector>
+#include <memory>
+
 #include "AST/ast.hpp"
 
 class ProgramNode : public AstNode {
   public:
     ProgramNode(const uint32_t line, const uint32_t col,
-                const std::string p_name
-                /* TODO: return type, declarations, functions,
-                 *       compound statement */);
+                const std::string p_name, const std::string ret_type,
+                const std::vector<std::shared_ptr<AstNode>> decl_list,
+                const std::vector<std::shared_ptr<AstNode>> func_list,
+                const std::shared_ptr<AstNode> compound_stmt);
     ~ProgramNode() = default;
 
     // visitor pattern version: const char *getNameCString() const; 
@@ -17,7 +21,10 @@ class ProgramNode : public AstNode {
 
   private:
     const std::string name;
-    // TODO: return type, declarations, functions, compound statement
+    const std::string ret_type;
+    const std::vector<std::shared_ptr<AstNode>> decl_list;
+    const std::vector<std::shared_ptr<AstNode>> func_list;
+    const std::shared_ptr<AstNode> compound_stmt;
 };
 
 #endif

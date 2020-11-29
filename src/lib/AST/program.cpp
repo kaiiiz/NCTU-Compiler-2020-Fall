@@ -3,8 +3,11 @@
 
 // TODO
 ProgramNode::ProgramNode(const uint32_t line, const uint32_t col,
-                         const std::string p_name)
-    : AstNode{line, col}, name(p_name) {}
+                        const std::string p_name, const std::string ret_type,
+                        const std::vector<std::shared_ptr<AstNode>> decl_list,
+                        const std::vector<std::shared_ptr<AstNode>> func_list,
+                        const std::shared_ptr<AstNode> compound_stmt)
+    : AstNode{line, col}, name(p_name), ret_type(ret_type), decl_list(decl_list), func_list(func_list), compound_stmt(compound_stmt) {}
 
 // visitor pattern version: const char *ProgramNode::getNameCString() const { return name.c_str(); }
 

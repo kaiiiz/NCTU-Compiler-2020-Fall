@@ -99,7 +99,10 @@ Program:
     DeclarationList FunctionList CompoundStatement
     /* End of ProgramBody */
     END {
-        drv.root = std::make_shared<ProgramNode>(@1.begin.line, @1.begin.column, $1);
+        std::vector<std::shared_ptr<AstNode>> decl_list;
+        std::vector<std::shared_ptr<AstNode>> func_list;
+        std::shared_ptr<AstNode> compound_stmt;
+        drv.root = std::make_shared<ProgramNode>(@1.begin.line, @1.begin.column, $1, "void", decl_list, func_list, compound_stmt);
     }
 ;
 
