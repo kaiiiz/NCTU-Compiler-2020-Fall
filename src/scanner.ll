@@ -92,11 +92,13 @@ float {integer}\.(0|[0-9]*[1-9])
     /* Integer (decimal/octal) */
 {integer} {
     TOKEN_STRING(integer, yytext);
-    return yy::parser::make_INT_LITERAL(loc);
+    int64_t num = std::strtol(yytext, NULL, 10);
+    return yy::parser::make_INT_LITERAL(num, loc);
 }
 0[0-7]+   {
     TOKEN_STRING(oct_integer, yytext);
-    return yy::parser::make_INT_LITERAL(loc);
+    int64_t num = std::strtol(yytext, NULL, 8);
+    return yy::parser::make_INT_LITERAL(num, loc);
 }
 
     /* Floating-Point */

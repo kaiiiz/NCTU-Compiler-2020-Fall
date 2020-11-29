@@ -9,19 +9,14 @@
 %define parse.trace
 %define parse.error verbose
 
-%code requires {
-    class driver;
-}
+%code requires { // dependency code required for YYSTYPE and YYLTYPE
+#include <vector>
+#include <memory>
 
-%param { driver& drv }
-%initial-action {
-    @$.begin.filename = @$.end.filename = &drv.file; // Initialize the initial location.
-};
+#include "type/scalar.hpp"
+#include "type/base.hpp"
+#include "type/array.hpp"
 
-%code {
-#include "driver/driver.hpp"
-
-#include "AST/AstDumper.hpp"
 #include "AST/ast.hpp"
 #include "AST/program.hpp"
 #include "AST/decl.hpp"
@@ -41,6 +36,18 @@
 #include "AST/while.hpp"
 #include "AST/for.hpp"
 #include "AST/return.hpp"
+
+class driver;
+}
+
+%param { driver& drv }
+%initial-action {
+    @$.begin.filename = @$.end.filename = &drv.file; // Initialize the initial location.
+};
+
+%code {
+#include "driver/driver.hpp"
+#include "AST/AstDumper.hpp"
 
 #include <cassert>
 #include <cstdlib>
@@ -82,12 +89,20 @@ extern char *yytext;
 %token <std::string> ID "id"
 
     /* Literal */
-%token INT_LITERAL
+%token <int64_t> INT_LITERAL
 %token REAL_LITERAL
 %token STRING_LITERAL
 
 
-%type <std::string> ProgramName
+%type <std::string> ProgramName;
+%type <std::vector<std::shared_ptr<IdNode>>> IdList;
+%type <std::shared_ptr<DeclNode>> Declaration;
+%type <std::vector<std::shared_ptr<DeclNode>>> Declarations;
+%type <std::vector<std::shared_ptr<DeclNode>>> DeclarationList;
+%type <std::shared_ptr<BaseType>> Type;
+%type <std::shared_ptr<ScalarType>> ScalarType;
+%type <std::vector<int64_t>> ArrDecl;
+%type <std::shared_ptr<ArrayType>> ArrType;
 
 %%
     /*
@@ -100,10 +115,9 @@ Program:
     DeclarationList FunctionList CompoundStatement
     /* End of ProgramBody */
     END {
-        std::vector<std::shared_ptr<AstNode>> decl_list;
-        std::vector<std::shared_ptr<AstNode>> func_list;
-        std::shared_ptr<AstNode> compound_stmt;
-        drv.root = std::make_shared<ProgramNode>(@1.begin.line, @1.begin.column, $1, "void", decl_list, func_list, compound_stmt);
+        std::vector<std::shared_ptr<FunctionNode>> func_list;
+        std::shared_ptr<CompoundStatementNode> compound_stmt;
+        drv.root = std::make_shared<ProgramNode>(@1.begin.line, @1.begin.column, $1, "void", $3, func_list, compound_stmt);
     }
 ;
 
@@ -112,15 +126,15 @@ ProgramName:
 ;
 
 DeclarationList:
-    Epsilon
+    Epsilon { $$ = std::vector<std::shared_ptr<DeclNode>>(); }
     |
-    Declarations
+    Declarations { $$ = $1; }
 ;
 
 Declarations:
-    Declaration
+    Declaration { $$ = std::vector<std::shared_ptr<DeclNode>>{$1}; }
     |
-    Declarations Declaration
+    Declarations Declaration { $1.push_back($2); $$ = $1; }
 ;
 
 FunctionList:
@@ -172,9 +186,16 @@ FormalArg:
 ;
 
 IdList:
-    ID
+    ID {
+        std::shared_ptr<IdNode> i = std::make_shared<IdNode>(@1.begin.line, @1.begin.column, $1);
+        $$ = std::vector<std::shared_ptr<IdNode>>{i};
+    }
     |
-    IdList COMMA ID
+    IdList COMMA ID {
+        std::shared_ptr<IdNode> i = std::make_shared<IdNode>(@3.begin.line, @3.begin.column, $3);
+        $1.push_back(i);
+        $$ = $1;
+    }
 ;
 
 ReturnType:
@@ -188,35 +209,41 @@ ReturnType:
                                    */
 
 Declaration:
-    VAR IdList COLON Type SEMICOLON
+    VAR IdList COLON Type SEMICOLON {
+        std::vector<std::shared_ptr<VariableNode>> var_list;
+        for (auto &idnode : $2) {
+            var_list.push_back(std::make_shared<VariableNode>(idnode, $4));
+        }
+        $$ = std::make_shared<DeclNode>(@1.begin.line, @1.begin.column, var_list);
+    }
     |
-    VAR IdList COLON LiteralConstant SEMICOLON
+    VAR IdList COLON LiteralConstant SEMICOLON { $$ = nullptr; }
 ;
 
 Type:
-    ScalarType
+    ScalarType { $$ = std::dynamic_pointer_cast<BaseType>($1); }
     |
-    ArrType
+    ArrType { $$ = std::dynamic_pointer_cast<BaseType>($1); }
 ;
 
 ScalarType:
-    INTEGER
+    INTEGER { $$ = std::make_shared<ScalarType>("integer"); }
     |
-    REAL
+    REAL { $$ = std::make_shared<ScalarType>("real"); }
     |
-    STRING
+    STRING { $$ = std::make_shared<ScalarType>("string"); }
     |
-    BOOLEAN
+    BOOLEAN { $$ = std::make_shared<ScalarType>("boolean"); }
 ;
 
 ArrType:
-    ArrDecl ScalarType
+    ArrDecl ScalarType { $$ = std::make_shared<ArrayType>($2->getTypeName(), $1); }
 ;
 
 ArrDecl:
-    ARRAY INT_LITERAL OF
+    ARRAY INT_LITERAL OF { $$ = std::vector<int64_t>{$2}; }
     |
-    ArrDecl ARRAY INT_LITERAL OF
+    ArrDecl ARRAY INT_LITERAL OF { $1.push_back($3); $$ = $1; }
 ;
 
 LiteralConstant:

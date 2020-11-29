@@ -17,9 +17,13 @@ VISITOR := $(shell find $(VISITORDIR) -name '*.cpp')
 DRIVERDIR = lib/driver/
 DRIVER := $(shell find $(DRIVERDIR) -name '*.cpp')
 
+TYPEDIR = lib/type/
+TYPE := $(shell find $(TYPEDIR) -name '*.cpp')
+
 SRC := $(AST) \
 	   $(VISITOR) \
-	   $(DRIVER)
+	   $(DRIVER) \
+	   $(TYPE)
 
 EXEC = $(PARSER)
 OBJS = $(PARSER:=.cpp) \

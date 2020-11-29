@@ -39,7 +39,7 @@ void AstDumper::visit(ProgramNode &p_program) {
                 p_program.getProgramName(), "void");
 
     incrementIndentation();
-    // p_program.visitChildNodes(*this);
+    p_program.dumpChildNodes(*this);
     decrementIndentation();
 }
 
@@ -50,17 +50,16 @@ void AstDumper::visit(DeclNode &p_decl) {
                 p_decl.getLocation().col);
 
     incrementIndentation();
-    // p_decl.visitChildNodes(*this);
+    p_decl.dumpChildNodes(*this);
     decrementIndentation();
 }
 
 void AstDumper::visit(VariableNode &p_variable) {
     outputIndentationSpace(m_indentation);
 
-    // TODO: name, type
     std::printf("variable <line: %u, col: %u> %s %s\n",
                 p_variable.getLocation().line, p_variable.getLocation().col,
-                "TODO", "TODO");
+                p_variable.getName().c_str(), p_variable.getType().c_str());
 
     incrementIndentation();
     // p_variable.visitChildNodes(*this);

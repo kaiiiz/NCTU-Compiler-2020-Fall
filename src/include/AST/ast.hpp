@@ -19,6 +19,7 @@ class AstNode {
     virtual ~AstNode() = 0;
 
     virtual void dump(AstDumper &dp) = 0;
+    virtual void dumpChildNodes(AstDumper &dp) = 0;
     const Location &getLocation() const;
 
   protected:
