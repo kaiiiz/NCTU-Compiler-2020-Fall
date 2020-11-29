@@ -104,13 +104,15 @@ float {integer}\.(0|[0-9]*[1-9])
     /* Floating-Point */
 {float} {
     TOKEN_STRING(float, yytext);
-    return yy::parser::make_REAL_LITERAL(loc);
+    double num = std::strtod(yytext, NULL);
+    return yy::parser::make_REAL_LITERAL(num, loc);
 }
 
     /* Scientific Notation [Ee][+-]?[0-9]+ */
 ({integer}|{float})[Ee][+-]?({integer}) {
     TOKEN_STRING(scientific, yytext);
-    return yy::parser::make_REAL_LITERAL(loc);
+    double num = std::strtod(yytext, NULL);
+    return yy::parser::make_REAL_LITERAL(num, loc);
 }
 
     /* String */
@@ -124,7 +126,7 @@ float {integer}\.(0|[0-9]*[1-9])
         string_literal.insert(idx, "\"");
     }
     TOKEN_STRING(string, string_literal.c_str());
-    return yy::parser::make_STRING_LITERAL(loc);
+    return yy::parser::make_STRING_LITERAL(string_literal, loc);
 }
     /* Whitespace */
 [ \t]+ {

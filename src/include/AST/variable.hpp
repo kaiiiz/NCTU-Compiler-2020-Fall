@@ -5,7 +5,9 @@
 #include <memory>
 
 #include "AST/ast.hpp"
-#include "type/base.hpp"
+
+class BaseType;
+class ConstantValueNode;
 
 class IdNode { // keep line and col information
   public:
@@ -24,19 +26,19 @@ class VariableNode : public AstNode {
     VariableNode(const uint32_t line, const uint32_t col,
                  std::string name, std::shared_ptr<BaseType> type);
     VariableNode(std::shared_ptr<IdNode> idnode, std::shared_ptr<BaseType> type);
-    // TODO: constructor for constant value node
+    VariableNode(std::shared_ptr<IdNode> idnode, std::shared_ptr<ConstantValueNode> literal_const);
     ~VariableNode() = default;
 
     std::string getName();
     std::string getType();
-    
+
     void dump(AstDumper &dp) override;
     void dumpChildNodes(AstDumper &dp) override;
 
   protected:
     std::string name;
     std::shared_ptr<BaseType> type;
-    // constant value
+    std::shared_ptr<ConstantValueNode> literal_const;
 };
 
 #endif

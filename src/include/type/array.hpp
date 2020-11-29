@@ -3,12 +3,13 @@
 
 #include <string>
 #include <vector>
+#include <memory>
 
 #include "type/scalar.hpp"
 
 class ArrayType : public ScalarType {
    public:
-    ArrayType(std::string name, std::vector<int64_t> dim);
+    ArrayType(scalar_type_t t, std::vector<int64_t> dim);
     ~ArrayType();
 
     std::string getTypeName() override;

@@ -5,13 +5,10 @@
 
 class BaseType {
    public:
-    BaseType(std::string name);
+    BaseType();
     ~BaseType();
 
     virtual std::string getTypeName() = 0;
-
-   protected:
-    std::string name;
 };
 
 #endif  // __TYPE_BASE

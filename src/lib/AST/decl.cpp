@@ -18,7 +18,3 @@ void DeclNode::dumpChildNodes(AstDumper &dp) {
         dp.visit(*var);
     }
 }
-
-// TODO
-//DeclNode::DeclNode(const uint32_t line, const uint32_t col)
-//    : AstNode{line, col} {}

@@ -90,8 +90,8 @@ extern char *yytext;
 
     /* Literal */
 %token <int64_t> INT_LITERAL
-%token REAL_LITERAL
-%token STRING_LITERAL
+%token <double> REAL_LITERAL
+%token <std::string> STRING_LITERAL
 
 
 %type <std::string> ProgramName;
@@ -103,6 +103,9 @@ extern char *yytext;
 %type <std::shared_ptr<ScalarType>> ScalarType;
 %type <std::vector<int64_t>> ArrDecl;
 %type <std::shared_ptr<ArrayType>> ArrType;
+%type <bool> NegOrNot;
+%type <std::shared_ptr<ConstantValueNode>> StringAndBoolean;
+%type <std::shared_ptr<ConstantValueNode>> LiteralConstant;
 
 %%
     /*
@@ -217,7 +220,13 @@ Declaration:
         $$ = std::make_shared<DeclNode>(@1.begin.line, @1.begin.column, var_list);
     }
     |
-    VAR IdList COLON LiteralConstant SEMICOLON { $$ = nullptr; }
+    VAR IdList COLON LiteralConstant SEMICOLON {
+        std::vector<std::shared_ptr<VariableNode>> var_list;
+        for (auto &idnode : $2) {
+            var_list.push_back(std::make_shared<VariableNode>(idnode, $4));
+        }
+        $$ = std::make_shared<DeclNode>(@1.begin.line, @1.begin.column, var_list);
+    }
 ;
 
 Type:
@@ -227,17 +236,17 @@ Type:
 ;
 
 ScalarType:
-    INTEGER { $$ = std::make_shared<ScalarType>("integer"); }
+    INTEGER { $$ = std::make_shared<ScalarType>(scalar_type_t::integer); }
     |
-    REAL { $$ = std::make_shared<ScalarType>("real"); }
+    REAL { $$ = std::make_shared<ScalarType>(scalar_type_t::real); }
     |
-    STRING { $$ = std::make_shared<ScalarType>("string"); }
+    STRING { $$ = std::make_shared<ScalarType>(scalar_type_t::string); }
     |
-    BOOLEAN { $$ = std::make_shared<ScalarType>("boolean"); }
+    BOOLEAN { $$ = std::make_shared<ScalarType>(scalar_type_t::boolean); }
 ;
 
 ArrType:
-    ArrDecl ScalarType { $$ = std::make_shared<ArrayType>($2->getTypeName(), $1); }
+    ArrDecl ScalarType { $$ = std::make_shared<ArrayType>($2->getType(), $1); }
 ;
 
 ArrDecl:
@@ -247,25 +256,35 @@ ArrDecl:
 ;
 
 LiteralConstant:
-    NegOrNot INT_LITERAL
+    NegOrNot INT_LITERAL {
+        $$ = ($1) ? 
+            std::make_shared<ConstantValueNode>(@1.begin.line, @1.begin.column, scalar_type_t::integer, $2 * (-1))
+            :
+            std::make_shared<ConstantValueNode>(@2.begin.line, @2.begin.column, scalar_type_t::integer, $2);
+    }
     |
-    NegOrNot REAL_LITERAL
+    NegOrNot REAL_LITERAL {
+        $$ = ($1) ? 
+            std::make_shared<ConstantValueNode>(@1.begin.line, @1.begin.column, scalar_type_t::real, $2 * (-1))
+            :
+            std::make_shared<ConstantValueNode>(@2.begin.line, @2.begin.column, scalar_type_t::real, $2);
+    }
     |
-    StringAndBoolean
+    StringAndBoolean { $$ = $1; }
 ;
 
 NegOrNot:
-    Epsilon
+    Epsilon { $$ = false; }
     |
-    MINUS %prec UNARY_MINUS
+    MINUS %prec UNARY_MINUS { $$ = true; }
 ;
 
 StringAndBoolean:
-    STRING_LITERAL
+    STRING_LITERAL { $$ = std::make_shared<ConstantValueNode>(@1.begin.line, @1.begin.column, scalar_type_t::string, $1); }
     |
-    TRUE
+    TRUE { $$ = std::make_shared<ConstantValueNode>(@1.begin.line, @1.begin.column, scalar_type_t::boolean, true); }
     |
-    FALSE
+    FALSE { $$ = std::make_shared<ConstantValueNode>(@1.begin.line, @1.begin.column, scalar_type_t::boolean, false); }
 ;
 
 IntegerAndReal:

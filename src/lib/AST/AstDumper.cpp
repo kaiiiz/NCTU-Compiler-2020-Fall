@@ -62,18 +62,17 @@ void AstDumper::visit(VariableNode &p_variable) {
                 p_variable.getName().c_str(), p_variable.getType().c_str());
 
     incrementIndentation();
-    // p_variable.visitChildNodes(*this);
+    p_variable.dumpChildNodes(*this);
     decrementIndentation();
 }
 
 void AstDumper::visit(ConstantValueNode &p_constant_value) {
     outputIndentationSpace(m_indentation);
 
-    // TODO: string of constant value
     std::printf("constant <line: %u, col: %u> %s\n",
                 p_constant_value.getLocation().line,
                 p_constant_value.getLocation().col,
-                "TODO");
+                p_constant_value.getValueString().c_str());
 }
 
 void AstDumper::visit(FunctionNode &p_function) {
