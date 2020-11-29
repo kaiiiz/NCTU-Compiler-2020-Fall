@@ -1,9 +1,9 @@
 #ifndef __AST_FOR_NODE_H
 #define __AST_FOR_NODE_H
 
-#include "AST/ast.hpp"
+#include "AST/statement/statement.hpp"
 
-class ForNode : public AstNode {
+class ForNode : public StatementNode {
   public:
     ForNode(const uint32_t line, const uint32_t col
             /* TODO: declaration, assignment, expression,

@@ -1,9 +1,9 @@
 #ifndef __AST_COMPOUND_STATEMENT_NODE_H
 #define __AST_COMPOUND_STATEMENT_NODE_H
 
-#include "AST/ast.hpp"
+#include "AST/statement/statement.hpp"
 
-class CompoundStatementNode : public AstNode {
+class CompoundStatementNode : public StatementNode {
   public:
     CompoundStatementNode(const uint32_t line, const uint32_t col
                           /* TODO: declarations, statements */);

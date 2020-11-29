@@ -2,7 +2,7 @@
 
 // TODO
 ReturnNode::ReturnNode(const uint32_t line, const uint32_t col)
-    : AstNode{line, col} {}
+    : StatementNode{line, col} {}
 
 // void ReturnNode::visitChildNodes(AstNodeVisitor &p_visitor) {
 //     // TODO
