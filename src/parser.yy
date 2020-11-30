@@ -148,6 +148,7 @@ std::vector<std::shared_ptr<VariableNode>> idList2VarNodeList(
 %type <std::shared_ptr<CompoundStatementNode>> ElseOrNot;
 %type <std::shared_ptr<IfNode>> Condition;
 %type <std::shared_ptr<WhileNode>> While;
+%type <std::shared_ptr<ForNode>> For;
 
 %%
     /*
@@ -347,7 +348,7 @@ Statement:
     |
     While { $$ = std::dynamic_pointer_cast<StatementBase>($1); }
     |
-    For { $$ = nullptr; }
+    For { $$ = std::dynamic_pointer_cast<StatementBase>($1); }
     |
     Return { $$ = nullptr; }
     |
@@ -426,7 +427,22 @@ While:
 For:
     FOR ID ASSIGN INT_LITERAL TO INT_LITERAL DO
     CompoundStatement
-    END DO
+    END DO {
+        // make declaration
+        auto id = std::make_shared<IdNode>(@2.begin.line, @2.begin.column, $2);
+        auto id_list = std::vector<std::shared_ptr<IdNode>>{id};
+        auto type = std::make_shared<ScalarType>(scalar_type_t::integer);
+        auto decl = std::make_shared<DeclNode>(@2.begin.line, @2.begin.column,
+                                               idList2VarNodeList<BaseType>(id_list, type), type);
+        // make assignment
+        auto constant_init = std::make_shared<ConstantValueNode>(@4.begin.line, @4.begin.column, scalar_type_t::integer, $4);
+        auto var_ref_indices = std::vector<std::shared_ptr<ExpressionBase>>();
+        auto var_ref = std::make_shared<VariableReferenceNode>(@2.begin.line, @2.begin.column, $2, var_ref_indices);
+        auto assignment = std::make_shared<AssignmentNode>(@3.begin.line, @3.begin.column, var_ref, constant_init);
+        // make condition
+        auto condition = std::make_shared<ConstantValueNode>(@6.begin.line, @6.begin.column, scalar_type_t::integer, $6);
+        $$ = std::make_shared<ForNode>(@1.begin.line, @1.begin.column, decl, assignment, condition, $8);
+    }
 ;
 
 Return:
