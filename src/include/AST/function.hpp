@@ -8,13 +8,17 @@
 #include "type/base.hpp"
 
 class DeclNode;
+class CompoundStatementNode;
 
 class FunctionNode : public AstNode {
   public:
     FunctionNode(const uint32_t line, const uint32_t col,
                  std::string name, std::vector<std::shared_ptr<DeclNode>> parameters,
                  std::shared_ptr<BaseType> return_type);
-    // TODO: constructor for optional body (compound statement)
+    FunctionNode(const uint32_t line, const uint32_t col,
+                 std::string name, std::vector<std::shared_ptr<DeclNode>> parameters,
+                 std::shared_ptr<BaseType> return_type,
+                 std::shared_ptr<CompoundStatementNode> compound_stmt);
     ~FunctionNode() = default;
 
     std::string getName();
@@ -27,6 +31,7 @@ class FunctionNode : public AstNode {
     std::string name;
     std::vector<std::shared_ptr<DeclNode>> parameters;
     std::shared_ptr<BaseType> return_type;
+    std::shared_ptr<CompoundStatementNode> compound_stmt;
 };
 
 #endif

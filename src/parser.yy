@@ -125,6 +125,7 @@ std::vector<std::shared_ptr<VariableNode>> idList2VarNodeList(
 %type <std::shared_ptr<ConstantValueNode>> StringAndBoolean;
 %type <std::shared_ptr<ConstantValueNode>> LiteralConstant;
 %type <std::shared_ptr<FunctionNode>> FunctionDeclaration;
+%type <std::shared_ptr<FunctionNode>> FunctionDefinition;
 %type <std::shared_ptr<FunctionNode>> Function;
 %type <std::vector<std::shared_ptr<FunctionNode>>> Functions;
 %type <std::vector<std::shared_ptr<FunctionNode>>> FunctionList;
@@ -179,7 +180,7 @@ Functions:
 Function:
     FunctionDeclaration { $$ = $1; }
     |
-    FunctionDefinition { $$ = nullptr; }
+    FunctionDefinition { $$ = $1; }
 ;
 
 FunctionDeclaration:
@@ -191,7 +192,9 @@ FunctionDeclaration:
 FunctionDefinition:
     FunctionName L_PARENTHESIS FormalArgList R_PARENTHESIS ReturnType
     CompoundStatement
-    END
+    END {
+        $$ = std::make_shared<FunctionNode>(@1.begin.line, @1.begin.column, $1, $3, $5, $6);
+    }
 ;
 
 FunctionName:

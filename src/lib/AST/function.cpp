@@ -10,6 +10,14 @@ FunctionNode::FunctionNode(const uint32_t line, const uint32_t col,
                            std::shared_ptr<BaseType> return_type)
     : AstNode{line, col}, name(name), parameters(parameters), return_type(return_type) {}
 
+
+FunctionNode::FunctionNode(const uint32_t line, const uint32_t col,
+                           std::string name, std::vector<std::shared_ptr<DeclNode>> parameters,
+                           std::shared_ptr<BaseType> return_type,
+                           std::shared_ptr<CompoundStatementNode> compound_stmt)
+    : AstNode{line, col}, name(name), parameters(parameters),
+      return_type(return_type), compound_stmt(compound_stmt) {}
+
 std::string FunctionNode::getName() { return name; }
 
 std::string FunctionNode::getFuncProtoType() {
@@ -33,5 +41,9 @@ void FunctionNode::dump(AstDumper &dp) {
 void FunctionNode::dumpChildNodes(AstDumper &dp) {
     for (auto& p : parameters) {
         dp.visit(*p);
+    }
+
+    if (compound_stmt != nullptr) {
+        dp.visit(*compound_stmt);
     }
 }
