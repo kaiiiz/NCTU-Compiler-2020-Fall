@@ -195,7 +195,7 @@ void AstDumper::visit(IfNode &p_if) {
                 p_if.getLocation().col);
 
     incrementIndentation();
-    // p_if.visitChildNodes(*this);
+    p_if.dumpChildNodes(*this);
     decrementIndentation();
 }
 

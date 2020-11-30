@@ -145,6 +145,8 @@ std::vector<std::shared_ptr<VariableNode>> idList2VarNodeList(
 %type <std::vector<std::shared_ptr<ExpressionBase>>> ArrRefs;
 %type <std::vector<std::shared_ptr<ExpressionBase>>> ArrRefList;
 %type <std::shared_ptr<VariableReferenceNode>> VariableReference;
+%type <std::shared_ptr<CompoundStatementNode>> ElseOrNot;
+%type <std::shared_ptr<IfNode>> Condition;
 
 %%
     /*
@@ -340,7 +342,7 @@ Statement:
     |
     Simple { $$ = $1; }
     |
-    Condition { $$ = nullptr; }
+    Condition { $$ = std::dynamic_pointer_cast<StatementBase>($1); }
     |
     While { $$ = nullptr; }
     |
@@ -400,14 +402,16 @@ Condition:
     IF Expression THEN
     CompoundStatement
     ElseOrNot
-    END IF
+    END IF {
+        $$ = std::make_shared<IfNode>(@1.begin.line, @1.begin.column, $2, $4, $5);
+    }
 ;
 
 ElseOrNot:
     ELSE
-    CompoundStatement
+    CompoundStatement { $$ = $2; }
     |
-    Epsilon
+    Epsilon { $$ = nullptr; }
 ;
 
 While:
