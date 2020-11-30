@@ -5,18 +5,18 @@
 
 #include "AST/base/StatementBase.hpp"
 
-class ExpressionNode;
+class ExpressionBase;
 
 class PrintNode : public StatementBase {
   public:
-    PrintNode(const uint32_t line, const uint32_t col, std::shared_ptr<ExpressionNode> expr);
+    PrintNode(const uint32_t line, const uint32_t col, std::shared_ptr<ExpressionBase> expr);
     ~PrintNode() = default;
 
     void dump(AstDumper &dp) override;
     void dumpChildNodes(AstDumper &dp) override;
 
   private:
-    std::shared_ptr<ExpressionNode> expr;
+    std::shared_ptr<ExpressionBase> expr;
 };
 
 #endif

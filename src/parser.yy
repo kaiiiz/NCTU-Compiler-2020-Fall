@@ -124,6 +124,7 @@ std::vector<std::shared_ptr<VariableNode>> idList2VarNodeList(
 %type <std::vector<int64_t>> ArrDecl;
 %type <std::shared_ptr<ArrayType>> ArrType;
 %type <bool> NegOrNot;
+%type <std::shared_ptr<ConstantValueNode>> IntegerAndReal;
 %type <std::shared_ptr<ConstantValueNode>> StringAndBoolean;
 %type <std::shared_ptr<ConstantValueNode>> LiteralConstant;
 %type <std::shared_ptr<FunctionNode>> FunctionDeclaration;
@@ -136,6 +137,7 @@ std::vector<std::shared_ptr<VariableNode>> idList2VarNodeList(
 %type <std::vector<std::shared_ptr<StatementBase>>> Statements;
 %type <std::shared_ptr<StatementBase>> Statement;
 %type <std::shared_ptr<StatementBase>> Simple;
+%type <std::shared_ptr<ExpressionBase>> Expression;
 
 %%
     /*
@@ -317,9 +319,9 @@ StringAndBoolean:
 ;
 
 IntegerAndReal:
-    INT_LITERAL
+    INT_LITERAL { $$ = std::make_shared<ConstantValueNode>(@1.begin.line, @1.begin.column, scalar_type_t::integer, $1); }
     |
-    REAL_LITERAL
+    REAL_LITERAL { $$ = std::make_shared<ConstantValueNode>(@1.begin.line, @1.begin.column, scalar_type_t::real, $1); }
 ;
 
     /*
@@ -358,7 +360,7 @@ Simple:
     |
     PRINT Expression SEMICOLON {
         $$ = std::dynamic_pointer_cast<StatementBase>(
-                std::make_shared<PrintNode>(@1.begin.line, @1.begin.column, nullptr)
+                std::make_shared<PrintNode>(@1.begin.line, @1.begin.column, $2)
              );
     }
     |
@@ -446,45 +448,71 @@ Statements:
 ;
 
 Expression:
-    L_PARENTHESIS Expression R_PARENTHESIS
+    L_PARENTHESIS Expression R_PARENTHESIS { $$ = $2; }
     |
-    MINUS Expression %prec UNARY_MINUS
+    MINUS Expression %prec UNARY_MINUS { $$ = nullptr; }
     |
-    Expression MULTIPLY Expression
+    Expression MULTIPLY Expression {
+        $$ = std::make_shared<BinaryOperatorNode>(@2.begin.line, @2.begin.column, BinaryOP::MULTIPLY, $1, $3);
+    }
     |
-    Expression DIVIDE Expression
+    Expression DIVIDE Expression {
+        $$ = std::make_shared<BinaryOperatorNode>(@2.begin.line, @2.begin.column, BinaryOP::DIVIDE, $1, $3);
+    }
     |
-    Expression MOD Expression
+    Expression MOD Expression {
+        $$ = std::make_shared<BinaryOperatorNode>(@2.begin.line, @2.begin.column, BinaryOP::MOD, $1, $3);
+    }
     |
-    Expression PLUS Expression
+    Expression PLUS Expression {
+        $$ = std::make_shared<BinaryOperatorNode>(@2.begin.line, @2.begin.column, BinaryOP::PLUS, $1, $3);
+    }
     |
-    Expression MINUS Expression
+    Expression MINUS Expression {
+        $$ = std::make_shared<BinaryOperatorNode>(@2.begin.line, @2.begin.column, BinaryOP::MINUS, $1, $3);
+    }
     |
-    Expression LESS Expression
+    Expression LESS Expression {
+        $$ = std::make_shared<BinaryOperatorNode>(@2.begin.line, @2.begin.column, BinaryOP::LESS, $1, $3);
+    }
     |
-    Expression LESS_OR_EQUAL Expression
+    Expression LESS_OR_EQUAL Expression {
+        $$ = std::make_shared<BinaryOperatorNode>(@2.begin.line, @2.begin.column, BinaryOP::LESS_OR_EQUAL, $1, $3);
+    }
     |
-    Expression GREATER Expression
+    Expression GREATER Expression {
+        $$ = std::make_shared<BinaryOperatorNode>(@2.begin.line, @2.begin.column, BinaryOP::GREATER, $1, $3);
+    }
     |
-    Expression GREATER_OR_EQUAL Expression
+    Expression GREATER_OR_EQUAL Expression {
+        $$ = std::make_shared<BinaryOperatorNode>(@2.begin.line, @2.begin.column, BinaryOP::GREATER_OR_EQUAL, $1, $3);
+    }
     |
-    Expression EQUAL Expression
+    Expression EQUAL Expression {
+        $$ = std::make_shared<BinaryOperatorNode>(@2.begin.line, @2.begin.column, BinaryOP::EQUAL, $1, $3);
+    }
     |
-    Expression NOT_EQUAL Expression
+    Expression NOT_EQUAL Expression {
+        $$ = std::make_shared<BinaryOperatorNode>(@2.begin.line, @2.begin.column, BinaryOP::NOT_EQUAL, $1, $3);
+    }
     |
-    NOT Expression
+    NOT Expression { $$ = nullptr; }
     |
-    Expression AND Expression
+    Expression AND Expression {
+        $$ = std::make_shared<BinaryOperatorNode>(@2.begin.line, @2.begin.column, BinaryOP::AND, $1, $3);
+    }
     |
-    Expression OR Expression
+    Expression OR Expression {
+        $$ = std::make_shared<BinaryOperatorNode>(@2.begin.line, @2.begin.column, BinaryOP::OR, $1, $3);
+    }
     |
-    IntegerAndReal
+    IntegerAndReal { $$ = std::dynamic_pointer_cast<ExpressionBase>($1); }
     |
-    StringAndBoolean
+    StringAndBoolean { $$ = std::dynamic_pointer_cast<ExpressionBase>($1); }
     |
-    VariableReference
+    VariableReference { $$ = nullptr; }
     |
-    FunctionInvocation
+    FunctionInvocation { $$ = nullptr; }
 ;
 
     /*

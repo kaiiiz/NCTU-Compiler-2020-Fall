@@ -107,20 +107,19 @@ void AstDumper::visit(PrintNode &p_print) {
                 p_print.getLocation().line, p_print.getLocation().col);
 
     incrementIndentation();
-    // p_print.visitChildNodes(*this);
+    p_print.dumpChildNodes(*this);
     decrementIndentation();
 }
 
 void AstDumper::visit(BinaryOperatorNode &p_bin_op) {
     outputIndentationSpace(m_indentation);
 
-    // TODO: operator string
     std::printf("binary operator <line: %u, col: %u> %s\n",
                 p_bin_op.getLocation().line, p_bin_op.getLocation().col,
-                "TODO");
+                p_bin_op.getOPString().c_str());
 
     incrementIndentation();
-    // p_bin_op.visitChildNodes(*this);
+    p_bin_op.dumpChildNodes(*this);
     decrementIndentation();
 }
 
