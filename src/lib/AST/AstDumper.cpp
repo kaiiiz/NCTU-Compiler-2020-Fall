@@ -155,14 +155,13 @@ void AstDumper::visit(FunctionCallNode &p_func_call) {
 void AstDumper::visit(VariableReferenceNode &p_variable_ref) {
     outputIndentationSpace(m_indentation);
 
-    // TODO: variable name
     std::printf("variable reference <line: %u, col: %u> %s\n",
                 p_variable_ref.getLocation().line,
                 p_variable_ref.getLocation().col,
-                "TODO");
+                p_variable_ref.getName().c_str());
 
     incrementIndentation();
-    // p_variable_ref.visitChildNodes(*this);
+    p_variable_ref.dumpChildNodes(*this);
     decrementIndentation();
 }
 
@@ -174,7 +173,7 @@ void AstDumper::visit(AssignmentNode &p_assignment) {
                 p_assignment.getLocation().col);
 
     incrementIndentation();
-    // p_assignment.visitChildNodes(*this);
+    p_assignment.dumpChildNodes(*this);
     decrementIndentation();
 }
 
@@ -185,7 +184,7 @@ void AstDumper::visit(ReadNode &p_read) {
                 p_read.getLocation().line, p_read.getLocation().col);
 
     incrementIndentation();
-    // p_read.visitChildNodes(*this);
+    p_read.dumpChildNodes(*this);
     decrementIndentation();
 }
 

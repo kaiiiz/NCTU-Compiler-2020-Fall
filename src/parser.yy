@@ -142,6 +142,9 @@ std::vector<std::shared_ptr<VariableNode>> idList2VarNodeList(
 %type <std::vector<std::shared_ptr<ExpressionBase>>> Expressions;
 %type <std::shared_ptr<FunctionInvocationNode>> FunctionInvocation;
 %type <std::shared_ptr<FunctionCallNode>> FunctionCall;
+%type <std::vector<std::shared_ptr<ExpressionBase>>> ArrRefs;
+%type <std::vector<std::shared_ptr<ExpressionBase>>> ArrRefList;
+%type <std::shared_ptr<VariableReferenceNode>> VariableReference;
 
 %%
     /*
@@ -359,7 +362,9 @@ CompoundStatement:
 
 Simple:
     VariableReference ASSIGN Expression SEMICOLON {
-        $$ = nullptr;
+        $$ = std::dynamic_pointer_cast<StatementBase>(
+                std::make_shared<AssignmentNode>(@2.begin.line, @2.begin.column, $1, $3)
+             );
     }
     |
     PRINT Expression SEMICOLON {
@@ -369,24 +374,26 @@ Simple:
     }
     |
     READ VariableReference SEMICOLON {
-        $$ = nullptr;
+        $$ = std::dynamic_pointer_cast<StatementBase>(
+                std::make_shared<ReadNode>(@1.begin.line, @1.begin.column, $2)
+             );
     }
 ;
 
 VariableReference:
-    ID ArrRefList
+    ID ArrRefList { $$ = std::make_shared<VariableReferenceNode>(@1.begin.line, @1.begin.column, $1, $2); }
 ;
 
 ArrRefList:
-    Epsilon
+    Epsilon { $$ = std::vector<std::shared_ptr<ExpressionBase>>(); }
     |
-    ArrRefs
+    ArrRefs { $$ = $1; }
 ;
 
 ArrRefs:
-    L_BRACKET Expression R_BRACKET
+    L_BRACKET Expression R_BRACKET { $$ = std::vector<std::shared_ptr<ExpressionBase>>{$2}; }
     |
-    ArrRefs L_BRACKET Expression R_BRACKET
+    ArrRefs L_BRACKET Expression R_BRACKET { $1.push_back($3); $$ = $1; }
 ;
 
 Condition:
@@ -522,7 +529,7 @@ Expression:
     |
     StringAndBoolean { $$ = std::dynamic_pointer_cast<ExpressionBase>($1); }
     |
-    VariableReference { $$ = nullptr; }
+    VariableReference { $$ = std::dynamic_pointer_cast<ExpressionBase>($1); }
     |
     FunctionInvocation { $$ = std::dynamic_pointer_cast<ExpressionBase>($1); }
 ;

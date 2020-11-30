@@ -1,15 +1,20 @@
 #include "AST/expression/VariableReference.hpp"
+#include "AST/AstDumper.hpp"
 
 // TODO
-VariableReferenceNode::VariableReferenceNode(const uint32_t line,
-                                             const uint32_t col)
-    : ExpressionBase{line, col} {}
+VariableReferenceNode::VariableReferenceNode(const uint32_t line, const uint32_t col,
+                                             std::string name,
+                                             std::vector<std::shared_ptr<ExpressionBase>> expressions)
+    : ExpressionBase{line, col}, name(name), expressions(expressions) {}
 
-// TODO
-// VariableReferenceNode::VariableReferenceNode(const uint32_t line,
-//                                              const uint32_t col)
-//     : ExpressionBase{line, col} {}
+std::string VariableReferenceNode::getName() { return name; }
 
-// void VariableReferenceNode::visitChildNodes(AstNodeVisitor &p_visitor) {
-//     // TODO
-// }
+void VariableReferenceNode::dump(AstDumper &dp) {
+    dp.visit(*this);
+}
+
+void VariableReferenceNode::dumpChildNodes(AstDumper &dp) {
+    for (auto &e : expressions) {
+        e->dump(dp);
+    }
+}
