@@ -1,10 +1,16 @@
+#include "AST/base/ExpressionBase.hpp"
 #include "AST/base/StatementBase.hpp"
 #include "AST/statement/return.hpp"
+#include "AST/AstDumper.hpp"
 
-// TODO
-ReturnNode::ReturnNode(const uint32_t line, const uint32_t col)
-    : StatementBase{line, col} {}
+ReturnNode::ReturnNode(const uint32_t line, const uint32_t col,
+                       std::shared_ptr<ExpressionBase> expression)
+    : StatementBase{line, col}, expression(expression) {}
 
-// void ReturnNode::visitChildNodes(AstNodeVisitor &p_visitor) {
-//     // TODO
-// }
+void ReturnNode::dump(AstDumper &dp) {
+    dp.visit(*this);
+}
+
+void ReturnNode::dumpChildNodes(AstDumper &dp) {
+    expression->dump(dp);
+}

@@ -149,6 +149,7 @@ std::vector<std::shared_ptr<VariableNode>> idList2VarNodeList(
 %type <std::shared_ptr<IfNode>> Condition;
 %type <std::shared_ptr<WhileNode>> While;
 %type <std::shared_ptr<ForNode>> For;
+%type <std::shared_ptr<ReturnNode>> Return;
 
 %%
     /*
@@ -350,7 +351,7 @@ Statement:
     |
     For { $$ = std::dynamic_pointer_cast<StatementBase>($1); }
     |
-    Return { $$ = nullptr; }
+    Return { $$ = std::dynamic_pointer_cast<StatementBase>($1); }
     |
     FunctionCall { $$ = std::dynamic_pointer_cast<StatementBase>($1); }
 ;
@@ -446,7 +447,7 @@ For:
 ;
 
 Return:
-    RETURN Expression SEMICOLON
+    RETURN Expression SEMICOLON { $$ = std::make_shared<ReturnNode>(@1.begin.line, @1.begin.column, $2); }
 ;
 
 FunctionCall:
