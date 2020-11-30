@@ -96,7 +96,7 @@ void AstDumper::visit(CompoundStatementNode &p_compound_statement) {
                 p_compound_statement.getLocation().col);
 
     incrementIndentation();
-    // p_compound_statement.visitChildNodes(*this);
+    p_compound_statement.dumpChildNodes(*this);
     decrementIndentation();
 }
 

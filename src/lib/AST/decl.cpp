@@ -3,6 +3,7 @@
 
 #include "AST/AstDumper.hpp"
 #include "AST/decl.hpp"
+#include "AST/variable.hpp"
 #include "type/base.hpp"
 
 DeclNode::DeclNode(const uint32_t line, const uint32_t col,
@@ -20,6 +21,6 @@ void DeclNode::dump(AstDumper &dp) {
 
 void DeclNode::dumpChildNodes(AstDumper &dp) {
     for (auto &var : var_list) {
-        dp.visit(*var);
+        var->dump(dp);
     }
 }

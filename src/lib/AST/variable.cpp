@@ -30,6 +30,6 @@ void VariableNode::dump(AstDumper &dp) {
 
 void VariableNode::dumpChildNodes(AstDumper &dp) {
     if (literal_const != nullptr) {
-        dp.visit(*literal_const);
+        literal_const->dump(dp);
     }
 }

@@ -1,10 +1,14 @@
 #include "AST/base/StatementBase.hpp"
 #include "AST/statement/print.hpp"
+#include "AST/AstDumper.hpp"
 
-// TODO
-PrintNode::PrintNode(const uint32_t line, const uint32_t col)
-    : StatementBase{line, col} {}
+PrintNode::PrintNode(const uint32_t line, const uint32_t col, std::shared_ptr<ExpressionNode> expr)
+    : StatementBase{line, col}, expr(expr) {}
 
-// void PrintNode::visitChildNodes(AstNodeVisitor &p_visitor) {
-//     // TODO
-// }
+void PrintNode::dump(AstDumper &dp) {
+    dp.visit(*this);
+}
+
+void PrintNode::dumpChildNodes(AstDumper &dp) {
+    // TODO: dump expression node
+}

@@ -135,6 +135,7 @@ std::vector<std::shared_ptr<VariableNode>> idList2VarNodeList(
 %type <std::vector<std::shared_ptr<StatementBase>>> StatementList;
 %type <std::vector<std::shared_ptr<StatementBase>>> Statements;
 %type <std::shared_ptr<StatementBase>> Statement;
+%type <std::shared_ptr<StatementBase>> Simple;
 
 %%
     /*
@@ -328,7 +329,7 @@ IntegerAndReal:
 Statement:
     CompoundStatement { $$ = std::dynamic_pointer_cast<StatementBase>($1); }
     |
-    Simple { $$ = nullptr; }
+    Simple { $$ = $1; }
     |
     Condition { $$ = nullptr; }
     |
@@ -351,11 +352,19 @@ CompoundStatement:
 ;
 
 Simple:
-    VariableReference ASSIGN Expression SEMICOLON
+    VariableReference ASSIGN Expression SEMICOLON {
+        $$ = nullptr;
+    }
     |
-    PRINT Expression SEMICOLON
+    PRINT Expression SEMICOLON {
+        $$ = std::dynamic_pointer_cast<StatementBase>(
+                std::make_shared<PrintNode>(@1.begin.line, @1.begin.column, nullptr)
+             );
+    }
     |
-    READ VariableReference SEMICOLON
+    READ VariableReference SEMICOLON {
+        $$ = nullptr;
+    }
 ;
 
 VariableReference:

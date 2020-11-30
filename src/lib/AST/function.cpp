@@ -3,6 +3,7 @@
 
 #include "AST/function.hpp"
 #include "AST/decl.hpp"
+#include "AST/statement/CompoundStatement.hpp"
 #include "AST/AstDumper.hpp"
 
 FunctionNode::FunctionNode(const uint32_t line, const uint32_t col,
@@ -40,10 +41,10 @@ void FunctionNode::dump(AstDumper &dp) {
 
 void FunctionNode::dumpChildNodes(AstDumper &dp) {
     for (auto& p : parameters) {
-        dp.visit(*p);
+        p->dump(dp);
     }
 
     if (compound_stmt != nullptr) {
-        dp.visit(*compound_stmt);
+        compound_stmt->dump(dp);
     }
 }
