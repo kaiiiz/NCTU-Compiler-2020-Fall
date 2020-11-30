@@ -2,6 +2,7 @@
 #include "AST/program.hpp"
 #include "AST/decl.hpp"
 #include "AST/function.hpp"
+#include "AST/statement/CompoundStatement.hpp"
 #include "visitor/AstNodeVisitor.hpp"
 
 ProgramNode::ProgramNode(const uint32_t line, const uint32_t col,
@@ -24,7 +25,7 @@ void ProgramNode::dumpChildNodes(AstDumper &dp) {
         func->dump(dp);
     }
 
-    // compound_stmt->dump(dp);
+    compound_stmt->dump(dp);
 }
 
 const char * ProgramNode::getProgramName() {

@@ -128,6 +128,10 @@ std::vector<std::shared_ptr<VariableNode>> idList2VarNodeList(
 %type <std::shared_ptr<FunctionNode>> Function;
 %type <std::vector<std::shared_ptr<FunctionNode>>> Functions;
 %type <std::vector<std::shared_ptr<FunctionNode>>> FunctionList;
+%type <std::shared_ptr<CompoundStatementNode>> CompoundStatement;
+%type <std::vector<std::shared_ptr<StatementNode>>> StatementList;
+%type <std::vector<std::shared_ptr<StatementNode>>> Statements;
+%type <std::shared_ptr<StatementNode>> Statement;
 
 %%
     /*
@@ -140,8 +144,7 @@ Program:
     DeclarationList FunctionList CompoundStatement
     /* End of ProgramBody */
     END {
-        std::shared_ptr<CompoundStatementNode> compound_stmt;
-        drv.root = std::make_shared<ProgramNode>(@1.begin.line, @1.begin.column, $1, "void", $3, $4, compound_stmt);
+        drv.root = std::make_shared<ProgramNode>(@1.begin.line, @1.begin.column, $1, "void", $3, $4, $5);
     }
 ;
 
@@ -318,26 +321,28 @@ IntegerAndReal:
                   */
 
 Statement:
-    CompoundStatement
+    CompoundStatement { $$ = std::dynamic_pointer_cast<StatementNode>($1); }
     |
-    Simple
+    Simple { $$ = nullptr; }
     |
-    Condition
+    Condition { $$ = nullptr; }
     |
-    While
+    While { $$ = nullptr; }
     |
-    For
+    For { $$ = nullptr; }
     |
-    Return
+    Return { $$ = nullptr; }
     |
-    FunctionCall
+    FunctionCall { $$ = nullptr; }
 ;
 
 CompoundStatement:
     BEGIN_
     DeclarationList
     StatementList
-    END
+    END {
+        $$ = std::make_shared<CompoundStatementNode>(@1.begin.line, @1.begin.column, $2, $3);
+    }
 ;
 
 Simple:
@@ -415,15 +420,15 @@ Expressions:
 ;
 
 StatementList:
-    Epsilon
+    Epsilon { $$ = std::vector<std::shared_ptr<StatementNode>>(); }
     |
-    Statements
+    Statements { $$ = $1; }
 ;
 
 Statements:
-    Statement
+    Statement { $$ = std::vector<std::shared_ptr<StatementNode>>{$1}; }
     |
-    Statements Statement
+    Statements Statement { $1.push_back($2); $$ = $1; }
 ;
 
 Expression:
