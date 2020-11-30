@@ -450,7 +450,9 @@ Statements:
 Expression:
     L_PARENTHESIS Expression R_PARENTHESIS { $$ = $2; }
     |
-    MINUS Expression %prec UNARY_MINUS { $$ = nullptr; }
+    MINUS Expression %prec UNARY_MINUS {
+        $$ = std::make_shared<UnaryOperatorNode>(@1.begin.line, @1.begin.column, UnaryOP::MINUS, $2);
+    }
     |
     Expression MULTIPLY Expression {
         $$ = std::make_shared<BinaryOperatorNode>(@2.begin.line, @2.begin.column, BinaryOP::MULTIPLY, $1, $3);
@@ -496,7 +498,9 @@ Expression:
         $$ = std::make_shared<BinaryOperatorNode>(@2.begin.line, @2.begin.column, BinaryOP::NOT_EQUAL, $1, $3);
     }
     |
-    NOT Expression { $$ = nullptr; }
+    NOT Expression {
+        $$ = std::make_shared<UnaryOperatorNode>(@1.begin.line, @1.begin.column, UnaryOP::NOT, $2);
+    }
     |
     Expression AND Expression {
         $$ = std::make_shared<BinaryOperatorNode>(@2.begin.line, @2.begin.column, BinaryOP::AND, $1, $3);

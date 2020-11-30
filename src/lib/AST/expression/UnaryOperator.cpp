@@ -1,9 +1,26 @@
+#include <memory>
 #include "AST/expression/UnaryOperator.hpp"
+#include "AST/AstDumper.hpp"
 
-// TODO
-UnaryOperatorNode::UnaryOperatorNode(const uint32_t line, const uint32_t col)
-    : ExpressionBase{line, col} {}
+UnaryOperatorNode::UnaryOperatorNode(const uint32_t line, const uint32_t col, UnaryOP op,
+                                     std::shared_ptr<ExpressionBase> expr)
+    : ExpressionBase{line, col}, op(op), expr(expr) {}
 
-// void UnaryOperatorNode::visitChildNodes(AstNodeVisitor &p_visitor) {
-//     // TODO
-// }
+std::string UnaryOperatorNode::getOPString() {
+    switch (op) {
+        case UnaryOP::NOT:
+            return "not";
+        case UnaryOP::MINUS:
+            return "-";
+        default:
+            return "<not handled>";
+    }
+}
+
+void UnaryOperatorNode::dump(AstDumper &dp) {
+    dp.visit(*this);
+}
+
+void UnaryOperatorNode::dumpChildNodes(AstDumper &dp) {
+    expr->dump(dp);
+}

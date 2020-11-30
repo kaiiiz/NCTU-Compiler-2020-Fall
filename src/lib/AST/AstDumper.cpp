@@ -126,13 +126,12 @@ void AstDumper::visit(BinaryOperatorNode &p_bin_op) {
 void AstDumper::visit(UnaryOperatorNode &p_un_op) {
     outputIndentationSpace(m_indentation);
 
-    // TODO: operator string
     std::printf("unary operator <line: %u, col: %u> %s\n",
                 p_un_op.getLocation().line, p_un_op.getLocation().col,
-                "TODO");
+                p_un_op.getOPString().c_str());
 
     incrementIndentation();
-    // p_un_op.visitChildNodes(*this);
+    p_un_op.dumpChildNodes(*this);
     decrementIndentation();
 }
 

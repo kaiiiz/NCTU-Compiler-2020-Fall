@@ -3,14 +3,24 @@
 
 #include "AST/base/ExpressionBase.hpp"
 
+enum class UnaryOP {
+    MINUS,
+    NOT,
+};
+
 class UnaryOperatorNode : public ExpressionBase {
   public:
-    UnaryOperatorNode(const uint32_t line, const uint32_t col
-                      /* TODO: operator, expression */);
+    UnaryOperatorNode(const uint32_t line, const uint32_t col, UnaryOP op,
+                       std::shared_ptr<ExpressionBase> expr);
     ~UnaryOperatorNode() = default;
 
+    std::string getOPString();
+    void dump(AstDumper &dp) override;
+    void dumpChildNodes(AstDumper &dp) override;
+
   private:
-    // TODO: operator, expression
+    UnaryOP op;
+    std::shared_ptr<ExpressionBase> expr;
 };
 
 #endif
