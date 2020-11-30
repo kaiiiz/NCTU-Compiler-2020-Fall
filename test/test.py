@@ -46,7 +46,7 @@ class Grader:
         test_case = "%s/%s/%s.p" % (self.basic_case_dir, "test_cases", self.basic_cases[case_id])
         output_file = "%s/%s" % (self.output_dir, self.basic_cases[case_id])
 
-        clist = [self.parser, test_case]
+        clist = [self.parser, test_case, '--dump-ast']
         cmd = " ".join(clist)
         try:
             proc = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=True)
