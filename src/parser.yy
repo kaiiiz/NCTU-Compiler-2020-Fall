@@ -147,6 +147,7 @@ std::vector<std::shared_ptr<VariableNode>> idList2VarNodeList(
 %type <std::shared_ptr<VariableReferenceNode>> VariableReference;
 %type <std::shared_ptr<CompoundStatementNode>> ElseOrNot;
 %type <std::shared_ptr<IfNode>> Condition;
+%type <std::shared_ptr<WhileNode>> While;
 
 %%
     /*
@@ -344,7 +345,7 @@ Statement:
     |
     Condition { $$ = std::dynamic_pointer_cast<StatementBase>($1); }
     |
-    While { $$ = nullptr; }
+    While { $$ = std::dynamic_pointer_cast<StatementBase>($1); }
     |
     For { $$ = nullptr; }
     |
@@ -417,7 +418,9 @@ ElseOrNot:
 While:
     WHILE Expression DO
     CompoundStatement
-    END DO
+    END DO {
+        $$ = std::make_shared<WhileNode>(@1.begin.line, @1.begin.column, $2, $4);
+    }
 ;
 
 For:
