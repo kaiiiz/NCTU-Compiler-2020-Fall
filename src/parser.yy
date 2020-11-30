@@ -22,21 +22,23 @@
 #include "AST/program.hpp"
 #include "AST/decl.hpp"
 #include "AST/variable.hpp"
-#include "AST/ConstantValue.hpp"
 #include "AST/function.hpp"
+#include "AST/base/ExpressionBase.hpp"
+#include "AST/base/StatementBase.hpp"
+#include "AST/expression/ConstantValue.hpp"
+#include "AST/expression/BinaryOperator.hpp"
+#include "AST/expression/UnaryOperator.hpp"
+#include "AST/expression/FunctionInvocation.hpp"
+#include "AST/expression/VariableReference.hpp"
 #include "AST/statement/CompoundStatement.hpp"
 #include "AST/statement/print.hpp"
-#include "AST/expression.hpp"
-#include "AST/BinaryOperator.hpp"
-#include "AST/UnaryOperator.hpp"
-#include "AST/statement/FunctionInvocation.hpp"
-#include "AST/VariableReference.hpp"
 #include "AST/statement/assignment.hpp"
 #include "AST/statement/read.hpp"
 #include "AST/statement/if.hpp"
 #include "AST/statement/while.hpp"
 #include "AST/statement/for.hpp"
 #include "AST/statement/return.hpp"
+#include "AST/statement/FunctionCall.hpp"
 
 class driver;
 }
@@ -130,9 +132,9 @@ std::vector<std::shared_ptr<VariableNode>> idList2VarNodeList(
 %type <std::vector<std::shared_ptr<FunctionNode>>> Functions;
 %type <std::vector<std::shared_ptr<FunctionNode>>> FunctionList;
 %type <std::shared_ptr<CompoundStatementNode>> CompoundStatement;
-%type <std::vector<std::shared_ptr<StatementNode>>> StatementList;
-%type <std::vector<std::shared_ptr<StatementNode>>> Statements;
-%type <std::shared_ptr<StatementNode>> Statement;
+%type <std::vector<std::shared_ptr<StatementBase>>> StatementList;
+%type <std::vector<std::shared_ptr<StatementBase>>> Statements;
+%type <std::shared_ptr<StatementBase>> Statement;
 
 %%
     /*
@@ -324,7 +326,7 @@ IntegerAndReal:
                   */
 
 Statement:
-    CompoundStatement { $$ = std::dynamic_pointer_cast<StatementNode>($1); }
+    CompoundStatement { $$ = std::dynamic_pointer_cast<StatementBase>($1); }
     |
     Simple { $$ = nullptr; }
     |
@@ -423,13 +425,13 @@ Expressions:
 ;
 
 StatementList:
-    Epsilon { $$ = std::vector<std::shared_ptr<StatementNode>>(); }
+    Epsilon { $$ = std::vector<std::shared_ptr<StatementBase>>(); }
     |
     Statements { $$ = $1; }
 ;
 
 Statements:
-    Statement { $$ = std::vector<std::shared_ptr<StatementNode>>{$1}; }
+    Statement { $$ = std::vector<std::shared_ptr<StatementBase>>{$1}; }
     |
     Statements Statement { $1.push_back($2); $$ = $1; }
 ;

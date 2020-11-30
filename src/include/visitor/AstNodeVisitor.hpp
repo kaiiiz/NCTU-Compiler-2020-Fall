@@ -12,6 +12,7 @@ class PrintNode;
 class BinaryOperatorNode;
 class UnaryOperatorNode;
 class FunctionInvocationNode;
+class FunctionCallNode;
 class VariableReferenceNode;
 class AssignmentNode;
 class ReadNode;
@@ -34,6 +35,7 @@ class AstNodeVisitor {
     virtual void visit(BinaryOperatorNode &p_bin_op) {}
     virtual void visit(UnaryOperatorNode &p_un_op) {}
     virtual void visit(FunctionInvocationNode &p_func_invocation) {}
+    virtual void visit(FunctionCallNode &p_func_call) {}
     virtual void visit(VariableReferenceNode &p_variable_ref) {}
     virtual void visit(AssignmentNode &p_assignment) {}
     virtual void visit(ReadNode &p_read) {}

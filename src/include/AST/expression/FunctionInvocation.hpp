@@ -1,15 +1,13 @@
 #ifndef __AST_FUNCTION_INVOCATION_NODE_H
 #define __AST_FUNCTION_INVOCATION_NODE_H
 
-#include "AST/statement/statement.hpp"
+#include "AST/base/ExpressionBase.hpp"
 
-class FunctionInvocationNode : public StatementNode {
+class FunctionInvocationNode : public ExpressionBase {
   public:
     FunctionInvocationNode(const uint32_t line, const uint32_t col
                            /* TODO: function name, expressions */);
     ~FunctionInvocationNode() = default;
-
-    const char *getNameCString() const;
 
   private:
     // TODO: function name, expressions

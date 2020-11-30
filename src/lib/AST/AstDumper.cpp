@@ -1,10 +1,11 @@
 #include "AST/AstDumper.hpp"
-#include "AST/BinaryOperator.hpp"
+#include "AST/expression/BinaryOperator.hpp"
 #include "AST/statement/CompoundStatement.hpp"
-#include "AST/ConstantValue.hpp"
-#include "AST/statement/FunctionInvocation.hpp"
-#include "AST/UnaryOperator.hpp"
-#include "AST/VariableReference.hpp"
+#include "AST/expression/ConstantValue.hpp"
+#include "AST/expression/FunctionInvocation.hpp"
+#include "AST/statement/FunctionCall.hpp"
+#include "AST/expression/UnaryOperator.hpp"
+#include "AST/expression/VariableReference.hpp"
 #include "AST/statement/assignment.hpp"
 #include "AST/decl.hpp"
 #include "AST/statement/for.hpp"
@@ -143,6 +144,20 @@ void AstDumper::visit(FunctionInvocationNode &p_func_invocation) {
     std::printf("function invocation <line: %u, col: %u> %s\n",
                 p_func_invocation.getLocation().line,
                 p_func_invocation.getLocation().col,
+                "TODO");
+
+    incrementIndentation();
+    // p_func_invocation.visitChildNodes(*this);
+    decrementIndentation();
+}
+
+void AstDumper::visit(FunctionCallNode &p_func_call) {
+    outputIndentationSpace(m_indentation);
+
+    // TODO: function name
+    std::printf("function invocation <line: %u, col: %u> %s\n",
+                p_func_call.getLocation().line,
+                p_func_call.getLocation().col,
                 "TODO");
 
     incrementIndentation();

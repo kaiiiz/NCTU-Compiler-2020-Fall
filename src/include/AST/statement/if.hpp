@@ -1,9 +1,9 @@
 #ifndef __AST_IF_NODE_H
 #define __AST_IF_NODE_H
 
-#include "AST/statement/statement.hpp"
+#include "AST/base/StatementBase.hpp"
 
-class IfNode : public StatementNode {
+class IfNode : public StatementBase {
   public:
     IfNode(const uint32_t line, const uint32_t col
            /* TODO: expression, compound statement, compound statement */);

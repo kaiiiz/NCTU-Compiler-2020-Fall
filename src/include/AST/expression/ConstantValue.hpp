@@ -3,13 +3,13 @@
 
 #include <memory>
 
-#include "AST/expression.hpp"
+#include "AST/base/ExpressionBase.hpp"
 #include "type/scalar.hpp"
 
 class BaseType;
 class VariableNode;
 
-class ConstantValueNode : public ExpressionNode {
+class ConstantValueNode : public ExpressionBase {
   public:
     friend class VariableNode;
     ConstantValueNode(const uint32_t line, const uint32_t col, scalar_type_t type, int64_t ival);

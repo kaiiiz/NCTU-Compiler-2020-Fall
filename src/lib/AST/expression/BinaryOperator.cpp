@@ -1,8 +1,8 @@
-#include "AST/BinaryOperator.hpp"
+#include "AST/expression/BinaryOperator.hpp"
 
 // TODO
 BinaryOperatorNode::BinaryOperatorNode(const uint32_t line, const uint32_t col)
-    : ExpressionNode{line, col} {}
+    : ExpressionBase{line, col} {}
 
 // void BinaryOperatorNode::visitChildNodes(AstNodeVisitor &p_visitor) {
 //     // TODO

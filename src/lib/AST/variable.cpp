@@ -1,7 +1,7 @@
 #include <memory>
 
 #include "AST/variable.hpp"
-#include "AST/ConstantValue.hpp"
+#include "AST/expression/ConstantValue.hpp"
 #include "AST/AstDumper.hpp"
 #include "type/base.hpp"
 #include "type/scalar.hpp"

@@ -3,6 +3,7 @@
 
 #include <string>
 #include <vector>
+#include <memory>
 
 #include "AST/ast.hpp"
 #include "type/base.hpp"

@@ -4,15 +4,15 @@
 #include <vector>
 #include <memory>
 
-#include "AST/statement/statement.hpp"
+#include "AST/base/StatementBase.hpp"
 
 class DeclNode;
 
-class CompoundStatementNode : public StatementNode {
+class CompoundStatementNode : public StatementBase {
   public:
     CompoundStatementNode(const uint32_t line, const uint32_t col,
                           std::vector<std::shared_ptr<DeclNode>> declarations,
-                          std::vector<std::shared_ptr<StatementNode>> statements);
+                          std::vector<std::shared_ptr<StatementBase>> statements);
     ~CompoundStatementNode() = default;
 
     void dump(AstDumper &dp) override;
@@ -20,7 +20,7 @@ class CompoundStatementNode : public StatementNode {
 
   private:
     std::vector<std::shared_ptr<DeclNode>> declarations;
-    std::vector<std::shared_ptr<StatementNode>> statements;
+    std::vector<std::shared_ptr<StatementBase>> statements;
 };
 
 #endif
