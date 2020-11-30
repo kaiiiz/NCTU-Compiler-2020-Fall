@@ -138,6 +138,10 @@ std::vector<std::shared_ptr<VariableNode>> idList2VarNodeList(
 %type <std::shared_ptr<StatementBase>> Statement;
 %type <std::shared_ptr<StatementBase>> Simple;
 %type <std::shared_ptr<ExpressionBase>> Expression;
+%type <std::vector<std::shared_ptr<ExpressionBase>>> ExpressionList;
+%type <std::vector<std::shared_ptr<ExpressionBase>>> Expressions;
+%type <std::shared_ptr<FunctionInvocationNode>> FunctionInvocation;
+%type <std::shared_ptr<FunctionCallNode>> FunctionCall;
 
 %%
     /*
@@ -341,7 +345,7 @@ Statement:
     |
     Return { $$ = nullptr; }
     |
-    FunctionCall { $$ = nullptr; }
+    FunctionCall { $$ = std::dynamic_pointer_cast<StatementBase>($1); }
 ;
 
 CompoundStatement:
@@ -416,23 +420,27 @@ Return:
 ;
 
 FunctionCall:
-    FunctionInvocation SEMICOLON
+    FunctionInvocation SEMICOLON {
+        $$ = std::make_shared<FunctionCallNode>(@1.begin.line, @1.begin.column, $1);
+    }
 ;
 
 FunctionInvocation:
-    ID L_PARENTHESIS ExpressionList R_PARENTHESIS
+    ID L_PARENTHESIS ExpressionList R_PARENTHESIS {
+        $$ = std::make_shared<FunctionInvocationNode>(@1.begin.line, @1.begin.column, $1, $3);
+    }
 ;
 
 ExpressionList:
-    Epsilon
+    Epsilon { $$ = std::vector<std::shared_ptr<ExpressionBase>>(); }
     |
-    Expressions
+    Expressions { $$ = $1; }
 ;
 
 Expressions:
-    Expression
+    Expression { $$ = std::vector<std::shared_ptr<ExpressionBase>>{$1}; }
     |
-    Expressions COMMA Expression
+    Expressions COMMA Expression { $1.push_back($3); $$ = $1; }
 ;
 
 StatementList:
@@ -516,7 +524,7 @@ Expression:
     |
     VariableReference { $$ = nullptr; }
     |
-    FunctionInvocation { $$ = nullptr; }
+    FunctionInvocation { $$ = std::dynamic_pointer_cast<ExpressionBase>($1); }
 ;
 
     /*
