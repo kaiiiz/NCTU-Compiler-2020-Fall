@@ -28,6 +28,4 @@ void ProgramNode::dumpChildNodes(AstDumper &dp) {
     compound_stmt->dump(dp);
 }
 
-const char * ProgramNode::getProgramName() {
-    return name.c_str();
-}
+std::string ProgramNode::getProgramName() { return name; }

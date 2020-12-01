@@ -2,7 +2,6 @@
 %require "3.0.4"
 
 %locations
-%define api.token.raw
 %define api.token.constructor
 %define api.value.type variant
 %define parse.assert
@@ -164,7 +163,7 @@ Program:
 ;
 
 ProgramName:
-    ID
+    ID { $$ = $1; }
 ;
 
 DeclarationList:
@@ -212,7 +211,7 @@ FunctionDefinition:
 ;
 
 FunctionName:
-    ID
+    ID { $$ = $1; }
 ;
 
 FormalArgList:

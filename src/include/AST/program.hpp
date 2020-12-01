@@ -22,7 +22,7 @@ class ProgramNode : public AstNode {
 
     void dump(AstDumper &dp) override;
     void dumpChildNodes(AstDumper &dp) override;
-    const char *getProgramName();
+    std::string getProgramName();
 
   private:
     const std::string name;

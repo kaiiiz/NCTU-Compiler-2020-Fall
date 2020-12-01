@@ -37,7 +37,7 @@ void AstDumper::visit(ProgramNode &p_program) {
 
     std::printf("program <line: %u, col: %u> %s %s\n",
                 p_program.getLocation().line, p_program.getLocation().col,
-                p_program.getProgramName(), "void");
+                p_program.getProgramName().c_str(), "void");
 
     incrementIndentation();
     p_program.dumpChildNodes(*this);
