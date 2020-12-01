@@ -44,9 +44,6 @@ class driver;
 }
 
 %param { driver& drv }
-%initial-action {
-    @$.begin.filename = @$.end.filename = &drv.file; // Initialize the initial location.
-};
 
 %code {
 #include "driver/driver.hpp"

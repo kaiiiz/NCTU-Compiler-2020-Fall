@@ -1,7 +1,6 @@
 #include "AST/expression/VariableReference.hpp"
 #include "AST/AstDumper.hpp"
 
-// TODO
 VariableReferenceNode::VariableReferenceNode(const uint32_t line, const uint32_t col,
                                              std::string name,
                                              std::vector<std::shared_ptr<ExpressionBase>> expressions)
