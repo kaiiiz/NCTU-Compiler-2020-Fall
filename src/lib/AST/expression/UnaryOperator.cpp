@@ -13,7 +13,7 @@ std::string UnaryOperatorNode::getOPString() {
         case UnaryOP::MINUS:
             return "neg";
         default:
-            return "<not handled>";
+            return "<not handled unary op>";
     }
 }
 

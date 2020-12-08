@@ -35,7 +35,7 @@ std::string BinaryOperatorNode::getOPString() {
         case BinaryOP::OR:
             return "or";
         default:
-            return "<not handled>";
+            return "<not handled bin op>";
     }
 }
 

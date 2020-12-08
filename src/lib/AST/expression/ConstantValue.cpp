@@ -30,8 +30,9 @@ std::string ConstantValueNode::getValueString() {
             return sval;
         case scalar_type_t::real:
             return std::to_string(rval);
+        default:
+            return "<not handled constant value type>";
     }
-    return "";
 }
 
 void ConstantValueNode::dump(AstDumper &dp) {
