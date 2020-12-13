@@ -60,7 +60,7 @@ void AstDumper::visit(VariableNode &p_variable) {
 
     std::printf("variable <line: %u, col: %u> %s %s\n",
                 p_variable.getLocation().line, p_variable.getLocation().col,
-                p_variable.getName().c_str(), p_variable.getTypeStr().c_str());
+                p_variable.getNameStr().c_str(), p_variable.getTypeStr().c_str());
 
     incrementIndentation();
     p_variable.visitChildNodes(*this);
@@ -81,7 +81,7 @@ void AstDumper::visit(FunctionNode &p_function) {
 
     std::printf("function declaration <line: %u, col: %u> %s %s\n",
                 p_function.getLocation().line, p_function.getLocation().col,
-                p_function.getName().c_str(), p_function.getFuncProtoType().c_str());
+                p_function.getNameStr().c_str(), p_function.getFuncProtoType().c_str());
 
     incrementIndentation();
     p_function.visitChildNodes(*this);
@@ -158,7 +158,7 @@ void AstDumper::visit(VariableReferenceNode &p_variable_ref) {
     std::printf("variable reference <line: %u, col: %u> %s\n",
                 p_variable_ref.getLocation().line,
                 p_variable_ref.getLocation().col,
-                p_variable_ref.getName().c_str());
+                p_variable_ref.getNameStr().c_str());
 
     incrementIndentation();
     p_variable_ref.visitChildNodes(*this);

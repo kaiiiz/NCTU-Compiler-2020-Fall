@@ -29,7 +29,7 @@ void VariableNode::fillAttribute(std::shared_ptr<ConstantValueNode> const_attr) 
     literal_const = const_attr;
 }
 
-std::string VariableNode::getName() { return name; }
+std::string VariableNode::getNameStr() { return name; }
 
 std::string VariableNode::getTypeStr() {
     if (type == nullptr) {

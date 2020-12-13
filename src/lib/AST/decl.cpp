@@ -17,6 +17,8 @@ std::string DeclNode::getTypeStr() { return type->getTypeStr(); }
 
 int32_t DeclNode::getVarNum() { return var_list.size(); }
 
+std::vector<std::shared_ptr<VariableNode>> DeclNode::getVarList() { return var_list; }
+
 void DeclNode::accept(AstNodeVisitor &p_visitor) {
     p_visitor.visit(*this);
 }

@@ -36,12 +36,12 @@ SemanticAnalyzer::SemanticAnalyzer(SymbolManager& symbol_mgr)
 
 void SemanticAnalyzer::visit(ProgramNode &p_program) {
     // 1. Push a new symbol table if this node forms a scope.
-    auto symTab = symbol_mgr.currentSymTab(); // global symbol table
+    auto globalSymTab = symbol_mgr.currentSymTab(); // global symbol table
     // 2. Insert the symbol into current symbol table if this node is related to
     //    declaration (ProgramNode, VariableNode, FunctionNode).
-    symTab->insert(std::make_shared<ParamSymbolEntry>(p_program.getProgramName(),
-                                                      symTab->level,
-                                                      p_program.getReturnType()));
+    globalSymTab->insert(std::make_shared<ProgramSymbolEntry>(p_program.getProgramName(),
+                                                              globalSymTab->level,
+                                                              p_program.getReturnType()));
     // 3. Travere child nodes of this node.
     p_program.visitChildNodes(*this);
     // 4. Perform semantic analyses of this node.
@@ -79,16 +79,29 @@ void SemanticAnalyzer::visit(ConstantValueNode &p_constant_value) {
 }
 
 void SemanticAnalyzer::visit(FunctionNode &p_function) {
-    /*
-     * TODO:
-     *
-     * 1. Push a new symbol table if this node forms a scope.
-     * 2. Insert the symbol into current symbol table if this node is related to
-     *    declaration (ProgramNode, VariableNode, FunctionNode).
-     * 3. Travere child nodes of this node.
-     * 4. Perform semantic analyses of this node.
-     * 5. Pop the symbol table pushed at the 1st step.
-     */
+    // 1. Push a new symbol table if this node forms a scope.
+    auto curSymTab = symbol_mgr.currentSymTab();
+    curSymTab->insert(std::make_shared<FunctionSymbolEntry>(p_function.getNameStr(),
+                                                            curSymTab->level,
+                                                            p_function.getRetType(),
+                                                            p_function.getParamTypeList()));
+    auto symTab = std::make_shared<SymbolTable>(curSymTab, curSymTab->level);
+    curSymTab->addChild(symTab);
+    symbol_mgr.pushScope(symTab);
+    // 2. Insert the symbol into current symbol table if this node is related to
+    //    declaration (ProgramNode, VariableNode, FunctionNode).
+    for (auto &p : p_function.getParamList()) {
+        for (auto &v : p->getVarList()) {
+            symTab->insert(std::make_shared<VarSymbolEntry>(v->getNameStr(),
+                                                            symTab->level,
+                                                            p->getType()));
+        }
+    }
+    // 3. Travere child nodes of this node.
+    p_function.visitChildNodes(*this);
+    // 4. Perform semantic analyses of this node.
+    // 5. Pop the symbol table pushed at the 1st step.
+    symbol_mgr.popScope();
 }
 
 void SemanticAnalyzer::visit(CompoundStatementNode &p_compound_statement) {

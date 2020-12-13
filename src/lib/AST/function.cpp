@@ -19,7 +19,7 @@ FunctionNode::FunctionNode(const uint32_t line, const uint32_t col,
     : AstNode{line, col}, name(name), parameters(parameters),
       return_type(return_type), compound_stmt(compound_stmt) {}
 
-std::string FunctionNode::getName() { return name; }
+std::string FunctionNode::getNameStr() { return name; }
 
 std::string FunctionNode::getFuncProtoType() {
     std::string s = return_type->getTypeStr();
@@ -34,6 +34,18 @@ std::string FunctionNode::getFuncProtoType() {
     s += ")";
     return s;
 }
+
+std::shared_ptr<TypeBase> FunctionNode::getRetType() { return return_type; }
+
+std::vector<std::shared_ptr<TypeBase>> FunctionNode::getParamTypeList() {
+    std::vector<std::shared_ptr<TypeBase>> param_type;
+    for (auto &p : parameters) {
+        param_type.push_back(p->getType());
+    }
+    return param_type;
+}
+
+std::vector<std::shared_ptr<DeclNode>> FunctionNode::getParamList() { return parameters; }
 
 void FunctionNode::accept(AstNodeVisitor &p_visitor) {
     p_visitor.visit(*this);

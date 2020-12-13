@@ -17,7 +17,7 @@ class VariableNode : public AstNode {
 
     void fillAttribute(std::shared_ptr<TypeBase> type);
     void fillAttribute(std::shared_ptr<ConstantValueNode> literal_const);
-    std::string getName();
+    std::string getNameStr();
     std::string getTypeStr();
 
     void accept(AstNodeVisitor &p_visitor) override;

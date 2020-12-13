@@ -6,7 +6,7 @@ VariableReferenceNode::VariableReferenceNode(const uint32_t line, const uint32_t
                                              std::vector<std::shared_ptr<ExpressionBase>> expressions)
     : ExpressionBase{line, col}, name(name), expressions(expressions) {}
 
-std::string VariableReferenceNode::getName() { return name; }
+std::string VariableReferenceNode::getNameStr() { return name; }
 
 void VariableReferenceNode::accept(AstNodeVisitor &p_visitor) {
     p_visitor.visit(*this);

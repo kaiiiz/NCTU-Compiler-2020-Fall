@@ -8,6 +8,10 @@
 SymbolTable::SymbolTable(std::shared_ptr<SymbolTable> parent, const std::uint32_t level)
     : level(level), parent(parent) {}
 
+void SymbolTable::addChild(std::shared_ptr<SymbolTable> child) {
+    childs.push_back(child);
+}
+
 void SymbolTable::insert(std::shared_ptr<SymbolEntry> symbol) {
     std::string symbol_name = symbol->getNameStr();
     entries.push_back(symbol_name);
@@ -22,6 +26,10 @@ void SymbolTable::dumpDemarcation(const char chr) {
 }
 
 void SymbolTable::dump() {
+    for (auto &c : childs) {
+        c->dump();
+    }
+
     dumpDemarcation('=');
     printf("%-33s%-11s%-11s%-17s%-11s\n", "Name", "Kind", "Level", "Type", "Attribute");
     dumpDemarcation('-');
