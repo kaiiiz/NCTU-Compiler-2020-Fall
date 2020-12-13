@@ -6,23 +6,37 @@
 #include "type/base.hpp"
 #include "type/scalar.hpp"
 
-IdNode::IdNode(const uint32_t line, const uint32_t col, std::string name)
-    : line(line), col(col), name(name) {}
+VariableNode::VariableNode(const uint32_t line, const uint32_t col,
+                           std::string name)
+    : AstNode{line, col}, name(name) {}
 
 VariableNode::VariableNode(const uint32_t line, const uint32_t col,
                            std::string name, std::shared_ptr<TypeBase> type)
     : AstNode{line, col}, name(name), type(type) {}
 
-VariableNode::VariableNode(std::shared_ptr<IdNode> idnode, std::shared_ptr<TypeBase> type) 
-    : AstNode{idnode->line, idnode->col}, name(idnode->name), type(type) {}
+void VariableNode::fillAttribute(std::shared_ptr<TypeBase> type_attr) {
+    if (type != nullptr) {
+        return;
+    }
+    type = type_attr;
+}
 
-VariableNode::VariableNode(std::shared_ptr<IdNode> idnode, std::shared_ptr<ConstantValueNode> literal_const)
-    : AstNode{idnode->line, idnode->col}, name(idnode->name),
-      type(literal_const->getType()), literal_const(literal_const) {}
+void VariableNode::fillAttribute(std::shared_ptr<ConstantValueNode> const_attr) {
+    if (type != nullptr || literal_const != nullptr) {
+        return;
+    }
+    type = const_attr->getType();
+    literal_const = const_attr;
+}
 
 std::string VariableNode::getName() { return name; }
 
-std::string VariableNode::getTypeStr() { return type->getTypeStr(); }
+std::string VariableNode::getTypeStr() {
+    if (type == nullptr) {
+        return "";
+    }
+    return type->getTypeStr();
+}
 
 void VariableNode::accept(AstNodeVisitor &p_visitor) {
     p_visitor.visit(*this);

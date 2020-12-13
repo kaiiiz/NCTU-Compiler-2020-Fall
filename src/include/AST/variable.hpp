@@ -9,26 +9,14 @@
 class TypeBase;
 class ConstantValueNode;
 
-class IdNode { // keep line and col information
-  public:
-    friend class VariableNode;
-    IdNode(const uint32_t line, const uint32_t col, std::string name);
-    ~IdNode() = default;
-
-  protected:
-    uint32_t line;
-    uint32_t col;
-    std::string name;
-};
-
 class VariableNode : public AstNode {
   public:
-    VariableNode(const uint32_t line, const uint32_t col,
-                 std::string name, std::shared_ptr<TypeBase> type);
-    VariableNode(std::shared_ptr<IdNode> idnode, std::shared_ptr<TypeBase> type);
-    VariableNode(std::shared_ptr<IdNode> idnode, std::shared_ptr<ConstantValueNode> literal_const);
+    VariableNode(const uint32_t line, const uint32_t col, std::string name);
+    VariableNode(const uint32_t line, const uint32_t col, std::string name, std::shared_ptr<TypeBase> type);
     ~VariableNode() = default;
 
+    void fillAttribute(std::shared_ptr<TypeBase> type);
+    void fillAttribute(std::shared_ptr<ConstantValueNode> literal_const);
     std::string getName();
     std::string getTypeStr();
 

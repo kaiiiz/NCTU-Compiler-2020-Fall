@@ -61,18 +61,6 @@ class driver;
 
 /* Declared by scanner.l */
 extern char *yytext;
-
-template <typename T>
-std::vector<std::shared_ptr<VariableNode>> idList2VarNodeList(
-    std::vector<std::shared_ptr<IdNode>> idList, std::shared_ptr<T> type) {
-
-    std::vector<std::shared_ptr<VariableNode>> var_list;
-    for (auto &idnode : idList) {
-        var_list.push_back(std::make_shared<VariableNode>(idnode, type));
-    }
-    return var_list;
-}
-
 }
 
 %token EOF_ 0 "end of file";
@@ -112,7 +100,7 @@ std::vector<std::shared_ptr<VariableNode>> idList2VarNodeList(
 
 %type <std::string> ProgramName FunctionName;
 %type <bool> NegOrNot;
-%type <std::vector<std::shared_ptr<IdNode>>> IdList;
+%type <std::vector<std::shared_ptr<VariableNode>>> IdList;
 %type <std::shared_ptr<DeclNode>> Declaration FormalArg;
 %type <std::vector<std::shared_ptr<DeclNode>>> FormalArgs FormalArgList Declarations DeclarationList;
 %type <std::shared_ptr<TypeBase>> Type ReturnType;
@@ -216,19 +204,21 @@ FormalArgs:
 
 FormalArg:
     IdList COLON Type {
-        $$ = std::make_shared<DeclNode>(@$.begin.line, @$.begin.column, idList2VarNodeList<TypeBase>($1, $3), $3);
+        for (auto &var : $1) {
+            var->fillAttribute($3);
+        }
+        $$ = std::make_shared<DeclNode>(@$.begin.line, @$.begin.column, $1, $3);
     }
 ;
 
 IdList:
     ID {
-        std::shared_ptr<IdNode> i = std::make_shared<IdNode>(@1.begin.line, @1.begin.column, $1);
-        $$ = std::vector<std::shared_ptr<IdNode>>{i};
+        auto i = std::make_shared<VariableNode>(@1.begin.line, @1.begin.column, $1);
+        $$ = std::vector<std::shared_ptr<VariableNode>>{i};
     }
     |
     IdList COMMA ID {
-        std::shared_ptr<IdNode> i = std::make_shared<IdNode>(@3.begin.line, @3.begin.column, $3);
-        $1.push_back(i);
+        $1.push_back(std::make_shared<VariableNode>(@3.begin.line, @3.begin.column, $3));
         $$ = $1;
     }
 ;
@@ -245,14 +235,17 @@ ReturnType:
 
 Declaration:
     VAR IdList COLON Type SEMICOLON {
-        $$ = std::make_shared<DeclNode>(@1.begin.line, @1.begin.column,
-                            idList2VarNodeList<TypeBase>($2, $4), $4);
+        for (auto &var : $2) {
+            var->fillAttribute($4);
+        }
+        $$ = std::make_shared<DeclNode>(@1.begin.line, @1.begin.column, $2, $4);
     }
     |
     VAR IdList COLON LiteralConstant SEMICOLON {
-        $$ = std::make_shared<DeclNode>(@1.begin.line, @1.begin.column,
-                            idList2VarNodeList<ConstantValueNode>($2, $4),
-                            $4->getType());
+        for (auto &var : $2) {
+            var->fillAttribute($4);
+        }
+        $$ = std::make_shared<DeclNode>(@1.begin.line, @1.begin.column, $2, $4->getType());
     }
 ;
 
@@ -431,11 +424,10 @@ For:
     CompoundStatement
     END DO {
         // make declaration
-        auto id = std::make_shared<IdNode>(@2.begin.line, @2.begin.column, $2);
-        auto id_list = std::vector<std::shared_ptr<IdNode>>{id};
         auto type = std::make_shared<ScalarType>(TypeKind::integer);
-        auto decl = std::make_shared<DeclNode>(@2.begin.line, @2.begin.column,
-                                               idList2VarNodeList<TypeBase>(id_list, type), type);
+        auto var = std::make_shared<VariableNode>(@2.begin.line, @2.begin.column, $2, type);
+        auto var_list = std::vector<std::shared_ptr<VariableNode>>{var};
+        auto decl = std::make_shared<DeclNode>(@2.begin.line, @2.begin.column, var_list, type);
         // make assignment
         auto constant_init = std::make_shared<ConstIntValueNode>(@4.begin.line, @4.begin.column, $4);
         auto var_ref_indices = std::vector<std::shared_ptr<ExpressionBase>>();
