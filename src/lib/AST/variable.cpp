@@ -2,7 +2,7 @@
 
 #include "AST/variable.hpp"
 #include "AST/expression/ConstantValue.hpp"
-#include "AST/AstDumper.hpp"
+#include "visitor/AstDumper.hpp"
 #include "type/base.hpp"
 #include "type/scalar.hpp"
 
@@ -24,12 +24,12 @@ std::string VariableNode::getName() { return name; }
 
 std::string VariableNode::getType() { return type->getTypeName(); }
 
-void VariableNode::dump(AstDumper &dp) {
-    dp.visit(*this);
+void VariableNode::accept(AstNodeVisitor &p_visitor) {
+    p_visitor.visit(*this);
 }
 
-void VariableNode::dumpChildNodes(AstDumper &dp) {
+void VariableNode::visitChildNodes(AstNodeVisitor &p_visitor) {
     if (literal_const != nullptr) {
-        literal_const->dump(dp);
+        literal_const->accept(p_visitor);
     }
 }

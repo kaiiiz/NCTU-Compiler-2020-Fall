@@ -1,5 +1,5 @@
 #include "AST/expression/BinaryOperator.hpp"
-#include "AST/AstDumper.hpp"
+#include "visitor/AstDumper.hpp"
 
 BinaryOperatorNode::BinaryOperatorNode(const uint32_t line, const uint32_t col, BinaryOP op,
                                        std::shared_ptr<ExpressionBase> lexpr,
@@ -39,11 +39,11 @@ std::string BinaryOperatorNode::getOPString() {
     }
 }
 
-void BinaryOperatorNode::dump(AstDumper &dp) {
-    dp.visit(*this);
+void BinaryOperatorNode::accept(AstNodeVisitor &p_visitor) {
+    p_visitor.visit(*this);
 }
 
-void BinaryOperatorNode::dumpChildNodes(AstDumper &dp) {
-    lexpr->dump(dp);
-    rexpr->dump(dp);
+void BinaryOperatorNode::visitChildNodes(AstNodeVisitor &p_visitor) {
+    lexpr->accept(p_visitor);
+    rexpr->accept(p_visitor);
 }

@@ -3,7 +3,7 @@
 #include "AST/statement/for.hpp"
 #include "AST/statement/assignment.hpp"
 #include "AST/statement/CompoundStatement.hpp"
-#include "AST/AstDumper.hpp"
+#include "visitor/AstDumper.hpp"
 #include "AST/decl.hpp"
 
 ForNode::ForNode(const uint32_t line, const uint32_t col,
@@ -14,13 +14,13 @@ ForNode::ForNode(const uint32_t line, const uint32_t col,
     : StatementBase{line, col}, declaration(declaration), assignment(assignment)
                 , condition(condition), compound_stmt(compound_stmt) {}
 
-void ForNode::dump(AstDumper &dp) {
-    dp.visit(*this);
+void ForNode::accept(AstNodeVisitor &p_visitor) {
+    p_visitor.visit(*this);
 }
 
-void ForNode::dumpChildNodes(AstDumper &dp) {
-    declaration->dump(dp);
-    assignment->dump(dp);
-    condition->dump(dp);
-    compound_stmt->dump(dp);
+void ForNode::visitChildNodes(AstNodeVisitor &p_visitor) {
+    declaration->accept(p_visitor);
+    assignment->accept(p_visitor);
+    condition->accept(p_visitor);
+    compound_stmt->accept(p_visitor);
 }

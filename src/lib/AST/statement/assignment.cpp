@@ -1,7 +1,7 @@
 #include "AST/base/StatementBase.hpp"
 #include "AST/statement/assignment.hpp"
 #include "AST/expression/VariableReference.hpp"
-#include "AST/AstDumper.hpp"
+#include "visitor/AstDumper.hpp"
 
 AssignmentNode::AssignmentNode(const uint32_t line, const uint32_t col,
                                std::shared_ptr<VariableReferenceNode> var_ref,
@@ -9,11 +9,11 @@ AssignmentNode::AssignmentNode(const uint32_t line, const uint32_t col,
     : StatementBase{line, col}, var_ref(var_ref), expression(expression) {}
 
 
-void AssignmentNode::dump(AstDumper &dp) {
-    dp.visit(*this);
+void AssignmentNode::accept(AstNodeVisitor &p_visitor) {
+    p_visitor.visit(*this);
 }
 
-void AssignmentNode::dumpChildNodes(AstDumper &dp) {
-    var_ref->dump(dp);
-    expression->dump(dp);
+void AssignmentNode::visitChildNodes(AstNodeVisitor &p_visitor) {
+    var_ref->accept(p_visitor);
+    expression->accept(p_visitor);
 }

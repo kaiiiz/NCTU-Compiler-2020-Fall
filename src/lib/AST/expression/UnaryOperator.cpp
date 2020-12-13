@@ -1,6 +1,6 @@
 #include <memory>
 #include "AST/expression/UnaryOperator.hpp"
-#include "AST/AstDumper.hpp"
+#include "visitor/AstDumper.hpp"
 
 UnaryOperatorNode::UnaryOperatorNode(const uint32_t line, const uint32_t col, UnaryOP op,
                                      std::shared_ptr<ExpressionBase> expr)
@@ -17,10 +17,10 @@ std::string UnaryOperatorNode::getOPString() {
     }
 }
 
-void UnaryOperatorNode::dump(AstDumper &dp) {
-    dp.visit(*this);
+void UnaryOperatorNode::accept(AstNodeVisitor &p_visitor) {
+    p_visitor.visit(*this);
 }
 
-void UnaryOperatorNode::dumpChildNodes(AstDumper &dp) {
-    expr->dump(dp);
+void UnaryOperatorNode::visitChildNodes(AstNodeVisitor &p_visitor) {
+    expr->accept(p_visitor);
 }

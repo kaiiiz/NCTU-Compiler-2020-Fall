@@ -4,7 +4,7 @@
 #include "AST/function.hpp"
 #include "AST/decl.hpp"
 #include "AST/statement/CompoundStatement.hpp"
-#include "AST/AstDumper.hpp"
+#include "visitor/AstDumper.hpp"
 
 FunctionNode::FunctionNode(const uint32_t line, const uint32_t col,
                            std::string name, std::vector<std::shared_ptr<DeclNode>> parameters,
@@ -35,16 +35,16 @@ std::string FunctionNode::getFuncProtoType() {
     return s;
 }
 
-void FunctionNode::dump(AstDumper &dp) {
-    dp.visit(*this);
+void FunctionNode::accept(AstNodeVisitor &p_visitor) {
+    p_visitor.visit(*this);
 }
 
-void FunctionNode::dumpChildNodes(AstDumper &dp) {
+void FunctionNode::visitChildNodes(AstNodeVisitor &p_visitor) {
     for (auto& p : parameters) {
-        p->dump(dp);
+        p->accept(p_visitor);
     }
 
     if (compound_stmt != nullptr) {
-        compound_stmt->dump(dp);
+        compound_stmt->accept(p_visitor);
     }
 }

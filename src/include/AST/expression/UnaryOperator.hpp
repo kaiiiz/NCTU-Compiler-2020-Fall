@@ -15,8 +15,8 @@ class UnaryOperatorNode : public ExpressionBase {
     ~UnaryOperatorNode() = default;
 
     std::string getOPString();
-    void dump(AstDumper &dp) override;
-    void dumpChildNodes(AstDumper &dp) override;
+    void accept(AstNodeVisitor &p_visitor) override;
+    void visitChildNodes(AstNodeVisitor &p_visitor) override;
 
   private:
     UnaryOP op;

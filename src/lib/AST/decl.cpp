@@ -1,7 +1,7 @@
 #include <vector>
 #include <string>
 
-#include "AST/AstDumper.hpp"
+#include "visitor/AstDumper.hpp"
 #include "AST/decl.hpp"
 #include "AST/variable.hpp"
 #include "type/base.hpp"
@@ -15,12 +15,12 @@ std::string DeclNode::getType() { return type->getTypeName(); }
 
 int32_t DeclNode::getVarNum() { return var_list.size(); }
 
-void DeclNode::dump(AstDumper &dp) {
-    dp.visit(*this);
+void DeclNode::accept(AstNodeVisitor &p_visitor) {
+    p_visitor.visit(*this);
 }
 
-void DeclNode::dumpChildNodes(AstDumper &dp) {
+void DeclNode::visitChildNodes(AstNodeVisitor &p_visitor) {
     for (auto &var : var_list) {
-        var->dump(dp);
+        var->accept(p_visitor);
     }
 }

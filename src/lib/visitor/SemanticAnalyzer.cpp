@@ -1,4 +1,4 @@
-#include "sema/SemanticAnalyzer.hpp"
+#include "visitor/SemanticAnalyzer.hpp"
 #include "AST/expression/BinaryOperator.hpp"
 #include "AST/statement/CompoundStatement.hpp"
 #include "AST/expression/ConstantValue.hpp"

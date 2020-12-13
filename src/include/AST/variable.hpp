@@ -32,8 +32,8 @@ class VariableNode : public AstNode {
     std::string getName();
     std::string getType();
 
-    void dump(AstDumper &dp) override;
-    void dumpChildNodes(AstDumper &dp) override;
+    void accept(AstNodeVisitor &p_visitor) override;
+    void visitChildNodes(AstNodeVisitor &p_visitor) override;
 
   protected:
     std::string name;

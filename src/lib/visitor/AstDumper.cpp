@@ -1,4 +1,4 @@
-#include "AST/AstDumper.hpp"
+#include "visitor/AstDumper.hpp"
 #include "AST/expression/BinaryOperator.hpp"
 #include "AST/statement/CompoundStatement.hpp"
 #include "AST/expression/ConstantValue.hpp"
@@ -40,7 +40,7 @@ void AstDumper::visit(ProgramNode &p_program) {
                 p_program.getProgramName().c_str(), "void");
 
     incrementIndentation();
-    p_program.dumpChildNodes(*this);
+    p_program.visitChildNodes(*this);
     decrementIndentation();
 }
 
@@ -51,7 +51,7 @@ void AstDumper::visit(DeclNode &p_decl) {
                 p_decl.getLocation().col);
 
     incrementIndentation();
-    p_decl.dumpChildNodes(*this);
+    p_decl.visitChildNodes(*this);
     decrementIndentation();
 }
 
@@ -63,7 +63,7 @@ void AstDumper::visit(VariableNode &p_variable) {
                 p_variable.getName().c_str(), p_variable.getType().c_str());
 
     incrementIndentation();
-    p_variable.dumpChildNodes(*this);
+    p_variable.visitChildNodes(*this);
     decrementIndentation();
 }
 
@@ -84,7 +84,7 @@ void AstDumper::visit(FunctionNode &p_function) {
                 p_function.getName().c_str(), p_function.getFuncProtoType().c_str());
 
     incrementIndentation();
-    p_function.dumpChildNodes(*this);
+    p_function.visitChildNodes(*this);
     decrementIndentation();
 }
 
@@ -96,7 +96,7 @@ void AstDumper::visit(CompoundStatementNode &p_compound_statement) {
                 p_compound_statement.getLocation().col);
 
     incrementIndentation();
-    p_compound_statement.dumpChildNodes(*this);
+    p_compound_statement.visitChildNodes(*this);
     decrementIndentation();
 }
 
@@ -107,7 +107,7 @@ void AstDumper::visit(PrintNode &p_print) {
                 p_print.getLocation().line, p_print.getLocation().col);
 
     incrementIndentation();
-    p_print.dumpChildNodes(*this);
+    p_print.visitChildNodes(*this);
     decrementIndentation();
 }
 
@@ -119,7 +119,7 @@ void AstDumper::visit(BinaryOperatorNode &p_bin_op) {
                 p_bin_op.getOPString().c_str());
 
     incrementIndentation();
-    p_bin_op.dumpChildNodes(*this);
+    p_bin_op.visitChildNodes(*this);
     decrementIndentation();
 }
 
@@ -131,7 +131,7 @@ void AstDumper::visit(UnaryOperatorNode &p_un_op) {
                 p_un_op.getOPString().c_str());
 
     incrementIndentation();
-    p_un_op.dumpChildNodes(*this);
+    p_un_op.visitChildNodes(*this);
     decrementIndentation();
 }
 
@@ -144,12 +144,12 @@ void AstDumper::visit(FunctionInvocationNode &p_func_invocation) {
                 p_func_invocation.getFuncName().c_str());
 
     incrementIndentation();
-    p_func_invocation.dumpChildNodes(*this);
+    p_func_invocation.visitChildNodes(*this);
     decrementIndentation();
 }
 
 void AstDumper::visit(FunctionCallNode &p_func_call) {
-    p_func_call.dumpChildNodes(*this);
+    p_func_call.visitChildNodes(*this);
 }
 
 void AstDumper::visit(VariableReferenceNode &p_variable_ref) {
@@ -161,7 +161,7 @@ void AstDumper::visit(VariableReferenceNode &p_variable_ref) {
                 p_variable_ref.getName().c_str());
 
     incrementIndentation();
-    p_variable_ref.dumpChildNodes(*this);
+    p_variable_ref.visitChildNodes(*this);
     decrementIndentation();
 }
 
@@ -173,7 +173,7 @@ void AstDumper::visit(AssignmentNode &p_assignment) {
                 p_assignment.getLocation().col);
 
     incrementIndentation();
-    p_assignment.dumpChildNodes(*this);
+    p_assignment.visitChildNodes(*this);
     decrementIndentation();
 }
 
@@ -184,7 +184,7 @@ void AstDumper::visit(ReadNode &p_read) {
                 p_read.getLocation().line, p_read.getLocation().col);
 
     incrementIndentation();
-    p_read.dumpChildNodes(*this);
+    p_read.visitChildNodes(*this);
     decrementIndentation();
 }
 
@@ -195,7 +195,7 @@ void AstDumper::visit(IfNode &p_if) {
                 p_if.getLocation().col);
 
     incrementIndentation();
-    p_if.dumpChildNodes(*this);
+    p_if.visitChildNodes(*this);
     decrementIndentation();
 }
 
@@ -206,7 +206,7 @@ void AstDumper::visit(WhileNode &p_while) {
                 p_while.getLocation().line, p_while.getLocation().col);
 
     incrementIndentation();
-    p_while.dumpChildNodes(*this);
+    p_while.visitChildNodes(*this);
     decrementIndentation();
 }
 
@@ -217,7 +217,7 @@ void AstDumper::visit(ForNode &p_for) {
                 p_for.getLocation().col);
 
     incrementIndentation();
-    p_for.dumpChildNodes(*this);
+    p_for.visitChildNodes(*this);
     decrementIndentation();
 }
 
@@ -228,6 +228,6 @@ void AstDumper::visit(ReturnNode &p_return) {
                 p_return.getLocation().line, p_return.getLocation().col);
 
     incrementIndentation();
-    p_return.dumpChildNodes(*this);
+    p_return.visitChildNodes(*this);
     decrementIndentation();
 }

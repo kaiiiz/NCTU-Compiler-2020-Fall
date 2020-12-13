@@ -22,8 +22,8 @@ class DeclNode : public AstNode {
     std::string getType();
     int32_t getVarNum();
 
-    void dump(AstDumper &dp) override;
-    void dumpChildNodes(AstDumper &dp) override;
+    void accept(AstNodeVisitor &p_visitor) override;
+    void visitChildNodes(AstNodeVisitor &p_visitor) override;
 
   private:
     std::vector<std::shared_ptr<VariableNode>> var_list;

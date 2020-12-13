@@ -15,8 +15,8 @@ class CompoundStatementNode : public StatementBase {
                           std::vector<std::shared_ptr<StatementBase>> statements);
     ~CompoundStatementNode() = default;
 
-    void dump(AstDumper &dp) override;
-    void dumpChildNodes(AstDumper &dp) override;
+    void accept(AstNodeVisitor &p_visitor) override;
+    void visitChildNodes(AstNodeVisitor &p_visitor) override;
 
   private:
     std::vector<std::shared_ptr<DeclNode>> declarations;

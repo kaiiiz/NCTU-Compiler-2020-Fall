@@ -29,8 +29,8 @@ class BinaryOperatorNode : public ExpressionBase {
     ~BinaryOperatorNode() = default;
 
     std::string getOPString();
-    void dump(AstDumper &dp) override;
-    void dumpChildNodes(AstDumper &dp) override;
+    void accept(AstNodeVisitor &p_visitor) override;
+    void visitChildNodes(AstNodeVisitor &p_visitor) override;
 
   private:
     BinaryOP op;

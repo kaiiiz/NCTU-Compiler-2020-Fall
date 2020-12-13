@@ -15,8 +15,8 @@ class AssignmentNode : public StatementBase {
                    std::shared_ptr<ExpressionBase> expression);
     ~AssignmentNode() = default;
 
-    void dump(AstDumper &dp) override;
-    void dumpChildNodes(AstDumper &dp) override;
+    void accept(AstNodeVisitor &p_visitor) override;
+    void visitChildNodes(AstNodeVisitor &p_visitor) override;
 
   private:
     std::shared_ptr<VariableReferenceNode> var_ref;

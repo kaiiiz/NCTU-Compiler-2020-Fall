@@ -46,7 +46,8 @@ class driver;
 
 %code {
 #include "driver/driver.hpp"
-#include "AST/AstDumper.hpp"
+#include "visitor/AstDumper.hpp"
+#include "visitor/SemanticAnalyzer.hpp"
 
 #include <cassert>
 #include <cstdlib>
@@ -559,8 +560,10 @@ int main(int argc, const char *argv[]) {
 
     if (argc >= 3 && strcmp(argv[2], "--dump-ast") == 0) {
         AstDumper dp;
-        drv.root->dump(dp);
+        drv.root->accept(dp);
     }
+    SemanticAnalyzer analyzer;
+    drv.root->accept(analyzer);
 
     printf("\n"
            "|--------------------------------|\n"

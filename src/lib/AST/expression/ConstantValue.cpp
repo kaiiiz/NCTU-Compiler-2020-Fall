@@ -1,6 +1,6 @@
 #include "AST/base/ExpressionBase.hpp"
 #include "AST/expression/ConstantValue.hpp"
-#include "AST/AstDumper.hpp"
+#include "visitor/AstDumper.hpp"
 
 ConstantValueNode::ConstantValueNode(const uint32_t line, const uint32_t col,
                                      scalar_type_t type, int64_t ival)
@@ -35,9 +35,9 @@ std::string ConstantValueNode::getValueString() {
     }
 }
 
-void ConstantValueNode::dump(AstDumper &dp) {
-    dp.visit(*this);
+void ConstantValueNode::accept(AstNodeVisitor &p_visitor) {
+    p_visitor.visit(*this);
 }
 
-void ConstantValueNode::dumpChildNodes(AstDumper &dp) {
+void ConstantValueNode::visitChildNodes(AstNodeVisitor &p_visitor) {
 }

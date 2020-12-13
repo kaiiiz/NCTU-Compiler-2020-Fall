@@ -1,4 +1,4 @@
-#include "AST/AstDumper.hpp"
+#include "visitor/AstDumper.hpp"
 #include "AST/program.hpp"
 #include "AST/decl.hpp"
 #include "AST/function.hpp"
@@ -12,20 +12,20 @@ ProgramNode::ProgramNode(const uint32_t line, const uint32_t col,
                         const std::shared_ptr<CompoundStatementNode> compound_stmt)
     : AstNode{line, col}, name(p_name), ret_type(ret_type), decl_list(decl_list), func_list(func_list), compound_stmt(compound_stmt) {}
 
-void ProgramNode::dump(AstDumper &dp) {
-    dp.visit(*this);
+void ProgramNode::accept(AstNodeVisitor &p_visitor) {
+    p_visitor.visit(*this);
 }
 
-void ProgramNode::dumpChildNodes(AstDumper &dp) {
+void ProgramNode::visitChildNodes(AstNodeVisitor &p_visitor) {
     for (auto &decl : decl_list) {
-        decl->dump(dp);
+        decl->accept(p_visitor);
     }
 
     for (auto &func : func_list) {
-        func->dump(dp);
+        func->accept(p_visitor);
     }
 
-    compound_stmt->dump(dp);
+    compound_stmt->accept(p_visitor);
 }
 
 std::string ProgramNode::getProgramName() { return name; }
