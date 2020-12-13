@@ -12,6 +12,8 @@ class ConstIntSymbolEntry : public SymbolEntry {
    public:
     ConstIntSymbolEntry(std::string name, uint32_t level, std::shared_ptr<ScalarType> type, int64_t ival);
 
+    std::string getAttributeStr() override;
+
    private:
     int64_t ival;
 };
@@ -19,6 +21,8 @@ class ConstIntSymbolEntry : public SymbolEntry {
 class ConstBoolSymbolEntry : public SymbolEntry {
    public:
     ConstBoolSymbolEntry(std::string name, uint32_t level, std::shared_ptr<ScalarType> type, bool bval);
+
+    std::string getAttributeStr() override;
 
    private:
     bool bval;
@@ -28,6 +32,8 @@ class ConstRealSymbolEntry : public SymbolEntry {
    public:
     ConstRealSymbolEntry(std::string name, uint32_t level, std::shared_ptr<ScalarType> type, double rval);
 
+    std::string getAttributeStr() override;
+
    private:
     double rval;
 };
@@ -35,6 +41,8 @@ class ConstRealSymbolEntry : public SymbolEntry {
 class ConstStrSymbolEntry : public SymbolEntry {
    public:
     ConstStrSymbolEntry(std::string name, uint32_t level, std::shared_ptr<ScalarType> type, std::string sval);
+
+    std::string getAttributeStr() override;
 
    private:
     std::string sval;

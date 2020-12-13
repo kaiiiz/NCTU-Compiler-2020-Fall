@@ -19,20 +19,33 @@
 #include "AST/statement/while.hpp"
 #include "AST/variable.hpp"
 
+#include "sema/SymbolEntry.hpp"
+#include "sema/SymbolManager.hpp"
+#include "sema/SymbolTable.hpp"
+#include "sema/SymbolEntry/ConstSymbolEntry.hpp"
+#include "sema/SymbolEntry/FunctionSymbolEntry.hpp"
+#include "sema/SymbolEntry/LoopVarSymbolEntry.hpp"
+#include "sema/SymbolEntry/ParamSymbolEntry.hpp"
+#include "sema/SymbolEntry/ProgramSymbolEntry.hpp"
+#include "sema/SymbolEntry/VarSymbolEntry.hpp"
+
+#include <iostream>
+
 SemanticAnalyzer::SemanticAnalyzer(SymbolManager& symbol_mgr)
     : symbol_mgr(symbol_mgr) {}
 
 void SemanticAnalyzer::visit(ProgramNode &p_program) {
-    /*
-     * TODO:
-     *
-     * 1. Push a new symbol table if this node forms a scope.
-     * 2. Insert the symbol into current symbol table if this node is related to
-     *    declaration (ProgramNode, VariableNode, FunctionNode).
-     * 3. Travere child nodes of this node.
-     * 4. Perform semantic analyses of this node.
-     * 5. Pop the symbol table pushed at the 1st step.
-     */
+    // 1. Push a new symbol table if this node forms a scope.
+    auto symTab = symbol_mgr.currentSymTab(); // global symbol table
+    // 2. Insert the symbol into current symbol table if this node is related to
+    //    declaration (ProgramNode, VariableNode, FunctionNode).
+    symTab->insert(std::make_shared<ParamSymbolEntry>(p_program.getProgramName(),
+                                                      symTab->level,
+                                                      p_program.getReturnType()));
+    // 3. Travere child nodes of this node.
+    p_program.visitChildNodes(*this);
+    // 4. Perform semantic analyses of this node.
+    // 5. Pop the symbol table pushed at the 1st step.
 }
 
 void SemanticAnalyzer::visit(DeclNode &p_decl) {

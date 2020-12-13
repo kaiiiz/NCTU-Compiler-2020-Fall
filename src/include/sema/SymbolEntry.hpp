@@ -21,6 +21,12 @@ class SymbolEntry {
    public:
     SymbolEntry(std::string name, SymbolEntryKind kind, uint32_t level, std::shared_ptr<TypeBase> type);
 
+    std::string getNameStr();
+    std::string getKindStr();
+    int getLevel();
+    std::string getTypeStr();
+    virtual std::string getAttributeStr() = 0;
+
    private:
     std::string name;
     SymbolEntryKind kind;

@@ -9,6 +9,14 @@ SymbolManager::SymbolManager() {
     tables.push(global);
 }
 
+void SymbolManager::pushScope(std::shared_ptr<SymbolTable> new_scope) {
+    tables.push(new_scope);
+}
+
+void SymbolManager::popScope() {
+    tables.pop();
+}
+
 std::shared_ptr<SymbolTable> SymbolManager::currentSymTab() { return tables.top(); }
 
 void SymbolManager::dumpSymTab() {

@@ -53,6 +53,16 @@ class driver;
 #include "visitor/AstDumper.hpp"
 #include "visitor/SemanticAnalyzer.hpp"
 
+#include "sema/SymbolEntry.hpp"
+#include "sema/SymbolManager.hpp"
+#include "sema/SymbolTable.hpp"
+#include "sema/SymbolEntry/ConstSymbolEntry.hpp"
+#include "sema/SymbolEntry/FunctionSymbolEntry.hpp"
+#include "sema/SymbolEntry/LoopVarSymbolEntry.hpp"
+#include "sema/SymbolEntry/ParamSymbolEntry.hpp"
+#include "sema/SymbolEntry/ProgramSymbolEntry.hpp"
+#include "sema/SymbolEntry/VarSymbolEntry.hpp"
+
 #include <cassert>
 #include <cstdlib>
 #include <cstdint>
@@ -134,7 +144,7 @@ Program:
     DeclarationList FunctionList CompoundStatement
     /* End of ProgramBody */
     END {
-        drv.root = std::make_shared<ProgramNode>(@1.begin.line, @1.begin.column, $1, "void", $3, $4, $5);
+        drv.root = std::make_shared<ProgramNode>(@1.begin.line, @1.begin.column, $1, std::make_shared<VoidType>(), $3, $4, $5);
     }
 ;
 
@@ -575,11 +585,11 @@ int main(int argc, const char *argv[]) {
         AstDumper dp;
         drv.root->accept(dp);
     }
+    SemanticAnalyzer analyzer(drv.symbol_mgr);
+    drv.root->accept(analyzer);
     if (drv.opt_dump_symtab) {
         drv.symbol_mgr.dumpSymTab();
     }
-    SemanticAnalyzer analyzer(drv.symbol_mgr);
-    drv.root->accept(analyzer);
 
     printf("\n"
            "|--------------------------------|\n"

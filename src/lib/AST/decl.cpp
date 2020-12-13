@@ -11,6 +11,8 @@ DeclNode::DeclNode(const uint32_t line, const uint32_t col,
                    std::shared_ptr<TypeBase> type)
     : AstNode{line, col}, var_list(var_list), type(type) {}
 
+std::shared_ptr<TypeBase> DeclNode::getType() { return type; }
+
 std::string DeclNode::getTypeStr() { return type->getTypeStr(); }
 
 int32_t DeclNode::getVarNum() { return var_list.size(); }

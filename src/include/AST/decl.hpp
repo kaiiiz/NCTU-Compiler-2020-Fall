@@ -19,6 +19,7 @@ class DeclNode : public AstNode {
 
     ~DeclNode() = default;
 
+    std::shared_ptr<TypeBase> getType();
     std::string getTypeStr();
     int32_t getVarNum();
 

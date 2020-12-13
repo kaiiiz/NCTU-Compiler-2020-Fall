@@ -10,11 +10,12 @@ class AstDumper;
 class DeclNode;
 class FunctionNode;
 class CompoundStatementNode;
+class TypeBase;
 
 class ProgramNode : public AstNode {
   public:
     ProgramNode(const uint32_t line, const uint32_t col,
-                const std::string p_name, const std::string ret_type,
+                const std::string p_name, std::shared_ptr<TypeBase> ret_type,
                 const std::vector<std::shared_ptr<DeclNode>> decl_list,
                 const std::vector<std::shared_ptr<FunctionNode>> func_list,
                 const std::shared_ptr<CompoundStatementNode> compound_stmt);
@@ -23,10 +24,11 @@ class ProgramNode : public AstNode {
     void accept(AstNodeVisitor &p_visitor) override;
     void visitChildNodes(AstNodeVisitor &p_visitor) override;
     std::string getProgramName();
+    std::shared_ptr<TypeBase> getReturnType();
 
   private:
     const std::string name;
-    const std::string ret_type;
+    std::shared_ptr<TypeBase> ret_type;
     const std::vector<std::shared_ptr<DeclNode>> decl_list;
     const std::vector<std::shared_ptr<FunctionNode>> func_list;
     const std::shared_ptr<CompoundStatementNode> compound_stmt;

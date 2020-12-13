@@ -13,6 +13,8 @@ class FunctionSymbolEntry : public SymbolEntry {
    public:
     FunctionSymbolEntry(std::string name, uint32_t level, std::shared_ptr<TypeBase> type, std::vector<std::shared_ptr<TypeBase>> param_type);
 
+    std::string getAttributeStr() override;
+
    private:
     std::vector<std::shared_ptr<TypeBase>> param_type;
 };

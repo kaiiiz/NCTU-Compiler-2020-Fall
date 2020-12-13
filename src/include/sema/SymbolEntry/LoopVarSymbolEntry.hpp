@@ -11,6 +11,8 @@ class TypeBase;
 class LoopVarSymbolEntry : public SymbolEntry {
    public:
     LoopVarSymbolEntry(std::string name, uint32_t level, std::shared_ptr<TypeBase> type);
+
+    std::string getAttributeStr() override;
 };
 
 #endif
