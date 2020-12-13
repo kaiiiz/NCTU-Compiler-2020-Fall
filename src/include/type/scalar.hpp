@@ -10,7 +10,7 @@ class ScalarType : public TypeBase {
     ScalarType(TypeKind t);
     ~ScalarType();
 
-    std::string getTypeName() override;
+    std::string getTypeStr() override;
 
    protected:
     std::string getScalarTypeName();

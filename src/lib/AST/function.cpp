@@ -22,11 +22,11 @@ FunctionNode::FunctionNode(const uint32_t line, const uint32_t col,
 std::string FunctionNode::getName() { return name; }
 
 std::string FunctionNode::getFuncProtoType() {
-    std::string s = return_type->getTypeName();
+    std::string s = return_type->getTypeStr();
     s += " (";
     for (auto &p : parameters) {
         for (int i = 0; i < p->getVarNum(); i++) {
-            s += p->getType();
+            s += p->getTypeStr();
             if (i != p->getVarNum() - 1) s += ", ";
         }
         if (&p != &parameters.back()) s += ", ";

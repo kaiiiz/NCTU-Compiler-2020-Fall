@@ -60,7 +60,7 @@ void AstDumper::visit(VariableNode &p_variable) {
 
     std::printf("variable <line: %u, col: %u> %s %s\n",
                 p_variable.getLocation().line, p_variable.getLocation().col,
-                p_variable.getName().c_str(), p_variable.getType().c_str());
+                p_variable.getName().c_str(), p_variable.getTypeStr().c_str());
 
     incrementIndentation();
     p_variable.visitChildNodes(*this);

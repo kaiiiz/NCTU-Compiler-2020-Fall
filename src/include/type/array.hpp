@@ -12,7 +12,7 @@ class ArrayType : public ScalarType {
     ArrayType(TypeKind t, std::vector<int64_t> dim);
     ~ArrayType();
 
-    std::string getTypeName() override;
+    std::string getTypeStr() override;
 
    private:
     std::vector<int64_t> dim;

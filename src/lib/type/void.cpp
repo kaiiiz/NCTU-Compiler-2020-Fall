@@ -7,4 +7,4 @@ VoidType::VoidType() : TypeBase(TypeKind::void_) {}
 
 VoidType::~VoidType() {}
 
-std::string VoidType::getTypeName() { return getTypeKindStr(); }
+std::string VoidType::getTypeStr() { return getTypeKindStr(); }

@@ -10,7 +10,7 @@ class VoidType : public TypeBase {
     VoidType();
     ~VoidType();
 
-    std::string getTypeName() override;
+    std::string getTypeStr() override;
 };
 
 #endif  // __TYPE_VOID

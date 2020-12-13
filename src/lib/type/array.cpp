@@ -8,7 +8,7 @@ ArrayType::ArrayType(TypeKind t, std::vector<int64_t> dim) : ScalarType{t}, dim(
 
 ArrayType::~ArrayType() {}
 
-std::string ArrayType::getTypeName() {
+std::string ArrayType::getTypeStr() {
     std::string s = getTypeKindStr() + " ";
     for (auto &d : dim) {
         s += "[";

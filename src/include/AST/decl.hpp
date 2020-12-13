@@ -19,7 +19,7 @@ class DeclNode : public AstNode {
 
     ~DeclNode() = default;
 
-    std::string getType();
+    std::string getTypeStr();
     int32_t getVarNum();
 
     void accept(AstNodeVisitor &p_visitor) override;

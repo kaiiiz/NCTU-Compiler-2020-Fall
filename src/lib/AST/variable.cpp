@@ -18,11 +18,11 @@ VariableNode::VariableNode(std::shared_ptr<IdNode> idnode, std::shared_ptr<TypeB
 
 VariableNode::VariableNode(std::shared_ptr<IdNode> idnode, std::shared_ptr<ConstantValueNode> literal_const)
     : AstNode{idnode->line, idnode->col}, name(idnode->name),
-      type(std::make_shared<ScalarType>(literal_const->getType())), literal_const(literal_const) {}
+      type(literal_const->getType()), literal_const(literal_const) {}
 
 std::string VariableNode::getName() { return name; }
 
-std::string VariableNode::getType() { return type->getTypeName(); }
+std::string VariableNode::getTypeStr() { return type->getTypeStr(); }
 
 void VariableNode::accept(AstNodeVisitor &p_visitor) {
     p_visitor.visit(*this);

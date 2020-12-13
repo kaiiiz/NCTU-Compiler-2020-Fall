@@ -16,7 +16,7 @@ class TypeBase {
     TypeBase(TypeKind t);
     ~TypeBase();
 
-    virtual std::string getTypeName() = 0;
+    virtual std::string getTypeStr() = 0;
     TypeKind getTypeKind();
 
    private:

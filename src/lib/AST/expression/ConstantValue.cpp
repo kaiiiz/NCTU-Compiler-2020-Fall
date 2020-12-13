@@ -2,10 +2,10 @@
 #include "AST/expression/ConstantValue.hpp"
 #include "visitor/AstDumper.hpp"
 
-ConstantValueNode::ConstantValueNode(const uint32_t line, const uint32_t col, TypeKind type)
+ConstantValueNode::ConstantValueNode(const uint32_t line, const uint32_t col, std::shared_ptr<TypeBase> type)
     : ExpressionBase{line, col}, type(type) {}
 
-TypeKind ConstantValueNode::getType() { return type; }
+std::shared_ptr<TypeBase> ConstantValueNode::getType() { return type; }
 
 void ConstantValueNode::accept(AstNodeVisitor &p_visitor) {
     p_visitor.visit(*this);

@@ -4,24 +4,24 @@
 #include <memory>
 
 #include "AST/base/ExpressionBase.hpp"
-#include "type/scalar.hpp"
+#include "type/base.hpp"
 
 class VariableNode;
 
 class ConstantValueNode : public ExpressionBase {
   public:
     friend class VariableNode;
-    ConstantValueNode(const uint32_t line, const uint32_t col, TypeKind type);
+    ConstantValueNode(const uint32_t line, const uint32_t col, std::shared_ptr<TypeBase> type);
     ~ConstantValueNode() = default;
 
-    TypeKind getType();
+    std::shared_ptr<TypeBase> getType();
     virtual std::string getValueString() = 0;
 
     void accept(AstNodeVisitor &p_visitor) override;
     void visitChildNodes(AstNodeVisitor &p_visitor) override;
 
   private:
-    TypeKind type;
+    std::shared_ptr<TypeBase> type;
 };
 
 #endif

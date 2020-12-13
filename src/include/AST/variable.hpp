@@ -30,7 +30,7 @@ class VariableNode : public AstNode {
     ~VariableNode() = default;
 
     std::string getName();
-    std::string getType();
+    std::string getTypeStr();
 
     void accept(AstNodeVisitor &p_visitor) override;
     void visitChildNodes(AstNodeVisitor &p_visitor) override;

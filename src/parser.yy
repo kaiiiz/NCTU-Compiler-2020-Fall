@@ -252,7 +252,7 @@ Declaration:
     VAR IdList COLON LiteralConstant SEMICOLON {
         $$ = std::make_shared<DeclNode>(@1.begin.line, @1.begin.column,
                             idList2VarNodeList<ConstantValueNode>($2, $4),
-                            std::make_shared<ScalarType>($4->getType()));
+                            $4->getType());
     }
 ;
 

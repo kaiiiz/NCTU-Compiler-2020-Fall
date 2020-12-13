@@ -7,4 +7,4 @@ ScalarType::ScalarType(TypeKind t) : TypeBase(t) {}
 
 ScalarType::~ScalarType() {}
 
-std::string ScalarType::getTypeName() { return getTypeKindStr(); }
+std::string ScalarType::getTypeStr() { return getTypeKindStr(); }
