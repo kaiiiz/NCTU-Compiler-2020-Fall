@@ -3,12 +3,27 @@
 
 #include <string>
 
-class BaseType {
+enum class TypeKind {
+    integer,
+    real,
+    string,
+    boolean,
+    void_,
+};
+
+class TypeBase {
    public:
-    BaseType();
-    ~BaseType();
+    TypeBase(TypeKind t);
+    ~TypeBase();
 
     virtual std::string getTypeName() = 0;
+    TypeKind getTypeKind();
+
+   private:
+    TypeKind kind;
+
+   protected:
+    std::string getTypeKindStr();
 };
 
 #endif  // __TYPE_BASE

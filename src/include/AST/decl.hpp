@@ -7,7 +7,7 @@
 
 #include "AST/ast.hpp"
 
-class BaseType;
+class TypeBase;
 class ArrayType;
 class VariableNode;
 
@@ -15,7 +15,7 @@ class DeclNode : public AstNode {
   public:
     DeclNode(const uint32_t line, const uint32_t col,
              std::vector<std::shared_ptr<VariableNode>> var_list,
-             std::shared_ptr<BaseType> type);
+             std::shared_ptr<TypeBase> type);
 
     ~DeclNode() = default;
 
@@ -27,7 +27,7 @@ class DeclNode : public AstNode {
 
   private:
     std::vector<std::shared_ptr<VariableNode>> var_list;
-    std::shared_ptr<BaseType> type;
+    std::shared_ptr<TypeBase> type;
 };
 
 #endif

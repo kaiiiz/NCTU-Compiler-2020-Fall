@@ -15,10 +15,10 @@ class FunctionNode : public AstNode {
   public:
     FunctionNode(const uint32_t line, const uint32_t col,
                  std::string name, std::vector<std::shared_ptr<DeclNode>> parameters,
-                 std::shared_ptr<BaseType> return_type);
+                 std::shared_ptr<TypeBase> return_type);
     FunctionNode(const uint32_t line, const uint32_t col,
                  std::string name, std::vector<std::shared_ptr<DeclNode>> parameters,
-                 std::shared_ptr<BaseType> return_type,
+                 std::shared_ptr<TypeBase> return_type,
                  std::shared_ptr<CompoundStatementNode> compound_stmt);
     ~FunctionNode() = default;
 
@@ -31,7 +31,7 @@ class FunctionNode : public AstNode {
   private:
     std::string name;
     std::vector<std::shared_ptr<DeclNode>> parameters;
-    std::shared_ptr<BaseType> return_type;
+    std::shared_ptr<TypeBase> return_type;
     std::shared_ptr<CompoundStatementNode> compound_stmt;
 };
 

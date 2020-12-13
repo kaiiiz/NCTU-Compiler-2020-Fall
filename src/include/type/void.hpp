@@ -5,7 +5,7 @@
 
 #include "type/base.hpp"
 
-class VoidType : public BaseType {
+class VoidType : public TypeBase {
    public:
     VoidType();
     ~VoidType();

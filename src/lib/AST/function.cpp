@@ -8,13 +8,13 @@
 
 FunctionNode::FunctionNode(const uint32_t line, const uint32_t col,
                            std::string name, std::vector<std::shared_ptr<DeclNode>> parameters,
-                           std::shared_ptr<BaseType> return_type)
+                           std::shared_ptr<TypeBase> return_type)
     : AstNode{line, col}, name(name), parameters(parameters), return_type(return_type) {}
 
 
 FunctionNode::FunctionNode(const uint32_t line, const uint32_t col,
                            std::string name, std::vector<std::shared_ptr<DeclNode>> parameters,
-                           std::shared_ptr<BaseType> return_type,
+                           std::shared_ptr<TypeBase> return_type,
                            std::shared_ptr<CompoundStatementNode> compound_stmt)
     : AstNode{line, col}, name(name), parameters(parameters),
       return_type(return_type), compound_stmt(compound_stmt) {}

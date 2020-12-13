@@ -3,8 +3,8 @@
 
 #include "type/void.hpp"
 
-VoidType::VoidType() {}
+VoidType::VoidType() : TypeBase(TypeKind::void_) {}
 
 VoidType::~VoidType() {}
 
-std::string VoidType::getTypeName() { return "void"; }
+std::string VoidType::getTypeName() { return getTypeKindStr(); }

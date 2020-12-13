@@ -111,7 +111,7 @@ std::vector<std::shared_ptr<VariableNode>> idList2VarNodeList(
 %type <std::vector<std::shared_ptr<IdNode>>> IdList;
 %type <std::shared_ptr<DeclNode>> Declaration FormalArg;
 %type <std::vector<std::shared_ptr<DeclNode>>> FormalArgs FormalArgList Declarations DeclarationList;
-%type <std::shared_ptr<BaseType>> Type ReturnType;
+%type <std::shared_ptr<TypeBase>> Type ReturnType;
 %type <std::shared_ptr<ScalarType>> ScalarType;
 %type <std::vector<int64_t>> ArrDecl;
 %type <std::shared_ptr<ArrayType>> ArrType;
@@ -212,7 +212,7 @@ FormalArgs:
 
 FormalArg:
     IdList COLON Type {
-        $$ = std::make_shared<DeclNode>(@$.begin.line, @$.begin.column, idList2VarNodeList<BaseType>($1, $3), $3);
+        $$ = std::make_shared<DeclNode>(@$.begin.line, @$.begin.column, idList2VarNodeList<TypeBase>($1, $3), $3);
     }
 ;
 
@@ -230,9 +230,9 @@ IdList:
 ;
 
 ReturnType:
-    COLON ScalarType { $$ = std::dynamic_pointer_cast<BaseType>($2); }
+    COLON ScalarType { $$ = std::dynamic_pointer_cast<TypeBase>($2); }
     |
-    Epsilon { $$ = std::dynamic_pointer_cast<BaseType>(std::make_shared<VoidType>()); }
+    Epsilon { $$ = std::dynamic_pointer_cast<TypeBase>(std::make_shared<VoidType>()); }
 ;
 
     /*
@@ -242,7 +242,7 @@ ReturnType:
 Declaration:
     VAR IdList COLON Type SEMICOLON {
         $$ = std::make_shared<DeclNode>(@1.begin.line, @1.begin.column,
-                            idList2VarNodeList<BaseType>($2, $4), $4);
+                            idList2VarNodeList<TypeBase>($2, $4), $4);
     }
     |
     VAR IdList COLON LiteralConstant SEMICOLON {
@@ -253,23 +253,23 @@ Declaration:
 ;
 
 Type:
-    ScalarType { $$ = std::dynamic_pointer_cast<BaseType>($1); }
+    ScalarType { $$ = std::dynamic_pointer_cast<TypeBase>($1); }
     |
-    ArrType { $$ = std::dynamic_pointer_cast<BaseType>($1); }
+    ArrType { $$ = std::dynamic_pointer_cast<TypeBase>($1); }
 ;
 
 ScalarType:
-    INTEGER { $$ = std::make_shared<ScalarType>(scalar_type_t::integer); }
+    INTEGER { $$ = std::make_shared<ScalarType>(TypeKind::integer); }
     |
-    REAL { $$ = std::make_shared<ScalarType>(scalar_type_t::real); }
+    REAL { $$ = std::make_shared<ScalarType>(TypeKind::real); }
     |
-    STRING { $$ = std::make_shared<ScalarType>(scalar_type_t::string); }
+    STRING { $$ = std::make_shared<ScalarType>(TypeKind::string); }
     |
-    BOOLEAN { $$ = std::make_shared<ScalarType>(scalar_type_t::boolean); }
+    BOOLEAN { $$ = std::make_shared<ScalarType>(TypeKind::boolean); }
 ;
 
 ArrType:
-    ArrDecl ScalarType { $$ = std::make_shared<ArrayType>($2->getType(), $1); }
+    ArrDecl ScalarType { $$ = std::make_shared<ArrayType>($2->getTypeKind(), $1); }
 ;
 
 ArrDecl:
@@ -281,16 +281,16 @@ ArrDecl:
 LiteralConstant:
     NegOrNot INT_LITERAL {
         $$ = ($1) ? 
-            std::make_shared<ConstantValueNode>(@1.begin.line, @1.begin.column, scalar_type_t::integer, $2 * (-1))
+            std::make_shared<ConstantValueNode>(@1.begin.line, @1.begin.column, TypeKind::integer, $2 * (-1))
             :
-            std::make_shared<ConstantValueNode>(@2.begin.line, @2.begin.column, scalar_type_t::integer, $2);
+            std::make_shared<ConstantValueNode>(@2.begin.line, @2.begin.column, TypeKind::integer, $2);
     }
     |
     NegOrNot REAL_LITERAL {
         $$ = ($1) ? 
-            std::make_shared<ConstantValueNode>(@1.begin.line, @1.begin.column, scalar_type_t::real, $2 * (-1))
+            std::make_shared<ConstantValueNode>(@1.begin.line, @1.begin.column, TypeKind::real, $2 * (-1))
             :
-            std::make_shared<ConstantValueNode>(@2.begin.line, @2.begin.column, scalar_type_t::real, $2);
+            std::make_shared<ConstantValueNode>(@2.begin.line, @2.begin.column, TypeKind::real, $2);
     }
     |
     StringAndBoolean { $$ = $1; }
@@ -303,17 +303,17 @@ NegOrNot:
 ;
 
 StringAndBoolean:
-    STRING_LITERAL { $$ = std::make_shared<ConstantValueNode>(@1.begin.line, @1.begin.column, scalar_type_t::string, $1); }
+    STRING_LITERAL { $$ = std::make_shared<ConstantValueNode>(@1.begin.line, @1.begin.column, TypeKind::string, $1); }
     |
-    TRUE { $$ = std::make_shared<ConstantValueNode>(@1.begin.line, @1.begin.column, scalar_type_t::boolean, true); }
+    TRUE { $$ = std::make_shared<ConstantValueNode>(@1.begin.line, @1.begin.column, TypeKind::boolean, true); }
     |
-    FALSE { $$ = std::make_shared<ConstantValueNode>(@1.begin.line, @1.begin.column, scalar_type_t::boolean, false); }
+    FALSE { $$ = std::make_shared<ConstantValueNode>(@1.begin.line, @1.begin.column, TypeKind::boolean, false); }
 ;
 
 IntegerAndReal:
-    INT_LITERAL { $$ = std::make_shared<ConstantValueNode>(@1.begin.line, @1.begin.column, scalar_type_t::integer, $1); }
+    INT_LITERAL { $$ = std::make_shared<ConstantValueNode>(@1.begin.line, @1.begin.column, TypeKind::integer, $1); }
     |
-    REAL_LITERAL { $$ = std::make_shared<ConstantValueNode>(@1.begin.line, @1.begin.column, scalar_type_t::real, $1); }
+    REAL_LITERAL { $$ = std::make_shared<ConstantValueNode>(@1.begin.line, @1.begin.column, TypeKind::real, $1); }
 ;
 
     /*
@@ -412,16 +412,16 @@ For:
         // make declaration
         auto id = std::make_shared<IdNode>(@2.begin.line, @2.begin.column, $2);
         auto id_list = std::vector<std::shared_ptr<IdNode>>{id};
-        auto type = std::make_shared<ScalarType>(scalar_type_t::integer);
+        auto type = std::make_shared<ScalarType>(TypeKind::integer);
         auto decl = std::make_shared<DeclNode>(@2.begin.line, @2.begin.column,
-                                               idList2VarNodeList<BaseType>(id_list, type), type);
+                                               idList2VarNodeList<TypeBase>(id_list, type), type);
         // make assignment
-        auto constant_init = std::make_shared<ConstantValueNode>(@4.begin.line, @4.begin.column, scalar_type_t::integer, $4);
+        auto constant_init = std::make_shared<ConstantValueNode>(@4.begin.line, @4.begin.column, TypeKind::integer, $4);
         auto var_ref_indices = std::vector<std::shared_ptr<ExpressionBase>>();
         auto var_ref = std::make_shared<VariableReferenceNode>(@2.begin.line, @2.begin.column, $2, var_ref_indices);
         auto assignment = std::make_shared<AssignmentNode>(@3.begin.line, @3.begin.column, var_ref, constant_init);
         // make condition
-        auto condition = std::make_shared<ConstantValueNode>(@6.begin.line, @6.begin.column, scalar_type_t::integer, $6);
+        auto condition = std::make_shared<ConstantValueNode>(@6.begin.line, @6.begin.column, TypeKind::integer, $6);
         $$ = std::make_shared<ForNode>(@1.begin.line, @1.begin.column, decl, assignment, condition, $8);
     }
 ;

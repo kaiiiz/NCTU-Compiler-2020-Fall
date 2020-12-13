@@ -8,7 +8,7 @@
 
 DeclNode::DeclNode(const uint32_t line, const uint32_t col,
                    std::vector<std::shared_ptr<VariableNode>> var_list,
-                   std::shared_ptr<BaseType> type)
+                   std::shared_ptr<TypeBase> type)
     : AstNode{line, col}, var_list(var_list), type(type) {}
 
 std::string DeclNode::getType() { return type->getTypeName(); }

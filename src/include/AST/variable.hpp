@@ -6,7 +6,7 @@
 
 #include "AST/ast.hpp"
 
-class BaseType;
+class TypeBase;
 class ConstantValueNode;
 
 class IdNode { // keep line and col information
@@ -24,8 +24,8 @@ class IdNode { // keep line and col information
 class VariableNode : public AstNode {
   public:
     VariableNode(const uint32_t line, const uint32_t col,
-                 std::string name, std::shared_ptr<BaseType> type);
-    VariableNode(std::shared_ptr<IdNode> idnode, std::shared_ptr<BaseType> type);
+                 std::string name, std::shared_ptr<TypeBase> type);
+    VariableNode(std::shared_ptr<IdNode> idnode, std::shared_ptr<TypeBase> type);
     VariableNode(std::shared_ptr<IdNode> idnode, std::shared_ptr<ConstantValueNode> literal_const);
     ~VariableNode() = default;
 
@@ -37,7 +37,7 @@ class VariableNode : public AstNode {
 
   protected:
     std::string name;
-    std::shared_ptr<BaseType> type;
+    std::shared_ptr<TypeBase> type;
     std::shared_ptr<ConstantValueNode> literal_const;
 };
 
