@@ -1,28 +1,31 @@
+#include "AST/AstDumper.hpp"
 #include "AST/program.hpp"
+#include "AST/decl.hpp"
+#include "AST/function.hpp"
+#include "AST/statement/CompoundStatement.hpp"
 #include "visitor/AstNodeVisitor.hpp"
 
 ProgramNode::ProgramNode(const uint32_t line, const uint32_t col,
-                         const PType *p_return_type, const char *p_name,
-                         Decls *p_var_decls, Funcs *p_funcs,
-                         CompoundStatementNode *p_body)
-    : AstNode{line, col}, return_type(p_return_type), name(p_name),
-      var_decls(std::move(*p_var_decls)), funcs(std::move(*p_funcs)),
-      body(p_body) {}
+                        const std::string p_name, const std::string ret_type,
+                        const std::vector<std::shared_ptr<DeclNode>> decl_list,
+                        const std::vector<std::shared_ptr<FunctionNode>> func_list,
+                        const std::shared_ptr<CompoundStatementNode> compound_stmt)
+    : AstNode{line, col}, name(p_name), ret_type(ret_type), decl_list(decl_list), func_list(func_list), compound_stmt(compound_stmt) {}
 
-const char *ProgramNode::getNameCString() const { return name.c_str(); }
-
-const char *ProgramNode::getTypeCString() const {
-    return return_type->getPTypeCString();
+void ProgramNode::dump(AstDumper &dp) {
+    dp.visit(*this);
 }
 
-void ProgramNode::accept(AstNodeVisitor &p_visitor) { p_visitor.visit(*this); }
+void ProgramNode::dumpChildNodes(AstDumper &dp) {
+    for (auto &decl : decl_list) {
+        decl->dump(dp);
+    }
 
-void ProgramNode::visitChildNodes(AstNodeVisitor &p_visitor) {
-    for (auto &decl : var_decls) {
-        decl->accept(p_visitor);
+    for (auto &func : func_list) {
+        func->dump(dp);
     }
-    for (auto &func : funcs) {
-        func->accept(p_visitor);
-    }
-    body->accept(p_visitor);
+
+    compound_stmt->dump(dp);
 }
+
+std::string ProgramNode::getProgramName() { return name; }

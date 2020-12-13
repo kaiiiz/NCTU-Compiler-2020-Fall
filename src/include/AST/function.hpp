@@ -1,39 +1,38 @@
 #ifndef __AST_FUNCTION_NODE_H
 #define __AST_FUNCTION_NODE_H
 
-#include "AST/CompoundStatement.hpp"
-#include "AST/PType.hpp"
-#include "AST/ast.hpp"
-#include "AST/decl.hpp"
-
-#include <memory>
+#include <string>
 #include <vector>
+#include <memory>
+
+#include "AST/ast.hpp"
+#include "type/base.hpp"
+
+class DeclNode;
+class CompoundStatementNode;
 
 class FunctionNode : public AstNode {
   public:
-    typedef std::vector<std::unique_ptr<DeclNode>> Decls;
-
-    FunctionNode(const uint32_t line, const uint32_t col, const char *p_name,
-                 Decls *p_parameters, const PType *p_type,
-                 CompoundStatementNode *p_body);
+    FunctionNode(const uint32_t line, const uint32_t col,
+                 std::string name, std::vector<std::shared_ptr<DeclNode>> parameters,
+                 std::shared_ptr<BaseType> return_type);
+    FunctionNode(const uint32_t line, const uint32_t col,
+                 std::string name, std::vector<std::shared_ptr<DeclNode>> parameters,
+                 std::shared_ptr<BaseType> return_type,
+                 std::shared_ptr<CompoundStatementNode> compound_stmt);
     ~FunctionNode() = default;
 
-    const char *getNameCString() const;
-    const char *getTypeCString() const;
-    const char *getPrototypeCString() const;
+    std::string getName();
+    std::string getFuncProtoType();
 
-    bool isDefined() const;
-
-    void accept(AstNodeVisitor &p_visitor) override;
-    void visitChildNodes(AstNodeVisitor &p_visitor) override;
+    void dump(AstDumper &dp) override;
+    void dumpChildNodes(AstDumper &dp) override;
 
   private:
-    const std::string name;
-    Decls parameters;
-    PTypeSharedPtr return_type;
-    mutable std::string prototype_string;
-    mutable bool prototype_string_is_valid = false;
-    std::unique_ptr<CompoundStatementNode> body;
+    std::string name;
+    std::vector<std::shared_ptr<DeclNode>> parameters;
+    std::shared_ptr<BaseType> return_type;
+    std::shared_ptr<CompoundStatementNode> compound_stmt;
 };
 
 #endif

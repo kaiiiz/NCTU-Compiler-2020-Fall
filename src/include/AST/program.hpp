@@ -1,38 +1,35 @@
 #ifndef __AST_PROGRAM_NODE_H
 #define __AST_PROGRAM_NODE_H
 
-#include "AST/CompoundStatement.hpp"
-#include "AST/PType.hpp"
-#include "AST/ast.hpp"
-#include "AST/decl.hpp"
-#include "AST/function.hpp"
-
-#include <memory>
 #include <vector>
+#include <memory>
+
+#include "AST/ast.hpp"
+
+class AstDumper;
+class DeclNode;
+class FunctionNode;
+class CompoundStatementNode;
 
 class ProgramNode : public AstNode {
   public:
-    typedef std::vector<std::unique_ptr<DeclNode>> Decls;
-    typedef std::vector<std::unique_ptr<FunctionNode>> Funcs;
-
     ProgramNode(const uint32_t line, const uint32_t col,
-                const PType *p_return_type, const char *p_name,
-                Decls *p_var_decls, Funcs *p_funcs,
-                CompoundStatementNode *p_body);
+                const std::string p_name, const std::string ret_type,
+                const std::vector<std::shared_ptr<DeclNode>> decl_list,
+                const std::vector<std::shared_ptr<FunctionNode>> func_list,
+                const std::shared_ptr<CompoundStatementNode> compound_stmt);
     ~ProgramNode() = default;
 
-    const char *getNameCString() const;
-    const char *getTypeCString() const;
-
-    void accept(AstNodeVisitor &p_visitor) override;
-    void visitChildNodes(AstNodeVisitor &p_visitor) override;
+    void dump(AstDumper &dp) override;
+    void dumpChildNodes(AstDumper &dp) override;
+    std::string getProgramName();
 
   private:
-    std::unique_ptr<const PType> return_type;
     const std::string name;
-    Decls var_decls;
-    Funcs funcs;
-    std::unique_ptr<CompoundStatementNode> body;
+    const std::string ret_type;
+    const std::vector<std::shared_ptr<DeclNode>> decl_list;
+    const std::vector<std::shared_ptr<FunctionNode>> func_list;
+    const std::shared_ptr<CompoundStatementNode> compound_stmt;
 };
 
 #endif
