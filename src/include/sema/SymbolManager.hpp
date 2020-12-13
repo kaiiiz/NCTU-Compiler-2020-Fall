@@ -10,9 +10,10 @@ class SymbolManager {
    public:
     SymbolManager();
 
-    void pushScope(std::shared_ptr<SymbolTable> *new_scope);
+    void pushScope(std::shared_ptr<SymbolTable> new_scope);
     void popScope();
     std::shared_ptr<SymbolTable> currentSymTab();
+    void dumpSymTab();
 
    private:
     std::shared_ptr<SymbolTable> global;

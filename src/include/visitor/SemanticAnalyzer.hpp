@@ -2,10 +2,11 @@
 #define __SEMA_SEMANTIC_ANALYZER_H
 
 #include "visitor/AstNodeVisitor.hpp"
+#include "sema/SymbolManager.hpp"
 
 class SemanticAnalyzer : public AstNodeVisitor {
   public:
-    SemanticAnalyzer() = default;
+    SemanticAnalyzer(SymbolManager& symbol_mgr);
     ~SemanticAnalyzer() = default;
 
     void visit(ProgramNode &p_program) override;
@@ -25,10 +26,10 @@ class SemanticAnalyzer : public AstNodeVisitor {
     void visit(WhileNode &p_while) override;
     void visit(ForNode &p_for) override;
     void visit(ReturnNode &p_return) override;
+    void dumpSymTab();
 
   private:
-    // TODO: something like symbol manager (manage symbol tables)
-    //       context manager, return type manager
+    SymbolManager& symbol_mgr;
 };
 
 #endif

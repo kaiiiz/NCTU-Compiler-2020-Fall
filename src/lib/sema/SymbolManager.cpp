@@ -10,3 +10,7 @@ SymbolManager::SymbolManager() {
 }
 
 std::shared_ptr<SymbolTable> SymbolManager::currentSymTab() { return tables.top(); }
+
+void SymbolManager::dumpSymTab() {
+    global->dump();
+}

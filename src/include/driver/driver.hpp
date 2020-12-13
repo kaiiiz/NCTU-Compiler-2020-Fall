@@ -6,6 +6,7 @@
 
 #include "parser.hh"
 #include "sema/SymbolManager.hpp"
+#include "visitor/SemanticAnalyzer.hpp"
 
 #define YY_DECL yy::parser::symbol_type yylex(driver& drv)
 
@@ -27,6 +28,7 @@ class driver {
     std::string buf;
     int32_t opt_src = 1;
     int32_t opt_tok = 1;
+    int32_t opt_dump_symtab = 1;
 
     // Parser Context
     int parse(const std::string &f);
