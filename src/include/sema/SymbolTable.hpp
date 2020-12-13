@@ -1,19 +1,26 @@
 #ifndef __SYMBOL_TABLE
 #define __SYMBOL_TABLE
 
+#include <string>
 #include <vector>
 #include <memory>
+#include <unordered_map>
 
-class SymbolEntry;
+#include "sema/SymbolEntry.hpp"
 
 class SymbolTable {
    public:
-    SymbolTable();
+    SymbolTable(std::shared_ptr<SymbolTable> parent, const std::uint32_t level);
 
     void addSymbol(/* attributes needed by a SymbolEntry */);
-    // other methods
+
+    const std::uint32_t level;
+
    private:
-    std::vector<std::shared_ptr<SymbolEntry>> entries;
+    std::shared_ptr<SymbolTable> parent;
+    std::vector<std::string> entries; // order list
+    std::unordered_map<std::string, std::shared_ptr<SymbolTable>> childs;
+    std::unordered_map<std::string, std::shared_ptr<SymbolEntry>> entries_instance;
 };
 
 #endif

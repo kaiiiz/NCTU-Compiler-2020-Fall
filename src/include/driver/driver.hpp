@@ -5,6 +5,7 @@
 #include <memory>
 
 #include "parser.hh"
+#include "sema/SymbolManager.hpp"
 
 #define YY_DECL yy::parser::symbol_type yylex(driver& drv)
 
@@ -32,6 +33,9 @@ class driver {
     std::string file; // file name
     std::shared_ptr<AstNode> root;
     void error(const yy::location &l, const std::string &m, const std::string yytext);
+
+    // Semantic Check Context
+    SymbolManager symbol_mgr;
 };
 
 #endif  // __DRIVER_HPP
