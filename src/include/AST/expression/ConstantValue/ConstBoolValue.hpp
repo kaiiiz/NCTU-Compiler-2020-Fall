@@ -11,6 +11,7 @@ class ConstBoolValueNode : public ConstantValueNode {
     ~ConstBoolValueNode() = default;
 
     std::string getValueString() override;
+    bool getValue();
 
   private:
     bool bval;

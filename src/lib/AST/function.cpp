@@ -45,8 +45,6 @@ std::vector<std::shared_ptr<TypeBase>> FunctionNode::getParamTypeList() {
     return param_type;
 }
 
-std::vector<std::shared_ptr<DeclNode>> FunctionNode::getParamList() { return parameters; }
-
 void FunctionNode::accept(AstNodeVisitor &p_visitor) {
     p_visitor.visit(*this);
 }

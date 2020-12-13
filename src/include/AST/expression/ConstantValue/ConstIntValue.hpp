@@ -11,6 +11,7 @@ class ConstIntValueNode : public ConstantValueNode {
     ~ConstIntValueNode() = default;
 
     std::string getValueString() override;
+    int64_t getValue();
 
   private:
     int64_t ival;

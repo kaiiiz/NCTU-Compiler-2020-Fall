@@ -15,6 +15,8 @@ class AssignmentNode : public StatementBase {
                    std::shared_ptr<ExpressionBase> expression);
     ~AssignmentNode() = default;
 
+    std::string getVarStr();
+
     void accept(AstNodeVisitor &p_visitor) override;
     void visitChildNodes(AstNodeVisitor &p_visitor) override;
 

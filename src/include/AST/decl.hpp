@@ -22,7 +22,6 @@ class DeclNode : public AstNode {
     std::shared_ptr<TypeBase> getType();
     std::string getTypeStr();
     int32_t getVarNum();
-    std::vector<std::shared_ptr<VariableNode>> getVarList();
 
     void accept(AstNodeVisitor &p_visitor) override;
     void visitChildNodes(AstNodeVisitor &p_visitor) override;

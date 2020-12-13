@@ -12,3 +12,5 @@ ConstBoolValueNode::ConstBoolValueNode(const uint32_t line, const uint32_t col, 
 std::string ConstBoolValueNode::getValueString() {
     return (bval) ? "true" : "false";
 }
+
+bool ConstBoolValueNode::getValue() { return bval; }

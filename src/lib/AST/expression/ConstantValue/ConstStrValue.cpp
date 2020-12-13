@@ -12,3 +12,7 @@ ConstStrValueNode::ConstStrValueNode(const uint32_t line, const uint32_t col, st
 std::string ConstStrValueNode::getValueString() {
     return sval;
 }
+
+std::string ConstStrValueNode::getValue() {
+    return sval;
+}

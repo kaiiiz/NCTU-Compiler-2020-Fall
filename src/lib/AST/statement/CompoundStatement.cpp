@@ -8,6 +8,10 @@ CompoundStatementNode::CompoundStatementNode(const uint32_t line, const uint32_t
                                              std::vector<std::shared_ptr<StatementBase>> statements)
     : StatementBase{line, col}, declarations(declarations), statements(statements) {}
 
+void CompoundStatementNode::fillAttribute(CompoundKind k) { kind = k; }
+
+CompoundKind CompoundStatementNode::getKind() { return kind; }
+
 void CompoundStatementNode::accept(AstNodeVisitor &p_visitor) {
     p_visitor.visit(*this);
 }

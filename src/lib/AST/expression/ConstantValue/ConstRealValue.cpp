@@ -12,3 +12,7 @@ ConstRealValueNode::ConstRealValueNode(const uint32_t line, const uint32_t col, 
 std::string ConstRealValueNode::getValueString() {
     return std::to_string(rval);
 }
+
+double ConstRealValueNode::getValue() {
+    return rval;
+}

@@ -26,7 +26,6 @@ class FunctionNode : public AstNode {
     std::string getFuncProtoType();
     std::shared_ptr<TypeBase> getRetType();
     std::vector<std::shared_ptr<TypeBase>> getParamTypeList();
-    std::vector<std::shared_ptr<DeclNode>> getParamList();
 
     void accept(AstNodeVisitor &p_visitor) override;
     void visitChildNodes(AstNodeVisitor &p_visitor) override;

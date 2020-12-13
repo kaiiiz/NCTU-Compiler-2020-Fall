@@ -144,6 +144,7 @@ Program:
     DeclarationList FunctionList CompoundStatement
     /* End of ProgramBody */
     END {
+        $5->fillAttribute(CompoundKind::normal);
         drv.root = std::make_shared<ProgramNode>(@1.begin.line, @1.begin.column, $1, std::make_shared<VoidType>(), $3, $4, $5);
     }
 ;
@@ -192,6 +193,7 @@ FunctionDefinition:
     FunctionName L_PARENTHESIS FormalArgList R_PARENTHESIS ReturnType
     CompoundStatement
     END {
+        $6->fillAttribute(CompoundKind::function);
         $$ = std::make_shared<FunctionNode>(@1.begin.line, @1.begin.column, $1, $3, $5, $6);
     }
 ;
@@ -216,6 +218,7 @@ FormalArg:
     IdList COLON Type {
         for (auto &var : $1) {
             var->fillAttribute($3);
+            var->fillAttribute(VariableKind::parameter);
         }
         $$ = std::make_shared<DeclNode>(@$.begin.line, @$.begin.column, $1, $3);
     }
@@ -247,6 +250,7 @@ Declaration:
     VAR IdList COLON Type SEMICOLON {
         for (auto &var : $2) {
             var->fillAttribute($4);
+            var->fillAttribute(VariableKind::variable);
         }
         $$ = std::make_shared<DeclNode>(@1.begin.line, @1.begin.column, $2, $4);
     }
@@ -254,6 +258,7 @@ Declaration:
     VAR IdList COLON LiteralConstant SEMICOLON {
         for (auto &var : $2) {
             var->fillAttribute($4);
+            var->fillAttribute(VariableKind::constant);
         }
         $$ = std::make_shared<DeclNode>(@1.begin.line, @1.begin.column, $2, $4->getType());
     }
@@ -345,7 +350,10 @@ IntegerAndReal:
                   */
 
 Statement:
-    CompoundStatement { $$ = std::dynamic_pointer_cast<StatementBase>($1); }
+    CompoundStatement { 
+        $1->fillAttribute(CompoundKind::normal);
+        $$ = std::dynamic_pointer_cast<StatementBase>($1);
+    }
     |
     Simple { $$ = $1; }
     |
@@ -410,13 +418,17 @@ Condition:
     CompoundStatement
     ElseOrNot
     END IF {
+        $4->fillAttribute(CompoundKind::normal);
         $$ = std::make_shared<IfNode>(@1.begin.line, @1.begin.column, $2, $4, $5);
     }
 ;
 
 ElseOrNot:
     ELSE
-    CompoundStatement { $$ = $2; }
+    CompoundStatement { 
+        $2->fillAttribute(CompoundKind::normal);
+        $$ = $2;
+    }
     |
     Epsilon { $$ = nullptr; }
 ;
@@ -425,6 +437,7 @@ While:
     WHILE Expression DO
     CompoundStatement
     END DO {
+        $4->fillAttribute(CompoundKind::normal);
         $$ = std::make_shared<WhileNode>(@1.begin.line, @1.begin.column, $2, $4);
     }
 ;
@@ -436,6 +449,7 @@ For:
         // make declaration
         auto type = std::make_shared<ScalarType>(TypeKind::integer);
         auto var = std::make_shared<VariableNode>(@2.begin.line, @2.begin.column, $2, type);
+        var->fillAttribute(VariableKind::loop_var);
         auto var_list = std::vector<std::shared_ptr<VariableNode>>{var};
         auto decl = std::make_shared<DeclNode>(@2.begin.line, @2.begin.column, var_list, type);
         // make assignment
@@ -445,6 +459,7 @@ For:
         auto assignment = std::make_shared<AssignmentNode>(@3.begin.line, @3.begin.column, var_ref, constant_init);
         // make condition
         auto condition = std::make_shared<ConstIntValueNode>(@6.begin.line, @6.begin.column, $6);
+        $8->fillAttribute(CompoundKind::normal);
         $$ = std::make_shared<ForNode>(@1.begin.line, @1.begin.column, decl, assignment, condition, $8);
     }
 ;
@@ -592,9 +607,9 @@ int main(int argc, const char *argv[]) {
     }
 
     printf("\n"
-           "|--------------------------------|\n"
-           "|  There is no syntactic error!  |\n"
-           "|--------------------------------|\n");
+           "|---------------------------------------------------|\n"
+           "|  There is no syntactic error and semantic error!  |\n"
+           "|---------------------------------------------------|\n");
 
     return 0;
 }

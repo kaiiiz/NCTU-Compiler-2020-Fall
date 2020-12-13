@@ -11,6 +11,7 @@ class ConstRealValueNode : public ConstantValueNode {
     ~ConstRealValueNode() = default;
 
     std::string getValueString() override;
+    double getValue();
 
   private:
     double rval;

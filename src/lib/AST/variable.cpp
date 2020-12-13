@@ -29,6 +29,14 @@ void VariableNode::fillAttribute(std::shared_ptr<ConstantValueNode> const_attr) 
     literal_const = const_attr;
 }
 
+void VariableNode::fillAttribute(VariableKind var_kind) {
+    kind = var_kind;
+}
+
+std::shared_ptr<ConstantValueNode> VariableNode::getLiteralConst() { return literal_const; }
+
+std::shared_ptr<TypeBase> VariableNode::getType() { return type; }
+
 std::string VariableNode::getNameStr() { return name; }
 
 std::string VariableNode::getTypeStr() {
@@ -37,6 +45,8 @@ std::string VariableNode::getTypeStr() {
     }
     return type->getTypeStr();
 }
+
+VariableKind VariableNode::getVarKind() { return kind; }
 
 void VariableNode::accept(AstNodeVisitor &p_visitor) {
     p_visitor.visit(*this);
