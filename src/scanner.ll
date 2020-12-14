@@ -135,7 +135,7 @@ float {integer}\.(0|[0-9]*[1-9])
 }
 
     /* Pseudocomment */
-"//&"[ST][+-].* {
+"//&"[STD][+-].* {
     LIST;
     char option = yytext[3];
     switch (option) {
@@ -144,6 +144,9 @@ float {integer}\.(0|[0-9]*[1-9])
         break;
     case 'T':
         drv.opt_tok = (yytext[4] == '+') ? 1 : 0;
+        break;
+    case 'D':
+        drv.opt_dump_symtab = (yytext[4] == '+') ? 1 : 0;
         break;
     }
 }
