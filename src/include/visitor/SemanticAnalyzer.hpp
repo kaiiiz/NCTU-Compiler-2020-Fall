@@ -1,12 +1,17 @@
 #ifndef __SEMA_SEMANTIC_ANALYZER_H
 #define __SEMA_SEMANTIC_ANALYZER_H
 
+#include <vector>
+#include <string>
+
 #include "visitor/AstNodeVisitor.hpp"
 #include "sema/SymbolManager.hpp"
 
+class SymbolEntry;
+
 class SemanticAnalyzer : public AstNodeVisitor {
   public:
-    SemanticAnalyzer(SymbolManager& symbol_mgr);
+    SemanticAnalyzer(SymbolManager& symbol_mgr, std::vector<long> &line_head, std::string source_filename);
     ~SemanticAnalyzer() = default;
 
     void visit(ProgramNode &p_program) override;
@@ -29,7 +34,12 @@ class SemanticAnalyzer : public AstNodeVisitor {
     void dumpSymTab();
 
   private:
+    void insertWithCheck(std::shared_ptr<SymbolTable> sym_tab, std::shared_ptr<SymbolEntry> symbol);
+    std::string getSourceLine(long lineno);
+    std::string getErrIndicator(long col);
     SymbolManager& symbol_mgr;
+    std::vector<long> &line_head;
+    std::string source_filename;
 };
 
 #endif

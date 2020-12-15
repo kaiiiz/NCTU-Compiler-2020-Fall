@@ -10,6 +10,7 @@ driver::~driver() {
 int driver::parse(const std::string &f) {
     file = f;
     location.initialize(&file);
+    line_head.push_back(0);
     scan_begin();
     yy::parser parser(*this);
     int res = parser.parse();

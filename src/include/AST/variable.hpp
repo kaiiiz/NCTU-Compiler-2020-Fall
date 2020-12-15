@@ -27,7 +27,12 @@ class VariableNode : public AstNode {
     void fillAttribute(VariableKind kind);
     std::string getNameStr();
     std::string getTypeStr();
-    std::shared_ptr<ConstantValueNode> getLiteralConst();
+
+    template <class T>
+    std::shared_ptr<T> getLiteralConst() {
+        return std::dynamic_pointer_cast<T>(literal_const);
+    }
+
     std::shared_ptr<TypeBase> getType();
     VariableKind getVarKind();
 

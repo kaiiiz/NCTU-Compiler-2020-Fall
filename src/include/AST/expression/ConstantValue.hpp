@@ -15,6 +15,8 @@ class ConstantValueNode : public ExpressionBase {
 
     std::shared_ptr<TypeBase> getType();
     virtual std::string getValueString() = 0;
+    template<typename T>
+    std::shared_ptr<T> getConstValueNode();
 
     void accept(AstNodeVisitor &p_visitor) override;
     void visitChildNodes(AstNodeVisitor &p_visitor) override;

@@ -10,7 +10,7 @@ class TypeBase;
 
 class ParamSymbolEntry : public SymbolEntry {
    public:
-    ParamSymbolEntry(std::string name, uint32_t level, std::shared_ptr<TypeBase> type);
+    ParamSymbolEntry(std::string name, uint32_t level, std::shared_ptr<TypeBase> type, const Location &loc);
 
     std::string getAttributeStr() override;
 };

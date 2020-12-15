@@ -3,6 +3,7 @@
 #include <string>
 #include <cstdint>
 #include <memory>
+#include <vector>
 
 #include "parser.hh"
 #include "sema/SymbolManager.hpp"
@@ -24,7 +25,9 @@ class driver {
     void scan_list(std::string str);
     void clear_buf();
     void scan_end();
+    void record_line_head(long line_size);
     yy::location location; // The token's location used by the scanner.
+    std::vector<long> line_head;
     std::string buf;
     int32_t opt_src = 1;
     int32_t opt_tok = 1;

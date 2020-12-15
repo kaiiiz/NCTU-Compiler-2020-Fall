@@ -33,8 +33,6 @@ void VariableNode::fillAttribute(VariableKind var_kind) {
     kind = var_kind;
 }
 
-std::shared_ptr<ConstantValueNode> VariableNode::getLiteralConst() { return literal_const; }
-
 std::shared_ptr<TypeBase> VariableNode::getType() { return type; }
 
 std::string VariableNode::getNameStr() { return name; }

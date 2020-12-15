@@ -18,6 +18,11 @@ void SymbolTable::insert(std::shared_ptr<SymbolEntry> symbol) {
     entries_instance[symbol_name] = symbol;
 }
 
+std::shared_ptr<SymbolEntry> SymbolTable::lookup(std::string name) {
+    auto find = entries_instance.find(name);
+    return (find != entries_instance.end()) ? find->second : nullptr;
+}
+
 void SymbolTable::dumpDemarcation(const char chr) {
     for (size_t i = 0; i < 110; ++i) {
         printf("%c", chr);

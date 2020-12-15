@@ -166,6 +166,7 @@ float {integer}\.(0|[0-9]*[1-9])
     }
     loc.lines();
     loc.step();
+    drv.record_line_head(drv.buf.length() + 1);
     drv.clear_buf();
 }
 
@@ -184,6 +185,10 @@ void driver::scan_begin() {
         std::cerr << "Open file error" << std::endl;
         exit(EXIT_FAILURE);
     }
+}
+
+void driver::record_line_head(long line_size) {
+    line_head.push_back(line_size + *(line_head.end() - 1));
 }
 
 void driver::scan_list(std::string str) {

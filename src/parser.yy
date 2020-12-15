@@ -600,7 +600,7 @@ int main(int argc, const char *argv[]) {
         AstDumper dp;
         drv.root->accept(dp);
     }
-    SemanticAnalyzer analyzer(drv.symbol_mgr);
+    SemanticAnalyzer analyzer(drv.symbol_mgr, drv.line_head, argv[1]);
     drv.root->accept(analyzer);
     if (drv.opt_dump_symtab) {
         drv.symbol_mgr.dumpSymTab();

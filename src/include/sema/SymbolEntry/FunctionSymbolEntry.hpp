@@ -11,7 +11,7 @@ class TypeBase;
 
 class FunctionSymbolEntry : public SymbolEntry {
    public:
-    FunctionSymbolEntry(std::string name, uint32_t level, std::shared_ptr<TypeBase> type, std::vector<std::shared_ptr<TypeBase>> param_type);
+    FunctionSymbolEntry(std::string name, uint32_t level, std::shared_ptr<TypeBase> type, std::vector<std::shared_ptr<TypeBase>> param_type, const Location &loc);
 
     std::string getAttributeStr() override;
 

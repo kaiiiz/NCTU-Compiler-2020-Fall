@@ -10,7 +10,7 @@ class TypeBase;
 
 class LoopVarSymbolEntry : public SymbolEntry {
    public:
-    LoopVarSymbolEntry(std::string name, uint32_t level, std::shared_ptr<TypeBase> type);
+    LoopVarSymbolEntry(std::string name, uint32_t level, std::shared_ptr<TypeBase> type, const Location &loc);
 
     std::string getAttributeStr() override;
 };
