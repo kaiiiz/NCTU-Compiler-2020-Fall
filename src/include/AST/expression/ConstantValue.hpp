@@ -13,16 +13,12 @@ class ConstantValueNode : public ExpressionBase {
     ConstantValueNode(const uint32_t line, const uint32_t col, std::shared_ptr<TypeStruct> type);
     ~ConstantValueNode() = default;
 
-    std::shared_ptr<TypeStruct> getType();
     virtual std::string getValueString() = 0;
     template<typename T>
     std::shared_ptr<T> getConstValueNode();
 
     void accept(AstNodeVisitor &p_visitor) override;
     void visitChildNodes(AstNodeVisitor &p_visitor) override;
-
-  private:
-    std::shared_ptr<TypeStruct> type;
 };
 
 #endif

@@ -31,4 +31,6 @@ SymbolEntryKind SymbolEntry::getKind() { return kind; }
 
 int SymbolEntry::getLevel() { return level; }
 
+std::shared_ptr<TypeStruct> SymbolEntry::getType() { return type; }
+
 std::string SymbolEntry::getTypeStr() { return type->getTypeStr(); }

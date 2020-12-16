@@ -7,6 +7,7 @@
 
 #include "visitor/AstNodeVisitor.hpp"
 #include "sema/SymbolManager.hpp"
+#include "type/struct.hpp"
 
 class SymbolEntry;
 
@@ -41,6 +42,8 @@ class SemanticAnalyzer : public AstNodeVisitor {
     std::string getErrIndicator(long col);
     void recordError(long lineno, long col);
     bool hasErrorAt(long lineno, long col);
+    std::shared_ptr<TypeStruct> coerce(std::shared_ptr<TypeStruct> t1,
+                                       std::shared_ptr<TypeStruct> t2);
 
     SymbolManager& symbol_mgr;
     std::vector<long> &line_head;

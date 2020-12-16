@@ -13,6 +13,8 @@ class VariableReferenceNode : public ExpressionBase {
     ~VariableReferenceNode() = default;
 
     std::string getNameStr();
+    std::vector<std::shared_ptr<ExpressionBase>> getExprs();
+
     void accept(AstNodeVisitor &p_visitor) override;
     void visitChildNodes(AstNodeVisitor &p_visitor) override;
 

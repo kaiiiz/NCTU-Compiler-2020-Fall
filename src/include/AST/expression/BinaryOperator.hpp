@@ -29,6 +29,9 @@ class BinaryOperatorNode : public ExpressionBase {
     ~BinaryOperatorNode() = default;
 
     std::string getOPString();
+    std::shared_ptr<ExpressionBase> getLExpr();
+    std::shared_ptr<ExpressionBase> getRExpr();
+
     void accept(AstNodeVisitor &p_visitor) override;
     void visitChildNodes(AstNodeVisitor &p_visitor) override;
 

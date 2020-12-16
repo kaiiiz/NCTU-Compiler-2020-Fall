@@ -51,7 +51,7 @@ void SemanticAnalyzer::visit(ProgramNode &p_program) {
                                                        globalSymTab->level,
                                                        p_program.getReturnType(),
                                                        p_program.getLocation());
-    if (!insertWithCheck(globalSymTab, symbol)) return;
+    insertWithCheck(globalSymTab, symbol);
     // 3. Travere child nodes of this node.
     p_program.visitChildNodes(*this);
     // 4. Perform semantic analyses of this node.
@@ -124,7 +124,7 @@ void SemanticAnalyzer::visit(VariableNode &p_variable) {
                                                       p_variable.getLocation());
         break;
     }
-    if (!insertWithCheck(symTab, symbol)) return;
+    insertWithCheck(symTab, symbol);
     // 3. Travere child nodes of this node.
     p_variable.visitChildNodes(*this);
     // 4. Perform semantic analyses of this node.
@@ -172,7 +172,7 @@ void SemanticAnalyzer::visit(FunctionNode &p_function) {
                                                         p_function.getLocation());
     auto newSymTab = std::make_shared<SymbolTable>(symTab, symTab->level + 1);
     symTab->addChild(newSymTab);
-    if (!insertWithCheck(symTab, symbol)) return;
+    insertWithCheck(symTab, symbol);
     symbol_mgr.pushScope(newSymTab);
     // 3. Travere child nodes of this node.
     p_function.visitChildNodes(*this);
@@ -215,17 +215,28 @@ void SemanticAnalyzer::visit(PrintNode &p_print) {
 }
 
 void SemanticAnalyzer::visit(BinaryOperatorNode &p_bin_op) {
-    /*
-     * TODO:
-     *
-     * 1. Push a new symbol table if this node forms a scope.
-     * 2. Insert the symbol into current symbol table if this node is related to
-     *    declaration (ProgramNode, VariableNode, FunctionNode).
-     * 3. Travere child nodes of this node.
-     * 4. Perform semantic analyses of this node.
-     * 5. Pop the symbol table pushed at the 1st step.
-     */
+    // 1. Push a new symbol table if this node forms a scope.
+    // 2. Insert the symbol into current symbol table if this node is related to
+    //    declaration (ProgramNode, VariableNode, FunctionNode).
+    // 3. Travere child nodes of this node.
     p_bin_op.visitChildNodes(*this);
+    // 4. Perform semantic analyses of this node.
+    // auto lexpr = p_bin_op.getLExpr();
+    // auto rexpr = p_bin_op.getRExpr();
+    // if (!hasErrorAt(lexpr->getLocation().line, lexpr->getLocation().col) &&
+    //     !hasErrorAt(rexpr->getLocation().line, rexpr->getLocation().col)) {
+    //     auto lexpr_type = lexpr->getType();
+    //     auto rexpr_type = rexpr->getType();
+    //     auto is_int_or_real = (lexpr_type->kind == TypeKind::integer ||
+    //                            lexpr_type->kind == TypeKind::real) &&
+    //                           (rexpr_type->kind == TypeKind::integer ||
+    //                            rexpr_type->kind == TypeKind::real);
+    //     auto coerce_type = coerce(lexpr_type, rexpr_type);
+    //     if (!is_int_or_real || (lexpr_type->kind != rexpr_type->kind && coerce_type == nullptr)) {
+
+    //     }
+    // }
+    // 5. Pop the symbol table pushed at the 1st step.
 }
 
 void SemanticAnalyzer::visit(UnaryOperatorNode &p_un_op) {
@@ -265,6 +276,7 @@ void SemanticAnalyzer::visit(VariableReferenceNode &p_variable_ref) {
     p_variable_ref.visitChildNodes(*this);
     // 4. Perform semantic analyses of this node.
     auto symbol = symTab->lookup(p_variable_ref.getNameStr());
+    // The identifier has to be in symbol tables.
     if (symbol == nullptr) {
         fprintf(stderr, "<Error> Found in line %u, column %u: use of undeclared symbol '%s'\n"
                         "    %s\n"
@@ -276,6 +288,7 @@ void SemanticAnalyzer::visit(VariableReferenceNode &p_variable_ref) {
         recordError(p_variable_ref.getLocation().line, p_variable_ref.getLocation().col);
         return;
     }
+    // The kind of symbol has to be a parameter, variable, loop_var, or constant.
     else if (symbol->getKind() != SymbolEntryKind::parameter &&
              symbol->getKind() != SymbolEntryKind::variable &&
              symbol->getKind() != SymbolEntryKind::loop_var &&
@@ -290,6 +303,38 @@ void SemanticAnalyzer::visit(VariableReferenceNode &p_variable_ref) {
         recordError(p_variable_ref.getLocation().line, p_variable_ref.getLocation().col);
         return;
     }
+    for (auto &e : p_variable_ref.getExprs()) {
+        // Skip the rest of semantic checks if there are any errors in the node of the declaration of the refered symbol
+        if (hasErrorAt(symbol->location.line, symbol->location.col)) {
+            return;
+        }
+        // Each index of an array reference must be of the integer type.
+        if (e->getType()->kind != TypeKind::integer) {
+            auto index_col = p_variable_ref.getLocation().col + p_variable_ref.getNameStr().length() + 1;
+            fprintf(stderr, "<Error> Found in line %u, column %lu: index of array reference must be an integer\n"
+                            "    %s\n"
+                            "    %s\n",
+                            p_variable_ref.getLocation().line, index_col,
+                            getSourceLine(p_variable_ref.getLocation().line).c_str(),
+                            getErrIndicator(index_col).c_str());
+            recordError(p_variable_ref.getLocation().line, p_variable_ref.getLocation().col);
+            return;
+        }
+    }
+    // An over array subscript is forbidden, that is, the number of indices of an array reference cannot be greater than the one of dimensions in the declaration.
+    if (symbol->getType()->dim.size() < p_variable_ref.getExprs().size()) {
+        fprintf(stderr, "<Error> Found in line %u, column %u: there is an over array subscript on '%s'\n"
+                        "    %s\n"
+                        "    %s\n",
+                        p_variable_ref.getLocation().line, p_variable_ref.getLocation().col,
+                        p_variable_ref.getNameStr().c_str(),
+                        getSourceLine(p_variable_ref.getLocation().line).c_str(),
+                        getErrIndicator(p_variable_ref.getLocation().col).c_str());
+        recordError(p_variable_ref.getLocation().line, p_variable_ref.getLocation().col);
+        return;
+    }
+    // back propagate type information
+
     // 5. Pop the symbol table pushed at the 1st step.
 }
 
@@ -438,4 +483,18 @@ void SemanticAnalyzer::recordError(long lineno, long col) {
 bool SemanticAnalyzer::hasErrorAt(long lineno, long col) {
     auto &err_in_line = error_list[lineno];
     return std::find(err_in_line.begin(), err_in_line.end(), col) != err_in_line.end();
+}
+
+std::shared_ptr<TypeStruct> SemanticAnalyzer::coerce(std::shared_ptr<TypeStruct> t1,
+                                                     std::shared_ptr<TypeStruct> t2) {
+    // Type coercion is not permitted for array
+    if (t1->isArray() || t2->isArray()) return nullptr;
+
+    if (t1->kind == TypeKind::real && t2->kind == TypeKind::integer) {
+        return t1;        
+    }
+    else if (t2->kind == TypeKind::real && t1->kind == TypeKind::integer) {
+        return t2;
+    }
+    return nullptr;
 }

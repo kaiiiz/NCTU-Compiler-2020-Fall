@@ -39,6 +39,10 @@ std::string BinaryOperatorNode::getOPString() {
     }
 }
 
+std::shared_ptr<ExpressionBase> BinaryOperatorNode::getLExpr() { return lexpr; }
+
+std::shared_ptr<ExpressionBase> BinaryOperatorNode::getRExpr() { return rexpr; }
+
 void BinaryOperatorNode::accept(AstNodeVisitor &p_visitor) {
     p_visitor.visit(*this);
 }
