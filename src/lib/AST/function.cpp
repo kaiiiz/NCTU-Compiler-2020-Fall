@@ -8,13 +8,13 @@
 
 FunctionNode::FunctionNode(const uint32_t line, const uint32_t col,
                            std::string name, std::vector<std::shared_ptr<DeclNode>> parameters,
-                           std::shared_ptr<TypeBase> return_type)
+                           std::shared_ptr<TypeStruct> return_type)
     : AstNode{line, col}, name(name), parameters(parameters), return_type(return_type) {}
 
 
 FunctionNode::FunctionNode(const uint32_t line, const uint32_t col,
                            std::string name, std::vector<std::shared_ptr<DeclNode>> parameters,
-                           std::shared_ptr<TypeBase> return_type,
+                           std::shared_ptr<TypeStruct> return_type,
                            std::shared_ptr<CompoundStatementNode> compound_stmt)
     : AstNode{line, col}, name(name), parameters(parameters),
       return_type(return_type), compound_stmt(compound_stmt) {}
@@ -35,10 +35,10 @@ std::string FunctionNode::getFuncProtoType() {
     return s;
 }
 
-std::shared_ptr<TypeBase> FunctionNode::getRetType() { return return_type; }
+std::shared_ptr<TypeStruct> FunctionNode::getRetType() { return return_type; }
 
-std::vector<std::shared_ptr<TypeBase>> FunctionNode::getParamTypeList() {
-    std::vector<std::shared_ptr<TypeBase>> param_type;
+std::vector<std::shared_ptr<TypeStruct>> FunctionNode::getParamTypeList() {
+    std::vector<std::shared_ptr<TypeStruct>> param_type;
     for (auto &p : parameters) {
         param_type.push_back(p->getType());
     }

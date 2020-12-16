@@ -6,8 +6,7 @@
 #include <vector>
 
 #include "AST/ast.hpp"
-#include "type/base.hpp"
-#include "type/scalar.hpp"
+#include "type/struct.hpp"
 
 enum class SymbolEntryKind {
     program,
@@ -20,7 +19,7 @@ enum class SymbolEntryKind {
 
 class SymbolEntry {
    public:
-    SymbolEntry(std::string name, SymbolEntryKind kind, uint32_t level, std::shared_ptr<TypeBase> type, const Location &loc);
+    SymbolEntry(std::string name, SymbolEntryKind kind, uint32_t level, std::shared_ptr<TypeStruct> type, const Location &loc);
 
     std::string getNameStr();
     std::string getKindStr();
@@ -34,7 +33,7 @@ class SymbolEntry {
     std::string name;
     SymbolEntryKind kind;
     uint32_t level;
-    std::shared_ptr<TypeBase> type;
+    std::shared_ptr<TypeStruct> type;
 };
 
 #endif

@@ -8,7 +8,7 @@
 
 class ProgramSymbolEntry : public SymbolEntry {
    public:
-    ProgramSymbolEntry(std::string name, uint32_t level, std::shared_ptr<TypeBase> type, const Location &loc);
+    ProgramSymbolEntry(std::string name, uint32_t level, std::shared_ptr<TypeStruct> type, const Location &loc);
 
     std::string getAttributeStr() override;
 };

@@ -6,7 +6,7 @@
 
 #include "AST/ast.hpp"
 
-class TypeBase;
+class TypeStruct;
 class ConstantValueNode;
 
 enum class VariableKind {
@@ -19,10 +19,10 @@ enum class VariableKind {
 class VariableNode : public AstNode {
    public:
     VariableNode(const uint32_t line, const uint32_t col, std::string name);
-    VariableNode(const uint32_t line, const uint32_t col, std::string name, std::shared_ptr<TypeBase> type);
+    VariableNode(const uint32_t line, const uint32_t col, std::string name, std::shared_ptr<TypeStruct> type);
     ~VariableNode() = default;
 
-    void fillAttribute(std::shared_ptr<TypeBase> type);
+    void fillAttribute(std::shared_ptr<TypeStruct> type);
     void fillAttribute(std::shared_ptr<ConstantValueNode> literal_const);
     void fillAttribute(VariableKind kind);
     std::string getNameStr();
@@ -33,7 +33,7 @@ class VariableNode : public AstNode {
         return std::dynamic_pointer_cast<T>(literal_const);
     }
 
-    std::shared_ptr<TypeBase> getType();
+    std::shared_ptr<TypeStruct> getType();
     VariableKind getVarKind();
 
     void accept(AstNodeVisitor &p_visitor) override;
@@ -41,7 +41,7 @@ class VariableNode : public AstNode {
 
    protected:
     std::string name;
-    std::shared_ptr<TypeBase> type;
+    std::shared_ptr<TypeStruct> type;
     std::shared_ptr<ConstantValueNode> literal_const;
     VariableKind kind;
 };

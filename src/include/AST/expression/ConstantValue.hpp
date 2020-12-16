@@ -4,16 +4,16 @@
 #include <memory>
 
 #include "AST/base/ExpressionBase.hpp"
-#include "type/base.hpp"
+#include "type/struct.hpp"
 
 class VariableNode;
 
 class ConstantValueNode : public ExpressionBase {
   public:
-    ConstantValueNode(const uint32_t line, const uint32_t col, std::shared_ptr<TypeBase> type);
+    ConstantValueNode(const uint32_t line, const uint32_t col, std::shared_ptr<TypeStruct> type);
     ~ConstantValueNode() = default;
 
-    std::shared_ptr<TypeBase> getType();
+    std::shared_ptr<TypeStruct> getType();
     virtual std::string getValueString() = 0;
     template<typename T>
     std::shared_ptr<T> getConstValueNode();
@@ -22,7 +22,7 @@ class ConstantValueNode : public ExpressionBase {
     void visitChildNodes(AstNodeVisitor &p_visitor) override;
 
   private:
-    std::shared_ptr<TypeBase> type;
+    std::shared_ptr<TypeStruct> type;
 };
 
 #endif

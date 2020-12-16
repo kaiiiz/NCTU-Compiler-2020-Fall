@@ -4,14 +4,14 @@
 #include "visitor/AstDumper.hpp"
 #include "AST/decl.hpp"
 #include "AST/variable.hpp"
-#include "type/base.hpp"
+#include "type/struct.hpp"
 
 DeclNode::DeclNode(const uint32_t line, const uint32_t col,
                    std::vector<std::shared_ptr<VariableNode>> var_list,
-                   std::shared_ptr<TypeBase> type)
+                   std::shared_ptr<TypeStruct> type)
     : AstNode{line, col}, var_list(var_list), type(type) {}
 
-std::shared_ptr<TypeBase> DeclNode::getType() { return type; }
+std::shared_ptr<TypeStruct> DeclNode::getType() { return type; }
 
 std::string DeclNode::getTypeStr() { return type->getTypeStr(); }
 

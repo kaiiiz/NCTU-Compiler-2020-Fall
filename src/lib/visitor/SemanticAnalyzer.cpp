@@ -37,8 +37,7 @@
 #include "sema/SymbolManager.hpp"
 #include "sema/SymbolTable.hpp"
 
-#include "type/base.hpp"
-#include "type/array.hpp"
+#include "type/struct.hpp"
 
 SemanticAnalyzer::SemanticAnalyzer(SymbolManager &symbol_mgr, std::vector<long> &line_head, std::string source_filename)
     : symbol_mgr(symbol_mgr), line_head(line_head), source_filename(source_filename) {}
@@ -83,7 +82,7 @@ void SemanticAnalyzer::visit(VariableNode &p_variable) {
                                                     p_variable.getLocation());
         break;
     case VariableKind::constant:
-        switch (p_variable.getType()->getTypeKind()) {
+        switch (p_variable.getType()->kind) {
         case TypeKind::boolean:
             symbol = std::make_shared<ConstBoolSymbolEntry>(
                 p_variable.getNameStr(), symTab->level, p_variable.getType(),
@@ -129,10 +128,9 @@ void SemanticAnalyzer::visit(VariableNode &p_variable) {
     // 3. Travere child nodes of this node.
     p_variable.visitChildNodes(*this);
     // 4. Perform semantic analyses of this node.
-    if (p_variable.getType()->is_array) {
-        auto arr_type = std::dynamic_pointer_cast<ArrayType>(p_variable.getType());
-        auto arr_dim = arr_type->getDim();
-        for (auto &d : arr_dim) {
+    auto var_type = p_variable.getType();
+    if (var_type->isArray()) {
+        for (auto &d : var_type->dim) {
             if (d <= 0) {
                 fprintf(stderr, "<Error> Found in line %u, column %u: '%s' declared as an array with an index that is not greater than 0\n"
                                 "    %s\n"

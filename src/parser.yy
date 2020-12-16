@@ -12,10 +12,7 @@
 #include <vector>
 #include <memory>
 
-#include "type/scalar.hpp"
-#include "type/base.hpp"
-#include "type/array.hpp"
-#include "type/void.hpp"
+#include "type/struct.hpp"
 
 #include "AST/ast.hpp"
 #include "AST/program.hpp"
@@ -113,10 +110,8 @@ extern char *yytext;
 %type <std::vector<std::shared_ptr<VariableNode>>> IdList;
 %type <std::shared_ptr<DeclNode>> Declaration FormalArg;
 %type <std::vector<std::shared_ptr<DeclNode>>> FormalArgs FormalArgList Declarations DeclarationList;
-%type <std::shared_ptr<TypeBase>> Type ReturnType;
-%type <std::shared_ptr<ScalarType>> ScalarType;
+%type <std::shared_ptr<TypeStruct>> Type ArrType ReturnType ScalarType;
 %type <std::vector<int64_t>> ArrDecl;
-%type <std::shared_ptr<ArrayType>> ArrType;
 %type <std::shared_ptr<ConstantValueNode>> IntegerAndReal StringAndBoolean LiteralConstant;
 %type <std::shared_ptr<FunctionNode>> FunctionDeclaration FunctionDefinition Function;
 %type <std::vector<std::shared_ptr<FunctionNode>>> Functions FunctionList;
@@ -145,7 +140,7 @@ Program:
     /* End of ProgramBody */
     END {
         $5->fillAttribute(CompoundKind::normal);
-        drv.root = std::make_shared<ProgramNode>(@1.begin.line, @1.begin.column, $1, std::make_shared<VoidType>(), $3, $4, $5);
+        drv.root = std::make_shared<ProgramNode>(@1.begin.line, @1.begin.column, $1, std::make_shared<TypeStruct>(TypeKind::void_), $3, $4, $5);
     }
 ;
 
@@ -237,9 +232,9 @@ IdList:
 ;
 
 ReturnType:
-    COLON ScalarType { $$ = std::dynamic_pointer_cast<TypeBase>($2); }
+    COLON ScalarType { $$ = $2; }
     |
-    Epsilon { $$ = std::dynamic_pointer_cast<TypeBase>(std::make_shared<VoidType>()); }
+    Epsilon { $$ = std::make_shared<TypeStruct>(TypeKind::void_); }
 ;
 
     /*
@@ -265,23 +260,23 @@ Declaration:
 ;
 
 Type:
-    ScalarType { $$ = std::dynamic_pointer_cast<TypeBase>($1); }
+    ScalarType { $$ = $1; }
     |
-    ArrType { $$ = std::dynamic_pointer_cast<TypeBase>($1); }
+    ArrType { $$ = $1; }
 ;
 
 ScalarType:
-    INTEGER { $$ = std::make_shared<ScalarType>(TypeKind::integer); }
+    INTEGER { $$ = std::make_shared<TypeStruct>(TypeKind::integer); }
     |
-    REAL { $$ = std::make_shared<ScalarType>(TypeKind::real); }
+    REAL { $$ = std::make_shared<TypeStruct>(TypeKind::real); }
     |
-    STRING { $$ = std::make_shared<ScalarType>(TypeKind::string); }
+    STRING { $$ = std::make_shared<TypeStruct>(TypeKind::string); }
     |
-    BOOLEAN { $$ = std::make_shared<ScalarType>(TypeKind::boolean); }
+    BOOLEAN { $$ = std::make_shared<TypeStruct>(TypeKind::boolean); }
 ;
 
 ArrType:
-    ArrDecl ScalarType { $$ = std::make_shared<ArrayType>($2->getTypeKind(), $1); }
+    ArrDecl ScalarType { $$ = std::make_shared<TypeStruct>($2->kind, $1); }
 ;
 
 ArrDecl:
@@ -447,7 +442,7 @@ For:
     CompoundStatement
     END DO {
         // make declaration
-        auto type = std::make_shared<ScalarType>(TypeKind::integer);
+        auto type = std::make_shared<TypeStruct>(TypeKind::integer);
         auto var = std::make_shared<VariableNode>(@2.begin.line, @2.begin.column, $2, type);
         var->fillAttribute(VariableKind::loop_var);
         auto var_list = std::vector<std::shared_ptr<VariableNode>>{var};

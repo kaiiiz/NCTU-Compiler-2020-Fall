@@ -7,19 +7,18 @@
 
 #include "AST/ast.hpp"
 
-class TypeBase;
-class ArrayType;
+class TypeStruct;
 class VariableNode;
 
 class DeclNode : public AstNode {
   public:
     DeclNode(const uint32_t line, const uint32_t col,
              std::vector<std::shared_ptr<VariableNode>> var_list,
-             std::shared_ptr<TypeBase> type);
+             std::shared_ptr<TypeStruct> type);
 
     ~DeclNode() = default;
 
-    std::shared_ptr<TypeBase> getType();
+    std::shared_ptr<TypeStruct> getType();
     std::string getTypeStr();
     int32_t getVarNum();
 
@@ -28,7 +27,7 @@ class DeclNode : public AstNode {
 
   private:
     std::vector<std::shared_ptr<VariableNode>> var_list;
-    std::shared_ptr<TypeBase> type;
+    std::shared_ptr<TypeStruct> type;
 };
 
 #endif

@@ -3,18 +3,17 @@
 #include "AST/variable.hpp"
 #include "AST/expression/ConstantValue.hpp"
 #include "visitor/AstDumper.hpp"
-#include "type/base.hpp"
-#include "type/scalar.hpp"
+#include "type/struct.hpp"
 
 VariableNode::VariableNode(const uint32_t line, const uint32_t col,
                            std::string name)
     : AstNode{line, col}, name(name) {}
 
 VariableNode::VariableNode(const uint32_t line, const uint32_t col,
-                           std::string name, std::shared_ptr<TypeBase> type)
+                           std::string name, std::shared_ptr<TypeStruct> type)
     : AstNode{line, col}, name(name), type(type) {}
 
-void VariableNode::fillAttribute(std::shared_ptr<TypeBase> type_attr) {
+void VariableNode::fillAttribute(std::shared_ptr<TypeStruct> type_attr) {
     if (type != nullptr) {
         return;
     }
@@ -33,7 +32,7 @@ void VariableNode::fillAttribute(VariableKind var_kind) {
     kind = var_kind;
 }
 
-std::shared_ptr<TypeBase> VariableNode::getType() { return type; }
+std::shared_ptr<TypeStruct> VariableNode::getType() { return type; }
 
 std::string VariableNode::getNameStr() { return name; }
 

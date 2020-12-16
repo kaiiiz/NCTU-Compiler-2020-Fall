@@ -7,16 +7,16 @@
 
 #include "sema/SymbolEntry.hpp"
 
-class TypeBase;
+class TypeStruct;
 
 class FunctionSymbolEntry : public SymbolEntry {
    public:
-    FunctionSymbolEntry(std::string name, uint32_t level, std::shared_ptr<TypeBase> type, std::vector<std::shared_ptr<TypeBase>> param_type, const Location &loc);
+    FunctionSymbolEntry(std::string name, uint32_t level, std::shared_ptr<TypeStruct> type, std::vector<std::shared_ptr<TypeStruct>> param_type, const Location &loc);
 
     std::string getAttributeStr() override;
 
    private:
-    std::vector<std::shared_ptr<TypeBase>> param_type;
+    std::vector<std::shared_ptr<TypeStruct>> param_type;
 };
 
 #endif

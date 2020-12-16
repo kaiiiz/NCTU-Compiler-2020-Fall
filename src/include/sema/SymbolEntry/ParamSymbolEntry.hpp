@@ -6,11 +6,11 @@
 
 #include "sema/SymbolEntry.hpp"
 
-class TypeBase;
+class TypeStruct;
 
 class ParamSymbolEntry : public SymbolEntry {
    public:
-    ParamSymbolEntry(std::string name, uint32_t level, std::shared_ptr<TypeBase> type, const Location &loc);
+    ParamSymbolEntry(std::string name, uint32_t level, std::shared_ptr<TypeStruct> type, const Location &loc);
 
     std::string getAttributeStr() override;
 };

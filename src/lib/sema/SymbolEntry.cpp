@@ -1,9 +1,9 @@
 #include <memory>
 
-#include "type/base.hpp"
+#include "type/struct.hpp"
 #include "sema/SymbolEntry.hpp"
 
-SymbolEntry::SymbolEntry(std::string name, SymbolEntryKind kind, std::uint32_t level, std::shared_ptr<TypeBase> type, const Location &loc)
+SymbolEntry::SymbolEntry(std::string name, SymbolEntryKind kind, std::uint32_t level, std::shared_ptr<TypeStruct> type, const Location &loc)
     : location(loc), name(name), kind(kind), level(level), type(type) {}
 
 std::string SymbolEntry::getNameStr() { return name; }
