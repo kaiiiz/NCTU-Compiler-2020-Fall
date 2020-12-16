@@ -259,17 +259,40 @@ void SemanticAnalyzer::visit(FunctionInvocationNode &p_func_invocation) {
 }
 
 void SemanticAnalyzer::visit(VariableReferenceNode &p_variable_ref) {
-    /*
-     * TODO:
-     *
-     * 1. Push a new symbol table if this node forms a scope.
-     * 2. Insert the symbol into current symbol table if this node is related to
-     *    declaration (ProgramNode, VariableNode, FunctionNode).
-     * 3. Travere child nodes of this node.
-     * 4. Perform semantic analyses of this node.
-     * 5. Pop the symbol table pushed at the 1st step.
-     */
+    // 1. Push a new symbol table if this node forms a scope.
+    auto symTab = symbol_mgr.currentSymTab();
+    // 2. Insert the symbol into current symbol table if this node is related to
+    //    declaration (ProgramNode, VariableNode, FunctionNode).
+    // 3. Travere child nodes of this node.
     p_variable_ref.visitChildNodes(*this);
+    // 4. Perform semantic analyses of this node.
+    auto symbol = symTab->lookup(p_variable_ref.getNameStr());
+    if (symbol == nullptr) {
+        fprintf(stderr, "<Error> Found in line %u, column %u: use of undeclared symbol '%s'\n"
+                        "    %s\n"
+                        "    %s\n",
+                        p_variable_ref.getLocation().line, p_variable_ref.getLocation().col,
+                        p_variable_ref.getNameStr().c_str(),
+                        getSourceLine(p_variable_ref.getLocation().line).c_str(),
+                        getErrIndicator(p_variable_ref.getLocation().col).c_str());
+        recordError(p_variable_ref.getLocation().line, p_variable_ref.getLocation().col);
+        return;
+    }
+    else if (symbol->getKind() != SymbolEntryKind::parameter &&
+             symbol->getKind() != SymbolEntryKind::variable &&
+             symbol->getKind() != SymbolEntryKind::loop_var &&
+             symbol->getKind() != SymbolEntryKind::constant) {
+        fprintf(stderr, "<Error> Found in line %u, column %u: use of non-variable symbol '%s'\n"
+                        "    %s\n"
+                        "    %s\n",
+                        p_variable_ref.getLocation().line, p_variable_ref.getLocation().col,
+                        p_variable_ref.getNameStr().c_str(),
+                        getSourceLine(p_variable_ref.getLocation().line).c_str(),
+                        getErrIndicator(p_variable_ref.getLocation().col).c_str());
+        recordError(p_variable_ref.getLocation().line, p_variable_ref.getLocation().col);
+        return;
+    }
+    // 5. Pop the symbol table pushed at the 1st step.
 }
 
 void SemanticAnalyzer::visit(AssignmentNode &p_assignment) {
