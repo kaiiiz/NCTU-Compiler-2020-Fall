@@ -2,7 +2,7 @@
 
 #include "type/base.hpp"
 
-TypeBase::TypeBase(TypeKind t) : kind(t) {}
+TypeBase::TypeBase(TypeKind t, bool is_array) : kind(t), is_array(is_array) {}
 
 TypeBase::~TypeBase() {}
 

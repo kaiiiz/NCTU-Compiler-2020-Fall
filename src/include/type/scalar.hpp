@@ -11,9 +11,6 @@ class ScalarType : public TypeBase {
     ~ScalarType();
 
     std::string getTypeStr() override;
-
-   protected:
-    std::string getScalarTypeName();
 };
 
 #endif  // __TYPE_SCALAR

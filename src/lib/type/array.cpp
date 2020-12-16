@@ -4,7 +4,7 @@
 #include "type/scalar.hpp"
 #include "type/array.hpp"
 
-ArrayType::ArrayType(TypeKind t, std::vector<int64_t> dim) : ScalarType{t}, dim(dim) {}
+ArrayType::ArrayType(TypeKind t, std::vector<int64_t> dim) : TypeBase{t, true}, dim(dim) {}
 
 ArrayType::~ArrayType() {}
 
@@ -16,4 +16,8 @@ std::string ArrayType::getTypeStr() {
         s += "]";
     }
     return s;
+}
+
+std::vector<int64_t> ArrayType::getDim() {
+    return dim;
 }

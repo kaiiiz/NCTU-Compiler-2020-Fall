@@ -7,12 +7,13 @@
 
 #include "type/scalar.hpp"
 
-class ArrayType : public ScalarType {
+class ArrayType : public TypeBase {
    public:
     ArrayType(TypeKind t, std::vector<int64_t> dim);
     ~ArrayType();
 
     std::string getTypeStr() override;
+    std::vector<int64_t> getDim();
 
    private:
     std::vector<int64_t> dim;

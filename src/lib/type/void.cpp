@@ -3,7 +3,7 @@
 
 #include "type/void.hpp"
 
-VoidType::VoidType() : TypeBase(TypeKind::void_) {}
+VoidType::VoidType() : TypeBase(TypeKind::void_, false) {}
 
 VoidType::~VoidType() {}
 

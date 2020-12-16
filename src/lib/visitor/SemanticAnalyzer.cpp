@@ -36,7 +36,9 @@
 #include "sema/SymbolEntry/VarSymbolEntry.hpp"
 #include "sema/SymbolManager.hpp"
 #include "sema/SymbolTable.hpp"
+
 #include "type/base.hpp"
+#include "type/array.hpp"
 
 SemanticAnalyzer::SemanticAnalyzer(SymbolManager &symbol_mgr, std::vector<long> &line_head, std::string source_filename)
     : symbol_mgr(symbol_mgr), line_head(line_head), source_filename(source_filename) {}
@@ -127,6 +129,22 @@ void SemanticAnalyzer::visit(VariableNode &p_variable) {
     // 3. Travere child nodes of this node.
     p_variable.visitChildNodes(*this);
     // 4. Perform semantic analyses of this node.
+    if (p_variable.getType()->is_array) {
+        auto arr_type = std::dynamic_pointer_cast<ArrayType>(p_variable.getType());
+        auto arr_dim = arr_type->getDim();
+        for (auto &d : arr_dim) {
+            if (d <= 0) {
+                fprintf(stderr, "<Error> Found in line %u, column %u: '%s' declared as an array with an index that is not greater than 0\n"
+                                "    %s\n"
+                                "    %s\n",
+                                p_variable.getLocation().line, p_variable.getLocation().col, p_variable.getNameStr().c_str(),
+                                getSourceLine(p_variable.getLocation().line).c_str(),
+                                getErrIndicator(p_variable.getLocation().col).c_str());
+                recordError(p_variable.getLocation().line, p_variable.getLocation().col);
+                return;
+            }
+        }
+    }
     // 5. Pop the symbol table pushed at the 1st step.
 }
 

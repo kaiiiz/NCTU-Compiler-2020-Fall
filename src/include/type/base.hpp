@@ -13,7 +13,7 @@ enum class TypeKind {
 
 class TypeBase {
    public:
-    TypeBase(TypeKind t);
+    TypeBase(TypeKind t, const bool is_array);
     ~TypeBase();
 
     virtual std::string getTypeStr() = 0;
@@ -21,6 +21,9 @@ class TypeBase {
 
    private:
     TypeKind kind;
+
+   public:
+    const bool is_array;
 
    protected:
     std::string getTypeKindStr();
