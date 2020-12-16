@@ -29,9 +29,9 @@ class driver {
     yy::location location; // The token's location used by the scanner.
     std::vector<long> line_head;
     std::string buf;
-    int32_t opt_src = 1;
-    int32_t opt_tok = 1;
-    int32_t opt_dump_symtab = 1;
+    bool opt_src = 1;
+    bool opt_tok = 1;
+    bool opt_dump_symtab = 1;
 
     // Parser Context
     int parse(const std::string &f);

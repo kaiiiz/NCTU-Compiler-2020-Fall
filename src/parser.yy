@@ -606,10 +606,12 @@ int main(int argc, const char *argv[]) {
         drv.symbol_mgr.dumpSymTab();
     }
 
-    printf("\n"
-           "|---------------------------------------------------|\n"
-           "|  There is no syntactic error and semantic error!  |\n"
-           "|---------------------------------------------------|\n");
+    if (!analyzer.hasError()) {
+        printf("\n"
+            "|---------------------------------------------------|\n"
+            "|  There is no syntactic error and semantic error!  |\n"
+            "|---------------------------------------------------|\n");
+    }
 
     return 0;
 }

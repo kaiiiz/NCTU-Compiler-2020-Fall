@@ -4,7 +4,7 @@
 #include "sema/SymbolEntry.hpp"
 
 SymbolEntry::SymbolEntry(std::string name, SymbolEntryKind kind, std::uint32_t level, std::shared_ptr<TypeBase> type, const Location &loc)
-    : name(name), kind(kind), level(level), type(type), location(loc) {}
+    : location(loc), name(name), kind(kind), level(level), type(type) {}
 
 std::string SymbolEntry::getNameStr() { return name; }
 
@@ -26,6 +26,8 @@ std::string SymbolEntry::getKindStr() {
             return "<not handled symbol entry>";
     }
 }
+
+SymbolEntryKind SymbolEntry::getKind() { return kind; }
 
 int SymbolEntry::getLevel() { return level; }
 

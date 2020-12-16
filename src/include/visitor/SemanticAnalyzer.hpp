@@ -3,6 +3,7 @@
 
 #include <vector>
 #include <string>
+#include <unordered_map>
 
 #include "visitor/AstNodeVisitor.hpp"
 #include "sema/SymbolManager.hpp"
@@ -32,14 +33,19 @@ class SemanticAnalyzer : public AstNodeVisitor {
     void visit(ForNode &p_for) override;
     void visit(ReturnNode &p_return) override;
     void dumpSymTab();
+    bool hasError();
 
   private:
-    void insertWithCheck(std::shared_ptr<SymbolTable> sym_tab, std::shared_ptr<SymbolEntry> symbol);
+    bool insertWithCheck(std::shared_ptr<SymbolTable> sym_tab, std::shared_ptr<SymbolEntry> symbol);
     std::string getSourceLine(long lineno);
     std::string getErrIndicator(long col);
+    void recordError(long lineno, long col);
+    bool hasErrorAt(long lineno, long col);
+
     SymbolManager& symbol_mgr;
     std::vector<long> &line_head;
     std::string source_filename;
+    std::unordered_map<long, std::vector<long>> error_list; // [lineno] = list(col)
 };
 
 #endif

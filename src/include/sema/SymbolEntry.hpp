@@ -24,6 +24,7 @@ class SymbolEntry {
 
     std::string getNameStr();
     std::string getKindStr();
+    SymbolEntryKind getKind();
     int getLevel();
     std::string getTypeStr();
     virtual std::string getAttributeStr() = 0;

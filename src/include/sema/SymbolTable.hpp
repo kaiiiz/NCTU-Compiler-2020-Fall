@@ -8,7 +8,7 @@
 
 class SymbolEntry;
 
-class SymbolTable {
+class SymbolTable : public std::enable_shared_from_this<SymbolTable> {
    public:
     SymbolTable(std::shared_ptr<SymbolTable> parent, const std::uint32_t level);
 

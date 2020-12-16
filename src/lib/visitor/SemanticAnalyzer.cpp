@@ -3,6 +3,7 @@
 #include <iostream>
 #include <vector>
 #include <fstream>
+#include <algorithm>
 
 #include "AST/decl.hpp"
 #include "AST/expression/BinaryOperator.hpp"
@@ -38,19 +39,18 @@
 #include "type/base.hpp"
 
 SemanticAnalyzer::SemanticAnalyzer(SymbolManager &symbol_mgr, std::vector<long> &line_head, std::string source_filename)
-    : symbol_mgr(symbol_mgr), line_head(line_head), source_filename(source_filename) {
-}
+    : symbol_mgr(symbol_mgr), line_head(line_head), source_filename(source_filename) {}
 
 void SemanticAnalyzer::visit(ProgramNode &p_program) {
     // 1. Push a new symbol table if this node forms a scope.
-    auto globalSymTab = symbol_mgr.currentSymTab();  // global symbol table
+    auto globalSymTab = symbol_mgr.currentSymTab();
     // 2. Insert the symbol into current symbol table if this node is related to
     //    declaration (ProgramNode, VariableNode, FunctionNode).
     auto symbol = std::make_shared<ProgramSymbolEntry>(p_program.getProgramName(),
                                                        globalSymTab->level,
                                                        p_program.getReturnType(),
                                                        p_program.getLocation());
-    insertWithCheck(globalSymTab, symbol);
+    if (!insertWithCheck(globalSymTab, symbol)) return;
     // 3. Travere child nodes of this node.
     p_program.visitChildNodes(*this);
     // 4. Perform semantic analyses of this node.
@@ -123,7 +123,7 @@ void SemanticAnalyzer::visit(VariableNode &p_variable) {
                                                       p_variable.getLocation());
         break;
     }
-    insertWithCheck(symTab, symbol);
+    if (!insertWithCheck(symTab, symbol)) return;
     // 3. Travere child nodes of this node.
     p_variable.visitChildNodes(*this);
     // 4. Perform semantic analyses of this node.
@@ -154,9 +154,9 @@ void SemanticAnalyzer::visit(FunctionNode &p_function) {
                                                         p_function.getRetType(),
                                                         p_function.getParamTypeList(),
                                                         p_function.getLocation());
-    insertWithCheck(symTab, symbol);
     auto newSymTab = std::make_shared<SymbolTable>(symTab, symTab->level + 1);
     symTab->addChild(newSymTab);
+    if (!insertWithCheck(symTab, symbol)) return;
     symbol_mgr.pushScope(newSymTab);
     // 3. Travere child nodes of this node.
     p_function.visitChildNodes(*this);
@@ -339,20 +339,34 @@ void SemanticAnalyzer::visit(ReturnNode &p_return) {
     p_return.visitChildNodes(*this);
 }
 
-void SemanticAnalyzer::insertWithCheck(std::shared_ptr<SymbolTable> sym_tab,
+bool SemanticAnalyzer::insertWithCheck(std::shared_ptr<SymbolTable> sym_tab,
                                        std::shared_ptr<SymbolEntry> symbol) {
-    std::string symbol_name = symbol->getNameStr();
+    auto symbol_name = symbol->getNameStr();
+    auto exist_symbol = sym_tab->lookup(symbol_name); 
     // normal symbol redeclaration check
-    if (sym_tab->lookup(symbol_name) != nullptr) {
+    if (exist_symbol != nullptr && exist_symbol->getLevel() == symbol->getLevel()) {
         fprintf(stderr, "<Error> Found in line %u, column %u: symbol '%s' is redeclared\n"
-                        "   %s\n"
-                        "   %s\n",
+                        "    %s\n"
+                        "    %s\n",
                         symbol->location.line, symbol->location.col, symbol->getNameStr().c_str(),
                         getSourceLine(symbol->location.line).c_str(),
                         getErrIndicator(symbol->location.col).c_str());
-        return;
+        recordError(symbol->location.line, symbol->location.col);
+        return false;
+    }
+    // loop var redeclaration check
+    else if (exist_symbol != nullptr && exist_symbol->getKind() == SymbolEntryKind::loop_var) {
+        fprintf(stderr, "<Error> Found in line %u, column %u: symbol '%s' is redeclared\n"
+                        "    %s\n"
+                        "    %s\n",
+                        symbol->location.line, symbol->location.col, symbol->getNameStr().c_str(),
+                        getSourceLine(symbol->location.line).c_str(),
+                        getErrIndicator(symbol->location.col).c_str());
+        recordError(symbol->location.line, symbol->location.col);
+        return false;
     }
     sym_tab->insert(symbol);
+    return true;
 }
 
 std::string SemanticAnalyzer::getSourceLine(long lineno) {
@@ -372,4 +386,17 @@ std::string SemanticAnalyzer::getErrIndicator(long col) {
     for (int i = 0; i < col - 1; i++) err_indicator += " ";
     err_indicator += "^";
     return err_indicator;
+}
+
+bool SemanticAnalyzer::hasError() {
+    return !error_list.empty();
+}
+
+void SemanticAnalyzer::recordError(long lineno, long col) {
+    error_list[lineno].push_back(col);
+}
+
+bool SemanticAnalyzer::hasErrorAt(long lineno, long col) {
+    auto &err_in_line = error_list[lineno];
+    return std::find(err_in_line.begin(), err_in_line.end(), col) != err_in_line.end();
 }

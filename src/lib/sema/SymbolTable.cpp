@@ -19,8 +19,13 @@ void SymbolTable::insert(std::shared_ptr<SymbolEntry> symbol) {
 }
 
 std::shared_ptr<SymbolEntry> SymbolTable::lookup(std::string name) {
-    auto find = entries_instance.find(name);
-    return (find != entries_instance.end()) ? find->second : nullptr;
+    auto table = shared_from_this();
+    while (table != nullptr) {
+        auto find = table->entries_instance.find(name);
+        if (find != entries_instance.end()) return find->second;
+        table = table->parent;
+    }
+    return nullptr;
 }
 
 void SymbolTable::dumpDemarcation(const char chr) {
