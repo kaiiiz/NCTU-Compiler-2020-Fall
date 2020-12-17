@@ -23,11 +23,12 @@ enum class BinaryOP {
 
 class BinaryOperatorNode : public ExpressionBase {
   public:
-    BinaryOperatorNode(const uint32_t line, const uint32_t col, BinaryOP op,
+    BinaryOperatorNode(const uint32_t line, const uint32_t col, const BinaryOP op,
                        std::shared_ptr<ExpressionBase> lexpr,
                        std::shared_ptr<ExpressionBase> rexpr);
     ~BinaryOperatorNode() = default;
 
+    const BinaryOP op;
     std::string getOPString();
     std::shared_ptr<ExpressionBase> getLExpr();
     std::shared_ptr<ExpressionBase> getRExpr();
@@ -36,7 +37,6 @@ class BinaryOperatorNode : public ExpressionBase {
     void visitChildNodes(AstNodeVisitor &p_visitor) override;
 
   private:
-    BinaryOP op;
     std::shared_ptr<ExpressionBase> lexpr;
     std::shared_ptr<ExpressionBase> rexpr;
 };

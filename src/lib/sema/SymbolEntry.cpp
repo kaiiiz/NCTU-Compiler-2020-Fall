@@ -34,3 +34,5 @@ int SymbolEntry::getLevel() { return level; }
 std::shared_ptr<TypeStruct> SymbolEntry::getType() { return type; }
 
 std::string SymbolEntry::getTypeStr() { return type->getTypeStr(); }
+
+const Location &SymbolEntry::getLocation() const { return location; }

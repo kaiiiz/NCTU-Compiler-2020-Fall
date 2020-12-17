@@ -1,7 +1,7 @@
 #include "AST/expression/BinaryOperator.hpp"
 #include "visitor/AstDumper.hpp"
 
-BinaryOperatorNode::BinaryOperatorNode(const uint32_t line, const uint32_t col, BinaryOP op,
+BinaryOperatorNode::BinaryOperatorNode(const uint32_t line, const uint32_t col, const BinaryOP op,
                                        std::shared_ptr<ExpressionBase> lexpr,
                                        std::shared_ptr<ExpressionBase> rexpr)
     : ExpressionBase{line, col}, op(op), lexpr(lexpr), rexpr(rexpr) {}

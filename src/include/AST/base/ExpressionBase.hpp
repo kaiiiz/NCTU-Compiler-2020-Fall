@@ -13,6 +13,7 @@ class ExpressionBase : public AstNode {
     ~ExpressionBase();
 
     std::shared_ptr<TypeStruct> getType();
+    void fillAttribute(std::shared_ptr<TypeStruct> type);
 
   protected:
     std::shared_ptr<TypeStruct> type;

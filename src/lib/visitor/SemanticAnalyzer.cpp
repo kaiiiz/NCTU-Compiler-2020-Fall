@@ -39,6 +39,12 @@
 
 #include "type/struct.hpp"
 
+static inline bool is_void(std::shared_ptr<TypeStruct> t) { return t->kind == TypeKind::void_; }
+static inline bool is_real(std::shared_ptr<TypeStruct> t) { return t->kind == TypeKind::real; }
+static inline bool is_int(std::shared_ptr<TypeStruct> t) { return t->kind == TypeKind::integer; }
+static inline bool is_bool(std::shared_ptr<TypeStruct> t) { return t->kind == TypeKind::boolean; }
+static inline bool is_str(std::shared_ptr<TypeStruct> t) { return t->kind == TypeKind::string; }
+
 SemanticAnalyzer::SemanticAnalyzer(SymbolManager &symbol_mgr, std::vector<long> &line_head, std::string source_filename)
     : symbol_mgr(symbol_mgr), line_head(line_head), source_filename(source_filename) {}
 
@@ -221,21 +227,83 @@ void SemanticAnalyzer::visit(BinaryOperatorNode &p_bin_op) {
     // 3. Travere child nodes of this node.
     p_bin_op.visitChildNodes(*this);
     // 4. Perform semantic analyses of this node.
-    // auto lexpr = p_bin_op.getLExpr();
-    // auto rexpr = p_bin_op.getRExpr();
-    // if (!hasErrorAt(lexpr->getLocation().line, lexpr->getLocation().col) &&
-    //     !hasErrorAt(rexpr->getLocation().line, rexpr->getLocation().col)) {
-    //     auto lexpr_type = lexpr->getType();
-    //     auto rexpr_type = rexpr->getType();
-    //     auto is_int_or_real = (lexpr_type->kind == TypeKind::integer ||
-    //                            lexpr_type->kind == TypeKind::real) &&
-    //                           (rexpr_type->kind == TypeKind::integer ||
-    //                            rexpr_type->kind == TypeKind::real);
-    //     auto coerce_type = coerce(lexpr_type, rexpr_type);
-    //     if (!is_int_or_real || (lexpr_type->kind != rexpr_type->kind && coerce_type == nullptr)) {
+    auto lexpr = p_bin_op.getLExpr();
+    auto rexpr = p_bin_op.getRExpr();
+    auto lexpr_type = lexpr->getType();
+    auto rexpr_type = rexpr->getType();
+    // Skip the rest of semantic checks if there are any errors in the nodes of operands
+    if (lexpr_type == nullptr || rexpr_type == nullptr) {
+        return;
+    }
+    auto log_error = [this, &p_bin_op, &lexpr_type, &rexpr_type]() {
+        fprintf(stderr, "<Error> Found in line %u, column %u: "
+                        "invalid operands to binary operator '%s' ('%s' and '%s')\n"
+                        "    %s\n"
+                        "    %s\n",
+                        p_bin_op.getLocation().line, p_bin_op.getLocation().col,
+                        p_bin_op.getOPString().c_str(),
+                        lexpr_type->getTypeStr().c_str(), rexpr_type->getTypeStr().c_str(),
+                        getSourceLine(p_bin_op.getLocation().line).c_str(),
+                        getErrIndicator(p_bin_op.getLocation().col).c_str());
+        recordError(p_bin_op.getLocation().line, p_bin_op.getLocation().col);
+    };
+    // two expression must be non void, non array, same type after coercion
+    if (is_void(lexpr_type) || is_void(rexpr_type) ||
+        lexpr_type->isArray() || rexpr_type->isArray() ||
+        !typeEq(lexpr_type, rexpr_type)) {
+        log_error();
+        return;
+    }
 
-    //     }
-    // }
+    switch (p_bin_op.op) {
+    case BinaryOP::PLUS:
+        if (!((is_int(lexpr_type) || is_real(lexpr_type) || is_str(lexpr_type)) &&
+              (is_int(rexpr_type) || is_real(rexpr_type) || is_str(rexpr_type)))) {
+            log_error();
+            return;
+        }
+        p_bin_op.fillAttribute(coerce(lexpr_type, rexpr_type));
+        break;
+    case BinaryOP::MINUS:
+    case BinaryOP::MULTIPLY:
+    case BinaryOP::DIVIDE:
+        if (!((is_int(lexpr_type) || is_real(lexpr_type)) &&
+              (is_int(rexpr_type) || is_real(rexpr_type)))) {
+            log_error();
+            return;
+        }
+        p_bin_op.fillAttribute(coerce(lexpr_type, rexpr_type));
+        break;
+    case BinaryOP::MOD:
+        if (!(is_int(lexpr_type) && is_int(rexpr_type))) {
+            log_error();
+            return;
+        }
+        p_bin_op.fillAttribute(coerce(lexpr_type, rexpr_type));
+        break;
+    case BinaryOP::AND:
+    case BinaryOP::OR:
+        if (!(is_bool(lexpr_type) && is_bool(rexpr_type))) {
+            log_error();
+            return;
+        }
+        p_bin_op.fillAttribute(std::make_shared<TypeStruct>(TypeKind::boolean));
+        break;
+    case BinaryOP::LESS:
+    case BinaryOP::LESS_OR_EQUAL:
+    case BinaryOP::EQUAL:
+    case BinaryOP::GREATER_OR_EQUAL:
+    case BinaryOP::GREATER:
+    case BinaryOP::NOT_EQUAL:
+        if (!((is_int(lexpr_type) || is_real(lexpr_type)) &&
+              (is_int(rexpr_type) || is_real(rexpr_type)))) {
+            log_error();
+            return;
+        }
+        p_bin_op.fillAttribute(std::make_shared<TypeStruct>(TypeKind::boolean));
+        break;
+    }
+
     // 5. Pop the symbol table pushed at the 1st step.
 }
 
@@ -303,12 +371,12 @@ void SemanticAnalyzer::visit(VariableReferenceNode &p_variable_ref) {
         recordError(p_variable_ref.getLocation().line, p_variable_ref.getLocation().col);
         return;
     }
+    // Skip the rest of semantic checks if there are any errors in the node of the declaration of the refered symbol
+    if (hasErrorAt(symbol->getLocation().line, symbol->getLocation().col)) {
+        return;
+    }
+    // Each index of an array reference must be of the integer type.
     for (auto &e : p_variable_ref.getExprs()) {
-        // Skip the rest of semantic checks if there are any errors in the node of the declaration of the refered symbol
-        if (hasErrorAt(symbol->location.line, symbol->location.col)) {
-            return;
-        }
-        // Each index of an array reference must be of the integer type.
         if (e->getType()->kind != TypeKind::integer) {
             auto index_col = p_variable_ref.getLocation().col + p_variable_ref.getNameStr().length() + 1;
             fprintf(stderr, "<Error> Found in line %u, column %lu: index of array reference must be an integer\n"
@@ -432,10 +500,10 @@ bool SemanticAnalyzer::insertWithCheck(std::shared_ptr<SymbolTable> sym_tab,
         fprintf(stderr, "<Error> Found in line %u, column %u: symbol '%s' is redeclared\n"
                         "    %s\n"
                         "    %s\n",
-                        symbol->location.line, symbol->location.col, symbol->getNameStr().c_str(),
-                        getSourceLine(symbol->location.line).c_str(),
-                        getErrIndicator(symbol->location.col).c_str());
-        recordError(symbol->location.line, symbol->location.col);
+                        symbol->getLocation().line, symbol->getLocation().col, symbol->getNameStr().c_str(),
+                        getSourceLine(symbol->getLocation().line).c_str(),
+                        getErrIndicator(symbol->getLocation().col).c_str());
+        recordError(symbol->getLocation().line, symbol->getLocation().col);
         return false;
     }
     // loop var redeclaration check
@@ -443,10 +511,10 @@ bool SemanticAnalyzer::insertWithCheck(std::shared_ptr<SymbolTable> sym_tab,
         fprintf(stderr, "<Error> Found in line %u, column %u: symbol '%s' is redeclared\n"
                         "    %s\n"
                         "    %s\n",
-                        symbol->location.line, symbol->location.col, symbol->getNameStr().c_str(),
-                        getSourceLine(symbol->location.line).c_str(),
-                        getErrIndicator(symbol->location.col).c_str());
-        recordError(symbol->location.line, symbol->location.col);
+                        symbol->getLocation().line, symbol->getLocation().col, symbol->getNameStr().c_str(),
+                        getSourceLine(symbol->getLocation().line).c_str(),
+                        getErrIndicator(symbol->getLocation().col).c_str());
+        recordError(symbol->getLocation().line, symbol->getLocation().col);
         return false;
     }
     sym_tab->insert(symbol);
@@ -481,8 +549,23 @@ void SemanticAnalyzer::recordError(long lineno, long col) {
 }
 
 bool SemanticAnalyzer::hasErrorAt(long lineno, long col) {
+    if (error_list.find(lineno) == error_list.end()) { return false; }
     auto &err_in_line = error_list[lineno];
     return std::find(err_in_line.begin(), err_in_line.end(), col) != err_in_line.end();
+}
+
+bool SemanticAnalyzer::typeEq(std::shared_ptr<TypeStruct> t1, std::shared_ptr<TypeStruct> t2) {
+    if (t1->kind != t2->kind && coerce(t1, t2) == nullptr) return false;
+    if (t1->isArray() && t2->isArray()) {
+        if (t1->dim.size() != t2->dim.size()) return false;
+        for (uint64_t i = 0; i < t1->dim.size(); i++) {
+            if (t1->dim[i] != t2->dim[i]) return false;
+        }
+    }
+    else if ((t1->isArray() && !t2->isArray()) || (t2->isArray() && !t1->isArray())) {
+        return false;
+    }
+    return true;
 }
 
 std::shared_ptr<TypeStruct> SemanticAnalyzer::coerce(std::shared_ptr<TypeStruct> t1,

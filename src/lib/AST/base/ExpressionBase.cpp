@@ -8,3 +8,5 @@ ExpressionBase::ExpressionBase(const uint32_t line, const uint32_t col, std::sha
 ExpressionBase::~ExpressionBase() {}
 
 std::shared_ptr<TypeStruct> ExpressionBase::getType() { return type; }
+
+void ExpressionBase::fillAttribute(std::shared_ptr<TypeStruct> t) { type = t; };

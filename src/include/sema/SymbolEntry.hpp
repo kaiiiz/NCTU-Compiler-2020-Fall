@@ -28,9 +28,10 @@ class SymbolEntry {
     std::shared_ptr<TypeStruct> getType();
     std::string getTypeStr();
     virtual std::string getAttributeStr() = 0;
-    const Location &location;
+    const Location &getLocation() const;
 
    protected:
+    const Location &location;
     std::string name;
     SymbolEntryKind kind;
     uint32_t level;
