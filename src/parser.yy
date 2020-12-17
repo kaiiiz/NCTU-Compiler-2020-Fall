@@ -50,6 +50,7 @@ class driver;
 #include "visitor/AstDumper.hpp"
 #include "visitor/SemanticAnalyzer.hpp"
 
+#include "type/manager.hpp"
 #include "sema/SymbolEntry.hpp"
 #include "sema/SymbolManager.hpp"
 #include "sema/SymbolTable.hpp"
@@ -68,6 +69,7 @@ class driver;
 
 /* Declared by scanner.l */
 extern char *yytext;
+extern TypeManager type_mgr;
 }
 
 %token EOF_ 0 "end of file";
@@ -140,7 +142,7 @@ Program:
     /* End of ProgramBody */
     END {
         $5->fillAttribute(CompoundKind::normal);
-        drv.root = std::make_shared<ProgramNode>(@1.begin.line, @1.begin.column, $1, std::make_shared<TypeStruct>(TypeKind::void_), $3, $4, $5);
+        drv.root = std::make_shared<ProgramNode>(@1.begin.line, @1.begin.column, $1, type_mgr.getType(TypeKind::void_), $3, $4, $5);
     }
 ;
 
@@ -234,7 +236,7 @@ IdList:
 ReturnType:
     COLON ScalarType { $$ = $2; }
     |
-    Epsilon { $$ = std::make_shared<TypeStruct>(TypeKind::void_); }
+    Epsilon { $$ = type_mgr.getType(TypeKind::void_); }
 ;
 
     /*
@@ -266,17 +268,17 @@ Type:
 ;
 
 ScalarType:
-    INTEGER { $$ = std::make_shared<TypeStruct>(TypeKind::integer); }
+    INTEGER { $$ = type_mgr.getType(TypeKind::integer); }
     |
-    REAL { $$ = std::make_shared<TypeStruct>(TypeKind::real); }
+    REAL { $$ = type_mgr.getType(TypeKind::real); }
     |
-    STRING { $$ = std::make_shared<TypeStruct>(TypeKind::string); }
+    STRING { $$ = type_mgr.getType(TypeKind::string); }
     |
-    BOOLEAN { $$ = std::make_shared<TypeStruct>(TypeKind::boolean); }
+    BOOLEAN { $$ = type_mgr.getType(TypeKind::boolean); }
 ;
 
 ArrType:
-    ArrDecl ScalarType { $$ = std::make_shared<TypeStruct>($2->kind, $1); }
+    ArrDecl ScalarType { $$ = type_mgr.getType($2->kind, $1); }
 ;
 
 ArrDecl:
@@ -442,7 +444,7 @@ For:
     CompoundStatement
     END DO {
         // make declaration
-        auto type = std::make_shared<TypeStruct>(TypeKind::integer);
+        auto type = type_mgr.getType(TypeKind::integer);
         auto var = std::make_shared<VariableNode>(@2.begin.line, @2.begin.column, $2, type);
         var->fillAttribute(VariableKind::loop_var);
         auto var_list = std::vector<std::shared_ptr<VariableNode>>{var};

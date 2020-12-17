@@ -5,9 +5,12 @@
 
 #include "AST/expression/ConstantValue.hpp"
 #include "type/struct.hpp"
+#include "type/manager.hpp"
+
+extern TypeManager type_mgr;
 
 ConstIntValueNode::ConstIntValueNode(const uint32_t line, const uint32_t col, int64_t ival)
-    : ConstantValueNode{line, col, std::make_shared<TypeStruct>(TypeKind::integer)}, ival(ival) {}
+    : ConstantValueNode{line, col, type_mgr.getType(TypeKind::integer)}, ival(ival) {}
 
 std::string ConstIntValueNode::getValueString() {
     return std::to_string(ival);

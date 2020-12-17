@@ -38,6 +38,9 @@
 #include "sema/SymbolTable.hpp"
 
 #include "type/struct.hpp"
+#include "type/manager.hpp"
+
+extern TypeManager type_mgr;
 
 static inline bool is_void(std::shared_ptr<TypeStruct> t) { return t->kind == TypeKind::void_; }
 static inline bool is_real(std::shared_ptr<TypeStruct> t) { return t->kind == TypeKind::real; }
@@ -287,7 +290,7 @@ void SemanticAnalyzer::visit(BinaryOperatorNode &p_bin_op) {
             log_error();
             return;
         }
-        p_bin_op.fillAttribute(std::make_shared<TypeStruct>(TypeKind::boolean));
+        p_bin_op.fillAttribute(type_mgr.getType(TypeKind::boolean));
         break;
     case BinaryOP::LESS:
     case BinaryOP::LESS_OR_EQUAL:
@@ -300,7 +303,7 @@ void SemanticAnalyzer::visit(BinaryOperatorNode &p_bin_op) {
             log_error();
             return;
         }
-        p_bin_op.fillAttribute(std::make_shared<TypeStruct>(TypeKind::boolean));
+        p_bin_op.fillAttribute(type_mgr.getType(TypeKind::boolean));
         break;
     }
 
