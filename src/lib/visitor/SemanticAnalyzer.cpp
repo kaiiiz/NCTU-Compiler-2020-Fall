@@ -322,22 +322,58 @@ void SemanticAnalyzer::visit(BinaryOperatorNode &p_bin_op) {
         p_bin_op.fillAttribute(type_mgr.getType(TypeKind::boolean));
         break;
     }
-
     // 5. Pop the symbol table pushed at the 1st step.
 }
 
 void SemanticAnalyzer::visit(UnaryOperatorNode &p_un_op) {
-    /*
-     * TODO:
-     *
-     * 1. Push a new symbol table if this node forms a scope.
-     * 2. Insert the symbol into current symbol table if this node is related to
-     *    declaration (ProgramNode, VariableNode, FunctionNode).
-     * 3. Travere child nodes of this node.
-     * 4. Perform semantic analyses of this node.
-     * 5. Pop the symbol table pushed at the 1st step.
-     */
+    // 1. Push a new symbol table if this node forms a scope.
+    auto symTab = symbol_mgr.currentSymTab();
+    // 2. Insert the symbol into current symbol table if this node is related to
+    //    declaration (ProgramNode, VariableNode, FunctionNode).
+    // 3. Travere child nodes of this node.
     p_un_op.visitChildNodes(*this);
+    // 4. Perform semantic analyses of this node.
+    auto expr_type = p_un_op.expr->getType();
+    // Skip the rest of semantic checks if there are any errors in the nodes of operands
+    if (hasErrorAt(p_un_op.expr->getLocation().line, p_un_op.expr->getLocation().col)) {
+        recordError(p_un_op.getLocation().line, p_un_op.getLocation().col);
+        return;
+    }
+    auto log_error = [this, &p_un_op, &expr_type]() {
+        fprintf(stderr, "<Error> Found in line %u, column %u: "
+                        "invalid operand to unary operator '%s' ('%s')\n"
+                        "    %s\n"
+                        "    %s\n",
+                        p_un_op.getLocation().line, p_un_op.getLocation().col,
+                        p_un_op.getOPString().c_str(),
+                        expr_type->getTypeStr().c_str(),
+                        getSourceLine(p_un_op.getLocation().line).c_str(),
+                        getErrIndicator(p_un_op.getLocation().col).c_str());
+        recordError(p_un_op.getLocation().line, p_un_op.getLocation().col);
+    };
+    // expression must be non void, non array
+    if (is_void(expr_type) || expr_type->isArray()) {
+        log_error();
+        return;
+    }
+
+    switch (p_un_op.op) {
+    case UnaryOP::MINUS:
+        if (!(is_int(expr_type) || is_real(expr_type))) {
+            log_error();
+            return;
+        }
+        p_un_op.fillAttribute(expr_type);
+        break;
+    case UnaryOP::NOT:
+        if (!(is_bool(expr_type))) {
+            log_error();
+            return;
+        }
+        p_un_op.fillAttribute(type_mgr.getType(TypeKind::boolean));
+        break;
+    }
+    // 5. Pop the symbol table pushed at the 1st step.
 }
 
 void SemanticAnalyzer::visit(FunctionInvocationNode &p_func_invocation) {
