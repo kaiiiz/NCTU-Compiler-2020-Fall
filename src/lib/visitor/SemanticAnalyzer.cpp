@@ -235,7 +235,9 @@ void SemanticAnalyzer::visit(BinaryOperatorNode &p_bin_op) {
     auto lexpr_type = lexpr->getType();
     auto rexpr_type = rexpr->getType();
     // Skip the rest of semantic checks if there are any errors in the nodes of operands
-    if (lexpr_type == nullptr || rexpr_type == nullptr) {
+    if (hasErrorAt(lexpr->getLocation().line, lexpr->getLocation().col) ||
+        hasErrorAt(rexpr->getLocation().line, rexpr->getLocation().col)) {
+        recordError(p_bin_op.getLocation().line, p_bin_op.getLocation().col);
         return;
     }
     auto log_error = [this, &p_bin_op, &lexpr_type, &rexpr_type]() {
@@ -265,7 +267,14 @@ void SemanticAnalyzer::visit(BinaryOperatorNode &p_bin_op) {
             log_error();
             return;
         }
-        p_bin_op.fillAttribute(coerce(lexpr_type, rexpr_type));
+        if (lexpr_type->kind == rexpr_type->kind) {
+            p_bin_op.fillAttribute(lexpr_type);
+        } else if (coerce(lexpr_type, rexpr_type) != nullptr) {
+            p_bin_op.fillAttribute(coerce(lexpr_type, rexpr_type));
+        } else {
+            log_error();
+            return;
+        }
         break;
     case BinaryOP::MINUS:
     case BinaryOP::MULTIPLY:
@@ -275,14 +284,21 @@ void SemanticAnalyzer::visit(BinaryOperatorNode &p_bin_op) {
             log_error();
             return;
         }
-        p_bin_op.fillAttribute(coerce(lexpr_type, rexpr_type));
+        if (lexpr_type->kind == rexpr_type->kind) {
+            p_bin_op.fillAttribute(lexpr_type);
+        } else if (coerce(lexpr_type, rexpr_type) != nullptr) {
+            p_bin_op.fillAttribute(coerce(lexpr_type, rexpr_type));
+        } else {
+            log_error();
+            return;
+        }
         break;
     case BinaryOP::MOD:
         if (!(is_int(lexpr_type) && is_int(rexpr_type))) {
             log_error();
             return;
         }
-        p_bin_op.fillAttribute(coerce(lexpr_type, rexpr_type));
+        p_bin_op.fillAttribute(type_mgr.getType(TypeKind::integer));
         break;
     case BinaryOP::AND:
     case BinaryOP::OR:
@@ -376,6 +392,7 @@ void SemanticAnalyzer::visit(VariableReferenceNode &p_variable_ref) {
     }
     // Skip the rest of semantic checks if there are any errors in the node of the declaration of the refered symbol
     if (hasErrorAt(symbol->getLocation().line, symbol->getLocation().col)) {
+        recordError(p_variable_ref.getLocation().line, p_variable_ref.getLocation().col);
         return;
     }
     // Each index of an array reference must be of the integer type.
@@ -405,7 +422,7 @@ void SemanticAnalyzer::visit(VariableReferenceNode &p_variable_ref) {
         return;
     }
     // back propagate type information
-
+    p_variable_ref.fillAttribute(type_mgr.getType(symbol->getType(), p_variable_ref.getExprs().size()));
     // 5. Pop the symbol table pushed at the 1st step.
 }
 
@@ -577,7 +594,7 @@ std::shared_ptr<TypeStruct> SemanticAnalyzer::coerce(std::shared_ptr<TypeStruct>
     if (t1->isArray() || t2->isArray()) return nullptr;
 
     if (t1->kind == TypeKind::real && t2->kind == TypeKind::integer) {
-        return t1;        
+        return t1;
     }
     else if (t2->kind == TypeKind::real && t1->kind == TypeKind::integer) {
         return t2;

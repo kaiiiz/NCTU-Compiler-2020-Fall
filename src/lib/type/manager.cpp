@@ -25,3 +25,17 @@ std::shared_ptr<TypeStruct> TypeManager::getType(TypeKind kind, std::vector<int6
     }
     return table[target];
 }
+
+std::shared_ptr<TypeStruct> TypeManager::getType(std::shared_ptr<TypeStruct> type, uint64_t indices_level) {
+    std::string target = getTypeKindStr(type->kind);
+    if (indices_level > type->dim.size()) {
+        return nullptr;
+    }
+    else if (indices_level == type->dim.size()) {
+        return getType(type->kind);
+    }
+    else {
+        std::vector<int64_t> dim(type->dim.begin() + indices_level, type->dim.end());
+        return getType(type->kind, dim);
+    }
+}

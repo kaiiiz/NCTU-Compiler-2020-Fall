@@ -13,6 +13,7 @@ class TypeManager {
 
     std::shared_ptr<TypeStruct> getType(TypeKind kind);
     std::shared_ptr<TypeStruct> getType(TypeKind kind, std::vector<int64_t> dim);
+    std::shared_ptr<TypeStruct> getType(std::shared_ptr<TypeStruct> type, uint64_t indices_level);
 
    private:
     std::unordered_map<std::string, std::shared_ptr<TypeStruct>> table;
