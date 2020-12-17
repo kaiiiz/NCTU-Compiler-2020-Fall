@@ -13,6 +13,8 @@ class FunctionInvocationNode : public ExpressionBase {
     ~FunctionInvocationNode() = default;
 
     std::string getFuncName();
+    std::vector<std::shared_ptr<ExpressionBase>> getExprs();
+
     void accept(AstNodeVisitor &p_visitor) override;
     void visitChildNodes(AstNodeVisitor &p_visitor) override;
 

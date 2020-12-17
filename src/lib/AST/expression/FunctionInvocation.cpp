@@ -8,6 +8,8 @@ FunctionInvocationNode::FunctionInvocationNode(const uint32_t line, const uint32
 
 std::string FunctionInvocationNode::getFuncName() { return name; }
 
+std::vector<std::shared_ptr<ExpressionBase>> FunctionInvocationNode::getExprs() { return expressions; }
+
 void FunctionInvocationNode::accept(AstNodeVisitor &p_visitor) {
     p_visitor.visit(*this);
 }

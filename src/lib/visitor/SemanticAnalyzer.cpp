@@ -341,17 +341,72 @@ void SemanticAnalyzer::visit(UnaryOperatorNode &p_un_op) {
 }
 
 void SemanticAnalyzer::visit(FunctionInvocationNode &p_func_invocation) {
-    /*
-     * TODO:
-     *
-     * 1. Push a new symbol table if this node forms a scope.
-     * 2. Insert the symbol into current symbol table if this node is related to
-     *    declaration (ProgramNode, VariableNode, FunctionNode).
-     * 3. Travere child nodes of this node.
-     * 4. Perform semantic analyses of this node.
-     * 5. Pop the symbol table pushed at the 1st step.
-     */
+    // 1. Push a new symbol table if this node forms a scope.
+    auto symTab = symbol_mgr.currentSymTab();
+    // 2. Insert the symbol into current symbol table if this node is related to
+    //    declaration (ProgramNode, VariableNode, FunctionNode).
+    // 3. Travere child nodes of this node.
     p_func_invocation.visitChildNodes(*this);
+    // 4. Perform semantic analyses of this node.
+    auto symbol = std::dynamic_pointer_cast<FunctionSymbolEntry>(
+                        symTab->lookup(p_func_invocation.getFuncName())
+                  );
+    // The identifier has to be in symbol tables.
+    if (symbol == nullptr) {
+        fprintf(stderr, "<Error> Found in line %u, column %u: use of undeclared symbol '%s'\n"
+                        "    %s\n"
+                        "    %s\n",
+                        p_func_invocation.getLocation().line, p_func_invocation.getLocation().col,
+                        p_func_invocation.getFuncName().c_str(),
+                        getSourceLine(p_func_invocation.getLocation().line).c_str(),
+                        getErrIndicator(p_func_invocation.getLocation().col).c_str());
+        recordError(p_func_invocation.getLocation().line, p_func_invocation.getLocation().col);
+        return;
+    }
+    // The kind of symbol has to be function.
+    else if (symbol->getKind() != SymbolEntryKind::function) {
+        fprintf(stderr, "<Error> Found in line %u, column %u: call of non-function symbol '%s'\n"
+                        "    %s\n"
+                        "    %s\n",
+                        p_func_invocation.getLocation().line, p_func_invocation.getLocation().col,
+                        p_func_invocation.getFuncName().c_str(),
+                        getSourceLine(p_func_invocation.getLocation().line).c_str(),
+                        getErrIndicator(p_func_invocation.getLocation().col).c_str());
+        recordError(p_func_invocation.getLocation().line, p_func_invocation.getLocation().col);
+        return;
+    }
+    // The number of arguments must be the same as one of the parameters.
+    else if (symbol->getType()->dim.size() != p_func_invocation.getExprs().size()) {
+        fprintf(stderr, "<Error> Found in line %u, column %u: too few/much arguments provided for function '%s'\n"
+                        "    %s\n"
+                        "    %s\n",
+                        p_func_invocation.getLocation().line, p_func_invocation.getLocation().col,
+                        p_func_invocation.getFuncName().c_str(),
+                        getSourceLine(p_func_invocation.getLocation().line).c_str(),
+                        getErrIndicator(p_func_invocation.getLocation().col).c_str());
+        recordError(p_func_invocation.getLocation().line, p_func_invocation.getLocation().col);
+        return;
+    }
+    // Traverse arguments
+    auto param_prototype = symbol->getParamType();
+    auto arg_exprs = p_func_invocation.getExprs();
+    for (uint64_t i = 0; i < param_prototype.size(); i++) {
+        auto param_type = param_prototype[i];
+        auto arg_expr = arg_exprs[i];
+        if (!typeEq(param_type, arg_expr->getType())) {
+            fprintf(stderr, "<Error> Found in line %u, column %u: incompatible type passing '%s' to parameter of type '%s'\n"
+                            "    %s\n"
+                            "    %s\n",
+                            arg_expr->getLocation().line, arg_expr->getLocation().col,
+                            arg_expr->getType()->getTypeStr().c_str(), param_type->getTypeStr().c_str(),
+                            getSourceLine(arg_expr->getLocation().line).c_str(),
+                            getErrIndicator(arg_expr->getLocation().col).c_str());
+            recordError(p_func_invocation.getLocation().line, p_func_invocation.getLocation().col);
+            return;
+        }
+    }
+    p_func_invocation.fillAttribute(symbol->getType());
+    // 5. Pop the symbol table pushed at the 1st step.
 }
 
 void SemanticAnalyzer::visit(VariableReferenceNode &p_variable_ref) {
