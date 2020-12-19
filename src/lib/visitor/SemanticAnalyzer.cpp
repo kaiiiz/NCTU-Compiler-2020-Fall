@@ -179,7 +179,13 @@ void SemanticAnalyzer::visit(FunctionNode &p_function) {
                                                         p_function.getRetType(),
                                                         p_function.getParamTypeList(),
                                                         p_function.getLocation());
-    auto newSymTab = std::make_shared<SymbolTable>(symTab, symTab->level + 1);
+    std::shared_ptr<SymbolTable> newSymTab;
+    if (p_function.getRetType()->kind == TypeKind::void_) {
+        newSymTab = std::make_shared<SymbolTable>(symTab, symTab->level + 1, ContextKind::Procedure, type_mgr.getType(TypeKind::void_));
+    }
+    else {
+        newSymTab = std::make_shared<SymbolTable>(symTab, symTab->level + 1, ContextKind::Function, p_function.getRetType());
+    }
     symTab->addChild(newSymTab);
     insertWithCheck(symTab, symbol);
     symbol_mgr.pushScope(newSymTab);
@@ -194,7 +200,7 @@ void SemanticAnalyzer::visit(CompoundStatementNode &p_compound_statement) {
     // 1. Push a new symbol table if this node forms a scope.
     if (p_compound_statement.getKind() == CompoundKind::normal) {
         auto curSymTab = symbol_mgr.currentSymTab();
-        auto symTab = std::make_shared<SymbolTable>(curSymTab, curSymTab->level + 1);
+        auto symTab = std::make_shared<SymbolTable>(curSymTab, curSymTab->level + 1, curSymTab->ctx_kind, curSymTab->ctx_type);
         curSymTab->addChild(symTab);
         symbol_mgr.pushScope(symTab);
     }
@@ -721,7 +727,7 @@ void SemanticAnalyzer::visit(WhileNode &p_while) {
 void SemanticAnalyzer::visit(ForNode &p_for) {
     // 1. Push a new symbol table if this node forms a scope.
     auto curSymTab = symbol_mgr.currentSymTab();
-    auto symTab = std::make_shared<SymbolTable>(curSymTab, curSymTab->level + 1);
+    auto symTab = std::make_shared<SymbolTable>(curSymTab, curSymTab->level + 1, curSymTab->ctx_kind, curSymTab->ctx_type);
     curSymTab->addChild(symTab);
     symbol_mgr.pushScope(symTab);
     // 2. Insert the symbol into current symbol table if this node is related to
@@ -748,17 +754,44 @@ void SemanticAnalyzer::visit(ForNode &p_for) {
 }
 
 void SemanticAnalyzer::visit(ReturnNode &p_return) {
-    /*
-     * TODO:
-     *
-     * 1. Push a new symbol table if this node forms a scope.
-     * 2. Insert the symbol into current symbol table if this node is related to
-     *    declaration (ProgramNode, VariableNode, FunctionNode).
-     * 3. Travere child nodes of this node.
-     * 4. Perform semantic analyses of this node.
-     * 5. Pop the symbol table pushed at the 1st step.
-     */
+    // 1. Push a new symbol table if this node forms a scope.
+    auto symTab = symbol_mgr.currentSymTab();
+    // 2. Insert the symbol into current symbol table if this node is related to
+    //    declaration (ProgramNode, VariableNode, FunctionNode).
+    // 3. Travere child nodes of this node.
     p_return.visitChildNodes(*this);
+    // 4. Perform semantic analyses of this node.
+    // The current context shouldn't be in the program or a procedure since their return type is void
+    if (symTab->ctx_kind == ContextKind::Program || symTab->ctx_kind == ContextKind::Procedure) {
+        fprintf(stderr, "<Error> Found in line %u, column %u: program/procedure should not return a value\n"
+                        "    %s\n"
+                        "    %s\n",
+                        p_return.getLocation().line, p_return.getLocation().col,
+                        getSourceLine(p_return.getLocation().line).c_str(),
+                        getErrIndicator(p_return.getLocation().col).c_str());
+        recordError(p_return.getLocation().line, p_return.getLocation().col);
+        return;
+    }
+    // Skip the rest of semantic checks if there are any errors in the node of the expression (return value)
+    if (hasErrorAt(p_return.expression->getLocation().line, p_return.expression->getLocation().col)) {
+        recordError(p_return.getLocation().line, p_return.getLocation().col);
+        return;
+    }
+    // The type of the result of the expression (return value) must be the same type as the return type of current function after appropriate type coercion
+    if (!typeEq(p_return.expression->getType(), symTab->ctx_type)) {
+        fprintf(stderr, "<Error> Found in line %u, column %u: return '%s' from a function with return type '%s'\n"
+                        "    %s\n"
+                        "    %s\n",
+                        p_return.expression->getLocation().line, p_return.expression->getLocation().col,
+                        p_return.expression->getType()->getTypeStr().c_str(),
+                        symTab->ctx_type->getTypeStr().c_str(),
+                        getSourceLine(p_return.expression->getLocation().line).c_str(),
+                        getErrIndicator(p_return.expression->getLocation().col).c_str());
+        recordError(p_return.expression->getLocation().line, p_return.expression->getLocation().col);
+        recordError(p_return.getLocation().line, p_return.getLocation().col);
+        return;
+    }
+    // 5. Pop the symbol table pushed at the 1st step.
 }
 
 bool SemanticAnalyzer::insertWithCheck(std::shared_ptr<SymbolTable> sym_tab,

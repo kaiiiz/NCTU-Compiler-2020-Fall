@@ -5,8 +5,8 @@
 
 #include "sema/SymbolEntry.hpp"
 
-SymbolTable::SymbolTable(std::shared_ptr<SymbolTable> parent, const std::uint32_t level)
-    : level(level), parent(parent) {}
+SymbolTable::SymbolTable(std::shared_ptr<SymbolTable> parent, const std::uint32_t level, const ContextKind ctx_kind, const std::shared_ptr<TypeStruct> ctx_type)
+    : level(level), ctx_kind(ctx_kind), ctx_type(ctx_type), parent(parent) {}
 
 void SymbolTable::addChild(std::shared_ptr<SymbolTable> child) {
     childs.push_back(child);

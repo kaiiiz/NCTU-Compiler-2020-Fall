@@ -3,9 +3,12 @@
 
 #include "sema/SymbolManager.hpp"
 #include "sema/SymbolTable.hpp"
+#include "type/manager.hpp"
+
+extern TypeManager type_mgr;
 
 SymbolManager::SymbolManager() {
-    global = std::make_shared<SymbolTable>(nullptr, 0);
+    global = std::make_shared<SymbolTable>(nullptr, 0, ContextKind::Program, type_mgr.getType(TypeKind::void_));
     tables.push(global);
 }
 

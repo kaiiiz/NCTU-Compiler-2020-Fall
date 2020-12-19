@@ -6,11 +6,19 @@
 #include <memory>
 #include <unordered_map>
 
+#include "type/struct.hpp"
+
 class SymbolEntry;
+
+enum class ContextKind {
+    Program,
+    Function,
+    Procedure,
+};
 
 class SymbolTable : public std::enable_shared_from_this<SymbolTable> {
    public:
-    SymbolTable(std::shared_ptr<SymbolTable> parent, const std::uint32_t level);
+    SymbolTable(std::shared_ptr<SymbolTable> parent, const std::uint32_t level, const ContextKind ctx_kind, const std::shared_ptr<TypeStruct> ctx_type);
 
     void insert(std::shared_ptr<SymbolEntry> symbol);
     std::shared_ptr<SymbolEntry> lookup(std::string name);
@@ -19,6 +27,8 @@ class SymbolTable : public std::enable_shared_from_this<SymbolTable> {
     void dump();
 
     const std::uint32_t level;
+    const ContextKind ctx_kind;
+    const std::shared_ptr<TypeStruct> ctx_type;
 
    private:
     void dumpDemarcation(const char chr);
