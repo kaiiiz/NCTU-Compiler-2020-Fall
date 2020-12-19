@@ -84,13 +84,13 @@ void SemanticAnalyzer::visit(VariableNode &p_variable) {
     //    declaration (ProgramNode, VariableNode, FunctionNode).
     std::shared_ptr<SymbolEntry> symbol;
     switch (p_variable.getVarKind()) {
-    case VariableKind::parameter:
+    case VariableKind::Parameter:
         symbol = std::make_shared<ParamSymbolEntry>(p_variable.getNameStr(),
                                                     symTab->level,
                                                     p_variable.getType(),
                                                     p_variable.getLocation());
         break;
-    case VariableKind::constant:
+    case VariableKind::Constant:
         switch (p_variable.getType()->kind) {
         case TypeKind::Boolean:
             symbol = std::make_shared<ConstBoolSymbolEntry>(
@@ -120,13 +120,13 @@ void SemanticAnalyzer::visit(VariableNode &p_variable) {
             break;
         }
         break;
-    case VariableKind::variable:
+    case VariableKind::Variable:
         symbol = std::make_shared<VarSymbolEntry>(p_variable.getNameStr(),
                                                   symTab->level,
                                                   p_variable.getType(),
                                                   p_variable.getLocation());
         break;
-    case VariableKind::loop_var:
+    case VariableKind::LoopVar:
         symbol = std::make_shared<LoopVarSymbolEntry>(p_variable.getNameStr(),
                                                       symTab->level,
                                                       p_variable.getType(),

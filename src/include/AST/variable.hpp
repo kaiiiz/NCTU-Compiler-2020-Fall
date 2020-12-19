@@ -10,10 +10,10 @@ class TypeStruct;
 class ConstantValueNode;
 
 enum class VariableKind {
-    parameter,
-    variable,
-    loop_var,
-    constant,
+    Parameter,
+    Variable,
+    LoopVar,
+    Constant,
 };
 
 class VariableNode : public AstNode {

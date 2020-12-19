@@ -215,7 +215,7 @@ FormalArg:
     IdList COLON Type {
         for (auto &var : $1) {
             var->fillAttribute($3);
-            var->fillAttribute(VariableKind::parameter);
+            var->fillAttribute(VariableKind::Parameter);
         }
         $$ = std::make_shared<DeclNode>(@$.begin.line, @$.begin.column, $1, $3);
     }
@@ -247,7 +247,7 @@ Declaration:
     VAR IdList COLON Type SEMICOLON {
         for (auto &var : $2) {
             var->fillAttribute($4);
-            var->fillAttribute(VariableKind::variable);
+            var->fillAttribute(VariableKind::Variable);
         }
         $$ = std::make_shared<DeclNode>(@1.begin.line, @1.begin.column, $2, $4);
     }
@@ -255,7 +255,7 @@ Declaration:
     VAR IdList COLON LiteralConstant SEMICOLON {
         for (auto &var : $2) {
             var->fillAttribute($4);
-            var->fillAttribute(VariableKind::constant);
+            var->fillAttribute(VariableKind::Constant);
         }
         $$ = std::make_shared<DeclNode>(@1.begin.line, @1.begin.column, $2, $4->getType());
     }
@@ -446,7 +446,7 @@ For:
         // make declaration
         auto type = type_mgr.getType(TypeKind::Integer);
         auto var = std::make_shared<VariableNode>(@2.begin.line, @2.begin.column, $2, type);
-        var->fillAttribute(VariableKind::loop_var);
+        var->fillAttribute(VariableKind::LoopVar);
         auto var_list = std::vector<std::shared_ptr<VariableNode>>{var};
         auto decl = std::make_shared<DeclNode>(@2.begin.line, @2.begin.column, var_list, type);
         // make assignment
