@@ -513,6 +513,10 @@ void SemanticAnalyzer::visit(VariableReferenceNode &p_variable_ref) {
     }
     // Each index of an array reference must be of the integer type.
     for (auto &e : p_variable_ref.getExprs()) {
+        if (hasErrorAt(e->getLocation().line, e->getLocation().col)) {
+            recordError(p_variable_ref.getLocation().line, p_variable_ref.getLocation().col);
+            return;
+        }
         if (e->getType()->kind != TypeKind::integer) {
             auto index_col = p_variable_ref.getLocation().col + p_variable_ref.getNameStr().length() + 1;
             fprintf(stderr, "<Error> Found in line %u, column %lu: index of array reference must be an integer\n"
