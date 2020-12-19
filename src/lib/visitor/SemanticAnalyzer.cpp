@@ -537,17 +537,88 @@ void SemanticAnalyzer::visit(VariableReferenceNode &p_variable_ref) {
 }
 
 void SemanticAnalyzer::visit(AssignmentNode &p_assignment) {
-    /*
-     * TODO:
-     *
-     * 1. Push a new symbol table if this node forms a scope.
-     * 2. Insert the symbol into current symbol table if this node is related to
-     *    declaration (ProgramNode, VariableNode, FunctionNode).
-     * 3. Travere child nodes of this node.
-     * 4. Perform semantic analyses of this node.
-     * 5. Pop the symbol table pushed at the 1st step.
-     */
+    // 1. Push a new symbol table if this node forms a scope.
+    auto symTab = symbol_mgr.currentSymTab();
+    // 2. Insert the symbol into current symbol table if this node is related to
+    //    declaration (ProgramNode, VariableNode, FunctionNode).
+    // 3. Travere child nodes of this node.
     p_assignment.visitChildNodes(*this);
+    // 4. Perform semantic analyses of this node.
+    // Skip the rest of semantic checks if there are any errors in the node of the variable reference (lvalue)
+    if (hasErrorAt(p_assignment.var_ref->getLocation().line, p_assignment.var_ref->getLocation().col)) {
+        recordError(p_assignment.getLocation().line, p_assignment.getLocation().col);
+        return;
+    }
+    // The type of the result of the variable reference cannot be an array type
+    if (p_assignment.var_ref->getType()->isArray()) {
+        fprintf(stderr, "<Error> Found in line %u, column %u: array assignment is not allowed\n"
+                        "    %s\n"
+                        "    %s\n",
+                        p_assignment.var_ref->getLocation().line, p_assignment.var_ref->getLocation().col,
+                        getSourceLine(p_assignment.var_ref->getLocation().line).c_str(),
+                        getErrIndicator(p_assignment.var_ref->getLocation().col).c_str());
+        recordError(p_assignment.var_ref->getLocation().line, p_assignment.var_ref->getLocation().col);
+        recordError(p_assignment.getLocation().line, p_assignment.getLocation().col);
+        return;
+    }
+    // The variable reference cannot be a reference to a constant variable
+    auto symbol = symTab->lookup(p_assignment.var_ref->getNameStr());
+    if (symbol->getKind() == SymbolEntryKind::constant) {
+        fprintf(stderr, "<Error> Found in line %u, column %u: cannot assign to variable '%s' which is a constant\n"
+                        "    %s\n"
+                        "    %s\n",
+                        p_assignment.var_ref->getLocation().line, p_assignment.var_ref->getLocation().col,
+                        p_assignment.var_ref->getNameStr().c_str(),
+                        getSourceLine(p_assignment.var_ref->getLocation().line).c_str(),
+                        getErrIndicator(p_assignment.var_ref->getLocation().col).c_str());
+        recordError(p_assignment.var_ref->getLocation().line, p_assignment.var_ref->getLocation().col);
+        recordError(p_assignment.getLocation().line, p_assignment.getLocation().col);
+        return;
+    }
+    // The variable reference cannot be a reference to a loop variable when the context is within a loop body
+    if (symbol->getKind() == SymbolEntryKind::loop_var && symTab->level > symbol->getLevel()) {
+        fprintf(stderr, "<Error> Found in line %u, column %u: the value of loop variable cannot be modified inside the loop body\n"
+                        "    %s\n"
+                        "    %s\n",
+                        p_assignment.var_ref->getLocation().line, p_assignment.var_ref->getLocation().col,
+                        getSourceLine(p_assignment.var_ref->getLocation().line).c_str(),
+                        getErrIndicator(p_assignment.var_ref->getLocation().col).c_str());
+        recordError(p_assignment.var_ref->getLocation().line, p_assignment.var_ref->getLocation().col);
+        recordError(p_assignment.getLocation().line, p_assignment.getLocation().col);
+        return;
+    }
+
+    // Skip the rest of semantic checks if there are any errors in the node of the expression
+    if (hasErrorAt(p_assignment.expression->getLocation().line, p_assignment.expression->getLocation().col)) {
+        recordError(p_assignment.getLocation().line, p_assignment.getLocation().col);
+        return;
+    }
+    // The type of the result of the expression cannot be an array type
+    if (p_assignment.expression->getType()->isArray()) {
+        fprintf(stderr, "<Error> Found in line %u, column %u: array assignment is not allowed\n"
+                        "    %s\n"
+                        "    %s\n",
+                        p_assignment.expression->getLocation().line, p_assignment.expression->getLocation().col,
+                        getSourceLine(p_assignment.expression->getLocation().line).c_str(),
+                        getErrIndicator(p_assignment.expression->getLocation().col).c_str());
+        recordError(p_assignment.expression->getLocation().line, p_assignment.expression->getLocation().col);
+        recordError(p_assignment.getLocation().line, p_assignment.getLocation().col);
+        return;
+    }
+    // The type of the variable reference (lvalue) must be the same as the one of the expression after appropriate type coercion
+    else if (!typeEq(p_assignment.var_ref->getType(), p_assignment.expression->getType())) {
+        fprintf(stderr, "<Error> Found in line %u, column %u: assigning to '%s' from incompatible type '%s'\n"
+                        "    %s\n"
+                        "    %s\n",
+                        p_assignment.getLocation().line, p_assignment.getLocation().col,
+                        p_assignment.var_ref->getType()->getTypeStr().c_str(),
+                        p_assignment.expression->getType()->getTypeStr().c_str(),
+                        getSourceLine(p_assignment.getLocation().line).c_str(),
+                        getErrIndicator(p_assignment.getLocation().col).c_str());
+        recordError(p_assignment.getLocation().line, p_assignment.getLocation().col);
+        return;
+    }
+    // 5. Pop the symbol table pushed at the 1st step.
 }
 
 void SemanticAnalyzer::visit(ReadNode &p_read) {

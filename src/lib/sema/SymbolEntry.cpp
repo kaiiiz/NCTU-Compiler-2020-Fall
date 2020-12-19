@@ -29,7 +29,7 @@ std::string SymbolEntry::getKindStr() {
 
 SymbolEntryKind SymbolEntry::getKind() { return kind; }
 
-int SymbolEntry::getLevel() { return level; }
+uint32_t SymbolEntry::getLevel() { return level; }
 
 std::shared_ptr<TypeStruct> SymbolEntry::getType() { return type; }
 

@@ -11,18 +11,16 @@ class ExpressionBase;
 class AssignmentNode : public StatementBase {
   public:
     AssignmentNode(const uint32_t line, const uint32_t col,
-                   std::shared_ptr<VariableReferenceNode> var_ref,
-                   std::shared_ptr<ExpressionBase> expression);
+                   const std::shared_ptr<VariableReferenceNode> var_ref,
+                   const std::shared_ptr<ExpressionBase> expression);
     ~AssignmentNode() = default;
 
     std::string getVarStr();
+    const std::shared_ptr<VariableReferenceNode> var_ref;
+    const std::shared_ptr<ExpressionBase> expression;
 
     void accept(AstNodeVisitor &p_visitor) override;
     void visitChildNodes(AstNodeVisitor &p_visitor) override;
-
-  private:
-    std::shared_ptr<VariableReferenceNode> var_ref;
-    std::shared_ptr<ExpressionBase> expression;
 };
 
 #endif
