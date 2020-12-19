@@ -229,7 +229,7 @@ void SemanticAnalyzer::visit(PrintNode &p_print) {
         return;
     }
     // The type of the expression (target) must be scalar type
-    if (p_print.expr->getType()->isArray()) {
+    if (p_print.expr->getType()->isArray() || p_print.expr->getType()->kind == TypeKind::void_) {
         fprintf(stderr, "<Error> Found in line %u, column %u: expression of print statement must be scalar type\n"
                         "    %s\n"
                         "    %s\n",
