@@ -9,12 +9,12 @@
 #include "type/struct.hpp"
 
 enum class SymbolEntryKind {
-    program,
-    function,
-    parameter,
-    variable,
-    loop_var,
-    constant,
+    Program,
+    Function,
+    Parameter,
+    Variable,
+    LoopVar,
+    Constant,
 };
 
 class SymbolEntry {

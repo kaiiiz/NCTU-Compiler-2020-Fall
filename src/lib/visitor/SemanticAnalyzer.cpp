@@ -418,7 +418,7 @@ void SemanticAnalyzer::visit(FunctionInvocationNode &p_func_invocation) {
         return;
     }
     // The kind of symbol has to be function.
-    else if (symbol->getKind() != SymbolEntryKind::function) {
+    else if (symbol->getKind() != SymbolEntryKind::Function) {
         fprintf(stderr, "<Error> Found in line %u, column %u: call of non-function symbol '%s'\n"
                         "    %s\n"
                         "    %s\n",
@@ -492,10 +492,10 @@ void SemanticAnalyzer::visit(VariableReferenceNode &p_variable_ref) {
         return;
     }
     // The kind of symbol has to be a parameter, variable, loop_var, or constant.
-    else if (symbol->getKind() != SymbolEntryKind::parameter &&
-             symbol->getKind() != SymbolEntryKind::variable &&
-             symbol->getKind() != SymbolEntryKind::loop_var &&
-             symbol->getKind() != SymbolEntryKind::constant) {
+    else if (symbol->getKind() != SymbolEntryKind::Parameter &&
+             symbol->getKind() != SymbolEntryKind::Variable &&
+             symbol->getKind() != SymbolEntryKind::LoopVar &&
+             symbol->getKind() != SymbolEntryKind::Constant) {
         fprintf(stderr, "<Error> Found in line %u, column %u: use of non-variable symbol '%s'\n"
                         "    %s\n"
                         "    %s\n",
@@ -573,7 +573,7 @@ void SemanticAnalyzer::visit(AssignmentNode &p_assignment) {
     }
     // The variable reference cannot be a reference to a constant variable
     auto symbol = symTab->lookup(p_assignment.var_ref->getNameStr());
-    if (symbol->getKind() == SymbolEntryKind::constant) {
+    if (symbol->getKind() == SymbolEntryKind::Constant) {
         fprintf(stderr, "<Error> Found in line %u, column %u: cannot assign to variable '%s' which is a constant\n"
                         "    %s\n"
                         "    %s\n",
@@ -586,7 +586,7 @@ void SemanticAnalyzer::visit(AssignmentNode &p_assignment) {
         return;
     }
     // The variable reference cannot be a reference to a loop variable when the context is within a loop body
-    if (symbol->getKind() == SymbolEntryKind::loop_var && symTab->level > symbol->getLevel()) {
+    if (symbol->getKind() == SymbolEntryKind::LoopVar && symTab->level > symbol->getLevel()) {
         fprintf(stderr, "<Error> Found in line %u, column %u: the value of loop variable cannot be modified inside the loop body\n"
                         "    %s\n"
                         "    %s\n",
@@ -658,7 +658,7 @@ void SemanticAnalyzer::visit(ReadNode &p_read) {
     }
     // The kind of symbol of the variable reference cannot be constant or loop_var
     auto symbol = symTab->lookup(p_read.var_ref->getNameStr());
-    if (symbol->getKind() == SymbolEntryKind::constant || symbol->getKind() == SymbolEntryKind::loop_var) {
+    if (symbol->getKind() == SymbolEntryKind::Constant || symbol->getKind() == SymbolEntryKind::LoopVar) {
         fprintf(stderr, "<Error> Found in line %u, column %u: variable reference of read statement cannot be a constant or loop variable\n"
                         "    %s\n"
                         "    %s\n",
@@ -814,7 +814,7 @@ bool SemanticAnalyzer::insertWithCheck(std::shared_ptr<SymbolTable> sym_tab,
         return false;
     }
     // loop var redeclaration check
-    else if (exist_symbol != nullptr && exist_symbol->getKind() == SymbolEntryKind::loop_var) {
+    else if (exist_symbol != nullptr && exist_symbol->getKind() == SymbolEntryKind::LoopVar) {
         fprintf(stderr, "<Error> Found in line %u, column %u: symbol '%s' is redeclared\n"
                         "    %s\n"
                         "    %s\n",

@@ -15,17 +15,17 @@ std::string SymbolEntry::getNameStr() { return name; }
 
 std::string SymbolEntry::getKindStr() {
     switch (kind) {
-        case SymbolEntryKind::constant:
+        case SymbolEntryKind::Constant:
             return "constant";
-        case SymbolEntryKind::function:
+        case SymbolEntryKind::Function:
             return "function";
-        case SymbolEntryKind::loop_var:
+        case SymbolEntryKind::LoopVar:
             return "loop_var";
-        case SymbolEntryKind::parameter:
+        case SymbolEntryKind::Parameter:
             return "parameter";
-        case SymbolEntryKind::program:
+        case SymbolEntryKind::Program:
             return "program";
-        case SymbolEntryKind::variable:
+        case SymbolEntryKind::Variable:
             return "variable";
         default:
             return "<not handled symbol entry>";
