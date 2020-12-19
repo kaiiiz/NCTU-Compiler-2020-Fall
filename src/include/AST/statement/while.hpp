@@ -11,16 +11,15 @@ class CompoundStatementNode;
 class WhileNode : public StatementBase {
   public:
     WhileNode(const uint32_t line, const uint32_t col,
-              std::shared_ptr<ExpressionBase> condition,
-              std::shared_ptr<CompoundStatementNode> body);
+              const std::shared_ptr<ExpressionBase> condition,
+              const std::shared_ptr<CompoundStatementNode> body);
     ~WhileNode() = default;
+
+    const std::shared_ptr<ExpressionBase> condition;
+    const std::shared_ptr<CompoundStatementNode> body;
 
     void accept(AstNodeVisitor &p_visitor) override;
     void visitChildNodes(AstNodeVisitor &p_visitor) override;
-
-  private:
-    std::shared_ptr<ExpressionBase> condition;
-    std::shared_ptr<CompoundStatementNode> body;
 };
 
 #endif

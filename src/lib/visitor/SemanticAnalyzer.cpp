@@ -663,31 +663,59 @@ void SemanticAnalyzer::visit(ReadNode &p_read) {
 }
 
 void SemanticAnalyzer::visit(IfNode &p_if) {
-    /*
-     * TODO:
-     *
-     * 1. Push a new symbol table if this node forms a scope.
-     * 2. Insert the symbol into current symbol table if this node is related to
-     *    declaration (ProgramNode, VariableNode, FunctionNode).
-     * 3. Travere child nodes of this node.
-     * 4. Perform semantic analyses of this node.
-     * 5. Pop the symbol table pushed at the 1st step.
-     */
+    // 1. Push a new symbol table if this node forms a scope.
+    auto symTab = symbol_mgr.currentSymTab();
+    // 2. Insert the symbol into current symbol table if this node is related to
+    //    declaration (ProgramNode, VariableNode, FunctionNode).
+    // 3. Travere child nodes of this node.
     p_if.visitChildNodes(*this);
+    // 4. Perform semantic analyses of this node.
+    // Skip the rest of semantic checks if there are any errors in the node of the expression (condition)
+    if (hasErrorAt(p_if.condition->getLocation().line, p_if.condition->getLocation().col)) {
+        recordError(p_if.getLocation().line, p_if.getLocation().col);
+        return;
+    }
+    // The type of the result of the expression (condition) must be boolean type
+    if (p_if.condition->getType()->kind != TypeKind::boolean) {
+        fprintf(stderr, "<Error> Found in line %u, column %u: the expression of condition must be boolean type\n"
+                        "    %s\n"
+                        "    %s\n",
+                        p_if.condition->getLocation().line, p_if.condition->getLocation().col,
+                        getSourceLine(p_if.condition->getLocation().line).c_str(),
+                        getErrIndicator(p_if.condition->getLocation().col).c_str());
+        recordError(p_if.condition->getLocation().line, p_if.condition->getLocation().col);
+        recordError(p_if.getLocation().line, p_if.getLocation().col);
+        return;
+    }
+    // 5. Pop the symbol table pushed at the 1st step.
 }
 
 void SemanticAnalyzer::visit(WhileNode &p_while) {
-    /*
-     * TODO:
-     *
-     * 1. Push a new symbol table if this node forms a scope.
-     * 2. Insert the symbol into current symbol table if this node is related to
-     *    declaration (ProgramNode, VariableNode, FunctionNode).
-     * 3. Travere child nodes of this node.
-     * 4. Perform semantic analyses of this node.
-     * 5. Pop the symbol table pushed at the 1st step.
-     */
+    // 1. Push a new symbol table if this node forms a scope.
+    auto symTab = symbol_mgr.currentSymTab();
+    // 2. Insert the symbol into current symbol table if this node is related to
+    //    declaration (ProgramNode, VariableNode, FunctionNode).
+    // 3. Travere child nodes of this node.
     p_while.visitChildNodes(*this);
+    // 4. Perform semantic analyses of this node.
+    // Skip the rest of semantic checks if there are any errors in the node of the expression (condition)
+    if (hasErrorAt(p_while.condition->getLocation().line, p_while.condition->getLocation().col)) {
+        recordError(p_while.getLocation().line, p_while.getLocation().col);
+        return;
+    }
+    // The type of the result of the expression (condition) must be boolean type
+    if (p_while.condition->getType()->kind != TypeKind::boolean) {
+        fprintf(stderr, "<Error> Found in line %u, column %u: the expression of condition must be boolean type\n"
+                        "    %s\n"
+                        "    %s\n",
+                        p_while.condition->getLocation().line, p_while.condition->getLocation().col,
+                        getSourceLine(p_while.condition->getLocation().line).c_str(),
+                        getErrIndicator(p_while.condition->getLocation().col).c_str());
+        recordError(p_while.condition->getLocation().line, p_while.condition->getLocation().col);
+        recordError(p_while.getLocation().line, p_while.getLocation().col);
+        return;
+    }
+    // 5. Pop the symbol table pushed at the 1st step.
 }
 
 void SemanticAnalyzer::visit(ForNode &p_for) {

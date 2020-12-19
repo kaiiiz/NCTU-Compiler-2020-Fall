@@ -11,18 +11,17 @@ class CompoundStatementNode;
 class IfNode : public StatementBase {
   public:
     IfNode(const uint32_t line, const uint32_t col,
-           std::shared_ptr<ExpressionBase> condition,
-           std::shared_ptr<CompoundStatementNode> body,
-           std::shared_ptr<CompoundStatementNode> body_else);
+           const std::shared_ptr<ExpressionBase> condition,
+           const std::shared_ptr<CompoundStatementNode> body,
+           const std::shared_ptr<CompoundStatementNode> body_else);
     ~IfNode() = default;
+
+    const std::shared_ptr<ExpressionBase> condition;
+    const std::shared_ptr<CompoundStatementNode> body;
+    const std::shared_ptr<CompoundStatementNode> body_else;
 
     void accept(AstNodeVisitor &p_visitor) override;
     void visitChildNodes(AstNodeVisitor &p_visitor) override;
-
-  private:
-    std::shared_ptr<ExpressionBase> condition;
-    std::shared_ptr<CompoundStatementNode> body;
-    std::shared_ptr<CompoundStatementNode> body_else;
 };
 
 #endif
