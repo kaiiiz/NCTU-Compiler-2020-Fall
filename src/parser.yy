@@ -60,6 +60,7 @@ class driver;
 #include "sema/SymbolEntry/ParamSymbolEntry.hpp"
 #include "sema/SymbolEntry/ProgramSymbolEntry.hpp"
 #include "sema/SymbolEntry/VarSymbolEntry.hpp"
+#include "sema/SemaErrHandler.hpp"
 
 #include <cassert>
 #include <cstdlib>

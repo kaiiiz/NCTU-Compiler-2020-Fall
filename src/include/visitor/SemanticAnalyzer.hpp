@@ -3,10 +3,10 @@
 
 #include <vector>
 #include <string>
-#include <unordered_map>
 
 #include "visitor/AstNodeVisitor.hpp"
 #include "sema/SymbolManager.hpp"
+#include "sema/SemaErrHandler.hpp"
 #include "type/struct.hpp"
 
 class SymbolEntry;
@@ -39,17 +39,11 @@ class SemanticAnalyzer : public AstNodeVisitor {
 
   private:
     bool insertWithCheck(std::shared_ptr<SymbolTable> sym_tab, std::shared_ptr<SymbolEntry> symbol);
-    std::string getSourceLine(long lineno);
-    std::string getErrIndicator(long col);
-    void recordError(long lineno, long col);
-    bool hasErrorAt(long lineno, long col);
     bool typeEq(std::shared_ptr<TypeStruct> t1, std::shared_ptr<TypeStruct> t2);
     std::shared_ptr<TypeStruct> coerce(std::shared_ptr<TypeStruct> t1, std::shared_ptr<TypeStruct> t2);
 
     SymbolManager& symbol_mgr;
-    std::vector<long> &line_head;
-    std::string source_filename;
-    std::unordered_map<long, std::vector<long>> error_list; // [lineno] = list(col)
+    SemaErrHandler err_handler;
 };
 
 #endif
