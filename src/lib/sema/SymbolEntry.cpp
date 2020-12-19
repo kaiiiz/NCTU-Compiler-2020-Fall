@@ -1,10 +1,15 @@
 #include <memory>
+#include <string>
 
 #include "type/struct.hpp"
 #include "sema/SymbolEntry.hpp"
 
-SymbolEntry::SymbolEntry(std::string name, SymbolEntryKind kind, std::uint32_t level, std::shared_ptr<TypeStruct> type, const Location &loc)
-    : location(loc), name(name), kind(kind), level(level), type(type) {}
+SymbolEntry::SymbolEntry(std::string symbol_name, SymbolEntryKind kind, std::uint32_t level, std::shared_ptr<TypeStruct> type, const Location &loc)
+    : location(loc), kind(kind), level(level), type(type) {
+    if (symbol_name.length() > 32)
+        symbol_name.erase(32, std::string::npos);
+    name = symbol_name;
+}
 
 std::string SymbolEntry::getNameStr() { return name; }
 
