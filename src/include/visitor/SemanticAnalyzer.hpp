@@ -26,6 +26,7 @@ class SemanticAnalyzer : public AstNodeVisitor {
     void visit(BinaryOperatorNode &p_bin_op) override;
     void visit(UnaryOperatorNode &p_un_op) override;
     void visit(FunctionInvocationNode &p_func_invocation) override;
+    void visit(FunctionCallNode &p_func_call);
     void visit(VariableReferenceNode &p_variable_ref) override;
     void visit(AssignmentNode &p_assignment) override;
     void visit(ReadNode &p_read) override;

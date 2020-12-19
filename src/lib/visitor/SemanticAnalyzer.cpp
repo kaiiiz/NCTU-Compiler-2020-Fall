@@ -384,9 +384,7 @@ void SemanticAnalyzer::visit(FunctionInvocationNode &p_func_invocation) {
     // 3. Travere child nodes of this node.
     p_func_invocation.visitChildNodes(*this);
     // 4. Perform semantic analyses of this node.
-    auto symbol = std::dynamic_pointer_cast<FunctionSymbolEntry>(
-                        symTab->lookup(p_func_invocation.getFuncName())
-                  );
+    auto symbol = symTab->lookup(p_func_invocation.getFuncName());
     // The identifier has to be in symbol tables.
     if (symbol == nullptr) {
         fprintf(stderr, "<Error> Found in line %u, column %u: use of undeclared symbol '%s'\n"
@@ -411,8 +409,10 @@ void SemanticAnalyzer::visit(FunctionInvocationNode &p_func_invocation) {
         recordError(p_func_invocation.getLocation().line, p_func_invocation.getLocation().col);
         return;
     }
+    // Pointer cast to function symbol after checking symbol kind is function
+    auto func_symbol = std::dynamic_pointer_cast<FunctionSymbolEntry>(symbol);
     // The number of arguments must be the same as one of the parameters.
-    else if (symbol->getType()->dim.size() != p_func_invocation.getExprs().size()) {
+    if (func_symbol->getParamType().size() != p_func_invocation.getExprs().size()) {
         fprintf(stderr, "<Error> Found in line %u, column %u: too few/much arguments provided for function '%s'\n"
                         "    %s\n"
                         "    %s\n",
@@ -424,7 +424,7 @@ void SemanticAnalyzer::visit(FunctionInvocationNode &p_func_invocation) {
         return;
     }
     // Traverse arguments
-    auto param_prototype = symbol->getParamType();
+    auto param_prototype = func_symbol->getParamType();
     auto arg_exprs = p_func_invocation.getExprs();
     for (uint64_t i = 0; i < param_prototype.size(); i++) {
         auto param_type = param_prototype[i];
@@ -441,8 +441,12 @@ void SemanticAnalyzer::visit(FunctionInvocationNode &p_func_invocation) {
             return;
         }
     }
-    p_func_invocation.fillAttribute(symbol->getType());
+    p_func_invocation.fillAttribute(func_symbol->getType());
     // 5. Pop the symbol table pushed at the 1st step.
+}
+
+void SemanticAnalyzer::visit(FunctionCallNode &p_func_call) {
+    p_func_call.visitChildNodes(*this);
 }
 
 void SemanticAnalyzer::visit(VariableReferenceNode &p_variable_ref) {
