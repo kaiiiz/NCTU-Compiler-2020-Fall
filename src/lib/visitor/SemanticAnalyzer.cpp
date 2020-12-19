@@ -210,17 +210,31 @@ void SemanticAnalyzer::visit(CompoundStatementNode &p_compound_statement) {
 }
 
 void SemanticAnalyzer::visit(PrintNode &p_print) {
-    /*
-     * TODO:
-     *
-     * 1. Push a new symbol table if this node forms a scope.
-     * 2. Insert the symbol into current symbol table if this node is related to
-     *    declaration (ProgramNode, VariableNode, FunctionNode).
-     * 3. Travere child nodes of this node.
-     * 4. Perform semantic analyses of this node.
-     * 5. Pop the symbol table pushed at the 1st step.
-     */
+    // 1. Push a new symbol table if this node forms a scope.
+    auto symTab = symbol_mgr.currentSymTab();
+    // 2. Insert the symbol into current symbol table if this node is related to
+    //    declaration (ProgramNode, VariableNode, FunctionNode).
+    // 3. Travere child nodes of this node.
     p_print.visitChildNodes(*this);
+    // 4. Perform semantic analyses of this node.
+    // Skip the rest of semantic checks if there are any errors in the node of the expression (target)
+    if (hasErrorAt(p_print.expr->getLocation().line, p_print.expr->getLocation().col)) {
+        recordError(p_print.getLocation().line, p_print.getLocation().col);
+        return;
+    }
+    // The type of the expression (target) must be scalar type
+    if (p_print.expr->getType()->isArray()) {
+        fprintf(stderr, "<Error> Found in line %u, column %u: expression of print statement must be scalar type\n"
+                        "    %s\n"
+                        "    %s\n",
+                        p_print.expr->getLocation().line, p_print.expr->getLocation().col,
+                        getSourceLine(p_print.expr->getLocation().line).c_str(),
+                        getErrIndicator(p_print.expr->getLocation().col).c_str());
+        recordError(p_print.expr->getLocation().line, p_print.expr->getLocation().col);
+        recordError(p_print.getLocation().line, p_print.getLocation().col);
+        return;
+    }
+    // 5. Pop the symbol table pushed at the 1st step.
 }
 
 void SemanticAnalyzer::visit(BinaryOperatorNode &p_bin_op) {
@@ -437,6 +451,7 @@ void SemanticAnalyzer::visit(FunctionInvocationNode &p_func_invocation) {
                             arg_expr->getType()->getTypeStr().c_str(), param_type->getTypeStr().c_str(),
                             getSourceLine(arg_expr->getLocation().line).c_str(),
                             getErrIndicator(arg_expr->getLocation().col).c_str());
+            recordError(arg_expr->getLocation().line, arg_expr->getLocation().col);
             recordError(p_func_invocation.getLocation().line, p_func_invocation.getLocation().col);
             return;
         }
@@ -536,17 +551,44 @@ void SemanticAnalyzer::visit(AssignmentNode &p_assignment) {
 }
 
 void SemanticAnalyzer::visit(ReadNode &p_read) {
-    /*
-     * TODO:
-     *
-     * 1. Push a new symbol table if this node forms a scope.
-     * 2. Insert the symbol into current symbol table if this node is related to
-     *    declaration (ProgramNode, VariableNode, FunctionNode).
-     * 3. Travere child nodes of this node.
-     * 4. Perform semantic analyses of this node.
-     * 5. Pop the symbol table pushed at the 1st step.
-     */
+    // 1. Push a new symbol table if this node forms a scope.
+    auto symTab = symbol_mgr.currentSymTab();
+    // 2. Insert the symbol into current symbol table if this node is related to
+    //    declaration (ProgramNode, VariableNode, FunctionNode).
+    // 3. Travere child nodes of this node.
     p_read.visitChildNodes(*this);
+    // 4. Perform semantic analyses of this node.
+    // Skip the rest of semantic checks if there are any errors in the node of the variable reference
+    if (hasErrorAt(p_read.var_ref->getLocation().line, p_read.var_ref->getLocation().col)) {
+        recordError(p_read.getLocation().line, p_read.getLocation().col);
+        return;
+    }
+    // The type of the variable reference must be scalar type
+    if (p_read.var_ref->getType()->isArray()) {
+        fprintf(stderr, "<Error> Found in line %u, column %u: variable reference of read statement must be scalar type\n"
+                        "    %s\n"
+                        "    %s\n",
+                        p_read.var_ref->getLocation().line, p_read.var_ref->getLocation().col,
+                        getSourceLine(p_read.var_ref->getLocation().line).c_str(),
+                        getErrIndicator(p_read.var_ref->getLocation().col).c_str());
+        recordError(p_read.var_ref->getLocation().line, p_read.var_ref->getLocation().col);
+        recordError(p_read.getLocation().line, p_read.getLocation().col);
+        return;
+    }
+    // The kind of symbol of the variable reference cannot be constant or loop_var
+    auto symbol = symTab->lookup(p_read.var_ref->getNameStr());
+    if (symbol->getKind() == SymbolEntryKind::constant || symbol->getKind() == SymbolEntryKind::loop_var) {
+        fprintf(stderr, "<Error> Found in line %u, column %u: variable reference of read statement cannot be a constant or loop variable\n"
+                        "    %s\n"
+                        "    %s\n",
+                        p_read.var_ref->getLocation().line, p_read.var_ref->getLocation().col,
+                        getSourceLine(p_read.var_ref->getLocation().line).c_str(),
+                        getErrIndicator(p_read.var_ref->getLocation().col).c_str());
+        recordError(p_read.var_ref->getLocation().line, p_read.var_ref->getLocation().col);
+        recordError(p_read.getLocation().line, p_read.getLocation().col);
+        return;
+    }
+    // 5. Pop the symbol table pushed at the 1st step.
 }
 
 void SemanticAnalyzer::visit(IfNode &p_if) {

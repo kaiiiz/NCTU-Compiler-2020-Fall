@@ -10,14 +10,13 @@ class VariableReferenceNode;
 class ReadNode : public StatementBase {
   public:
     ReadNode(const uint32_t line, const uint32_t col,
-             std::shared_ptr<VariableReferenceNode> var_ref);
+             const std::shared_ptr<VariableReferenceNode> var_ref);
     ~ReadNode() = default;
+
+    const std::shared_ptr<VariableReferenceNode> var_ref;
 
     void accept(AstNodeVisitor &p_visitor) override;
     void visitChildNodes(AstNodeVisitor &p_visitor) override;
-
-  private:
-    std::shared_ptr<VariableReferenceNode> var_ref;
 };
 
 #endif
