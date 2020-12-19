@@ -10,7 +10,7 @@
 extern TypeManager type_mgr;
 
 ConstStrValueNode::ConstStrValueNode(const uint32_t line, const uint32_t col, std::string sval)
-    : ConstantValueNode{line, col, type_mgr.getType(TypeKind::string)}, sval(sval) {}
+    : ConstantValueNode{line, col, type_mgr.getType(TypeKind::String)}, sval(sval) {}
 
 std::string ConstStrValueNode::getValueString() {
     return sval;

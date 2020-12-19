@@ -42,11 +42,11 @@
 
 extern TypeManager type_mgr;
 
-static inline bool is_void(std::shared_ptr<TypeStruct> t) { return t->kind == TypeKind::void_; }
-static inline bool is_real(std::shared_ptr<TypeStruct> t) { return t->kind == TypeKind::real; }
-static inline bool is_int(std::shared_ptr<TypeStruct> t) { return t->kind == TypeKind::integer; }
-static inline bool is_bool(std::shared_ptr<TypeStruct> t) { return t->kind == TypeKind::boolean; }
-static inline bool is_str(std::shared_ptr<TypeStruct> t) { return t->kind == TypeKind::string; }
+static inline bool is_void(std::shared_ptr<TypeStruct> t) { return t->kind == TypeKind::Void; }
+static inline bool is_real(std::shared_ptr<TypeStruct> t) { return t->kind == TypeKind::Real; }
+static inline bool is_int(std::shared_ptr<TypeStruct> t) { return t->kind == TypeKind::Integer; }
+static inline bool is_bool(std::shared_ptr<TypeStruct> t) { return t->kind == TypeKind::Boolean; }
+static inline bool is_str(std::shared_ptr<TypeStruct> t) { return t->kind == TypeKind::String; }
 
 SemanticAnalyzer::SemanticAnalyzer(SymbolManager &symbol_mgr, std::vector<long> &line_head, std::string source_filename)
     : symbol_mgr(symbol_mgr), line_head(line_head), source_filename(source_filename) {}
@@ -92,31 +92,31 @@ void SemanticAnalyzer::visit(VariableNode &p_variable) {
         break;
     case VariableKind::constant:
         switch (p_variable.getType()->kind) {
-        case TypeKind::boolean:
+        case TypeKind::Boolean:
             symbol = std::make_shared<ConstBoolSymbolEntry>(
                 p_variable.getNameStr(), symTab->level, p_variable.getType(),
                 p_variable.getLiteralConst<ConstBoolValueNode>()->getValue(),
                 p_variable.getLocation());
             break;
-        case TypeKind::integer:
+        case TypeKind::Integer:
             symbol = std::make_shared<ConstIntSymbolEntry>(
                 p_variable.getNameStr(), symTab->level, p_variable.getType(),
                 p_variable.getLiteralConst<ConstIntValueNode>()->getValue(),
                 p_variable.getLocation());
             break;
-        case TypeKind::real:
+        case TypeKind::Real:
             symbol = std::make_shared<ConstRealSymbolEntry>(
                 p_variable.getNameStr(), symTab->level, p_variable.getType(),
                 p_variable.getLiteralConst<ConstRealValueNode>()->getValue(),
                 p_variable.getLocation());
             break;
-        case TypeKind::string:
+        case TypeKind::String:
             symbol = std::make_shared<ConstStrSymbolEntry>(
                 p_variable.getNameStr(), symTab->level, p_variable.getType(),
                 p_variable.getLiteralConst<ConstStrValueNode>()->getValue(),
                 p_variable.getLocation());
             break;
-        case TypeKind::void_:
+        case TypeKind::Void:
             break;
         }
         break;
@@ -180,8 +180,8 @@ void SemanticAnalyzer::visit(FunctionNode &p_function) {
                                                         p_function.getParamTypeList(),
                                                         p_function.getLocation());
     std::shared_ptr<SymbolTable> newSymTab;
-    if (p_function.getRetType()->kind == TypeKind::void_) {
-        newSymTab = std::make_shared<SymbolTable>(symTab, symTab->level + 1, ContextKind::Procedure, type_mgr.getType(TypeKind::void_));
+    if (p_function.getRetType()->kind == TypeKind::Void) {
+        newSymTab = std::make_shared<SymbolTable>(symTab, symTab->level + 1, ContextKind::Procedure, type_mgr.getType(TypeKind::Void));
     }
     else {
         newSymTab = std::make_shared<SymbolTable>(symTab, symTab->level + 1, ContextKind::Function, p_function.getRetType());
@@ -229,7 +229,7 @@ void SemanticAnalyzer::visit(PrintNode &p_print) {
         return;
     }
     // The type of the expression (target) must be scalar type
-    if (p_print.expr->getType()->isArray() || p_print.expr->getType()->kind == TypeKind::void_) {
+    if (p_print.expr->getType()->isArray() || p_print.expr->getType()->kind == TypeKind::Void) {
         fprintf(stderr, "<Error> Found in line %u, column %u: expression of print statement must be scalar type\n"
                         "    %s\n"
                         "    %s\n",
@@ -318,7 +318,7 @@ void SemanticAnalyzer::visit(BinaryOperatorNode &p_bin_op) {
             log_error();
             return;
         }
-        p_bin_op.fillAttribute(type_mgr.getType(TypeKind::integer));
+        p_bin_op.fillAttribute(type_mgr.getType(TypeKind::Integer));
         break;
     case BinaryOP::AND:
     case BinaryOP::OR:
@@ -326,7 +326,7 @@ void SemanticAnalyzer::visit(BinaryOperatorNode &p_bin_op) {
             log_error();
             return;
         }
-        p_bin_op.fillAttribute(type_mgr.getType(TypeKind::boolean));
+        p_bin_op.fillAttribute(type_mgr.getType(TypeKind::Boolean));
         break;
     case BinaryOP::LESS:
     case BinaryOP::LESS_OR_EQUAL:
@@ -339,7 +339,7 @@ void SemanticAnalyzer::visit(BinaryOperatorNode &p_bin_op) {
             log_error();
             return;
         }
-        p_bin_op.fillAttribute(type_mgr.getType(TypeKind::boolean));
+        p_bin_op.fillAttribute(type_mgr.getType(TypeKind::Boolean));
         break;
     }
     // 5. Pop the symbol table pushed at the 1st step.
@@ -390,7 +390,7 @@ void SemanticAnalyzer::visit(UnaryOperatorNode &p_un_op) {
             log_error();
             return;
         }
-        p_un_op.fillAttribute(type_mgr.getType(TypeKind::boolean));
+        p_un_op.fillAttribute(type_mgr.getType(TypeKind::Boolean));
         break;
     }
     // 5. Pop the symbol table pushed at the 1st step.
@@ -517,7 +517,7 @@ void SemanticAnalyzer::visit(VariableReferenceNode &p_variable_ref) {
             recordError(p_variable_ref.getLocation().line, p_variable_ref.getLocation().col);
             return;
         }
-        if (e->getType()->kind != TypeKind::integer) {
+        if (e->getType()->kind != TypeKind::Integer) {
             auto index_col = p_variable_ref.getLocation().col + p_variable_ref.getNameStr().length() + 1;
             fprintf(stderr, "<Error> Found in line %u, column %lu: index of array reference must be an integer\n"
                             "    %s\n"
@@ -686,7 +686,7 @@ void SemanticAnalyzer::visit(IfNode &p_if) {
         return;
     }
     // The type of the result of the expression (condition) must be boolean type
-    if (p_if.condition->getType()->kind != TypeKind::boolean) {
+    if (p_if.condition->getType()->kind != TypeKind::Boolean) {
         fprintf(stderr, "<Error> Found in line %u, column %u: the expression of condition must be boolean type\n"
                         "    %s\n"
                         "    %s\n",
@@ -714,7 +714,7 @@ void SemanticAnalyzer::visit(WhileNode &p_while) {
         return;
     }
     // The type of the result of the expression (condition) must be boolean type
-    if (p_while.condition->getType()->kind != TypeKind::boolean) {
+    if (p_while.condition->getType()->kind != TypeKind::Boolean) {
         fprintf(stderr, "<Error> Found in line %u, column %u: the expression of condition must be boolean type\n"
                         "    %s\n"
                         "    %s\n",
@@ -880,10 +880,10 @@ std::shared_ptr<TypeStruct> SemanticAnalyzer::coerce(std::shared_ptr<TypeStruct>
     // Type coercion is not permitted for array
     if (t1->isArray() || t2->isArray()) return nullptr;
 
-    if (t1->kind == TypeKind::real && t2->kind == TypeKind::integer) {
+    if (t1->kind == TypeKind::Real && t2->kind == TypeKind::Integer) {
         return t1;
     }
-    else if (t2->kind == TypeKind::real && t1->kind == TypeKind::integer) {
+    else if (t2->kind == TypeKind::Real && t1->kind == TypeKind::Integer) {
         return t2;
     }
     return nullptr;

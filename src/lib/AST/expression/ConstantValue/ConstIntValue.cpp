@@ -10,7 +10,7 @@
 extern TypeManager type_mgr;
 
 ConstIntValueNode::ConstIntValueNode(const uint32_t line, const uint32_t col, int64_t ival)
-    : ConstantValueNode{line, col, type_mgr.getType(TypeKind::integer)}, ival(ival) {}
+    : ConstantValueNode{line, col, type_mgr.getType(TypeKind::Integer)}, ival(ival) {}
 
 std::string ConstIntValueNode::getValueString() {
     return std::to_string(ival);

@@ -5,24 +5,24 @@
 #include <vector>
 
 enum class TypeKind {
-    integer,
-    real,
-    string,
-    boolean,
-    void_,
+    Integer,
+    Real,
+    String,
+    Boolean,
+    Void,
 };
 
 static inline std::string getTypeKindStr(TypeKind kind) {
     switch (kind) {
-        case TypeKind::integer:
+        case TypeKind::Integer:
             return "integer";
-        case TypeKind::string:
+        case TypeKind::String:
             return "string";
-        case TypeKind::boolean:
+        case TypeKind::Boolean:
             return "boolean";
-        case TypeKind::real:
+        case TypeKind::Real:
             return "real";
-        case TypeKind::void_:
+        case TypeKind::Void:
             return "void";
         default:
             return "<not handled type kind>";

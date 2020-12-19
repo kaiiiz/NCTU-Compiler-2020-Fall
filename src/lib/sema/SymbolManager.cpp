@@ -8,7 +8,7 @@
 extern TypeManager type_mgr;
 
 SymbolManager::SymbolManager() {
-    global = std::make_shared<SymbolTable>(nullptr, 0, ContextKind::Program, type_mgr.getType(TypeKind::void_));
+    global = std::make_shared<SymbolTable>(nullptr, 0, ContextKind::Program, type_mgr.getType(TypeKind::Void));
     tables.push(global);
 }
 

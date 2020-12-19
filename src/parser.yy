@@ -142,7 +142,7 @@ Program:
     /* End of ProgramBody */
     END {
         $5->fillAttribute(CompoundKind::normal);
-        drv.root = std::make_shared<ProgramNode>(@1.begin.line, @1.begin.column, $1, type_mgr.getType(TypeKind::void_), $3, $4, $5);
+        drv.root = std::make_shared<ProgramNode>(@1.begin.line, @1.begin.column, $1, type_mgr.getType(TypeKind::Void), $3, $4, $5);
     }
 ;
 
@@ -236,7 +236,7 @@ IdList:
 ReturnType:
     COLON ScalarType { $$ = $2; }
     |
-    Epsilon { $$ = type_mgr.getType(TypeKind::void_); }
+    Epsilon { $$ = type_mgr.getType(TypeKind::Void); }
 ;
 
     /*
@@ -268,13 +268,13 @@ Type:
 ;
 
 ScalarType:
-    INTEGER { $$ = type_mgr.getType(TypeKind::integer); }
+    INTEGER { $$ = type_mgr.getType(TypeKind::Integer); }
     |
-    REAL { $$ = type_mgr.getType(TypeKind::real); }
+    REAL { $$ = type_mgr.getType(TypeKind::Real); }
     |
-    STRING { $$ = type_mgr.getType(TypeKind::string); }
+    STRING { $$ = type_mgr.getType(TypeKind::String); }
     |
-    BOOLEAN { $$ = type_mgr.getType(TypeKind::boolean); }
+    BOOLEAN { $$ = type_mgr.getType(TypeKind::Boolean); }
 ;
 
 ArrType:
@@ -444,7 +444,7 @@ For:
     CompoundStatement
     END DO {
         // make declaration
-        auto type = type_mgr.getType(TypeKind::integer);
+        auto type = type_mgr.getType(TypeKind::Integer);
         auto var = std::make_shared<VariableNode>(@2.begin.line, @2.begin.column, $2, type);
         var->fillAttribute(VariableKind::loop_var);
         auto var_list = std::vector<std::shared_ptr<VariableNode>>{var};

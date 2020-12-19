@@ -10,7 +10,7 @@
 extern TypeManager type_mgr;
 
 ConstRealValueNode::ConstRealValueNode(const uint32_t line, const uint32_t col, double rval)
-    : ConstantValueNode{line, col, type_mgr.getType(TypeKind::real)}, rval(rval) {}
+    : ConstantValueNode{line, col, type_mgr.getType(TypeKind::Real)}, rval(rval) {}
 
 std::string ConstRealValueNode::getValueString() {
     return std::to_string(rval);

@@ -10,7 +10,7 @@
 extern TypeManager type_mgr;
 
 ConstBoolValueNode::ConstBoolValueNode(const uint32_t line, const uint32_t col, bool bval)
-    : ConstantValueNode{line, col, type_mgr.getType(TypeKind::boolean)}, bval(bval) {}
+    : ConstantValueNode{line, col, type_mgr.getType(TypeKind::Boolean)}, bval(bval) {}
 
 std::string ConstBoolValueNode::getValueString() {
     return (bval) ? "true" : "false";
