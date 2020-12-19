@@ -13,20 +13,19 @@ class CompoundStatementNode;
 class ForNode : public StatementBase {
   public:
     ForNode(const uint32_t line, const uint32_t col,
-            std::shared_ptr<DeclNode> declaration,
-            std::shared_ptr<AssignmentNode> assignment,
-            std::shared_ptr<ConstantValueNode> condition,
-            std::shared_ptr<CompoundStatementNode> compound_stmt);
+            const std::shared_ptr<DeclNode> declaration,
+            const std::shared_ptr<AssignmentNode> assignment,
+            const std::shared_ptr<ConstantValueNode> condition,
+            const std::shared_ptr<CompoundStatementNode> compound_stmt);
     ~ForNode() = default;
+
+    const std::shared_ptr<DeclNode> declaration;
+    const std::shared_ptr<AssignmentNode> assignment;
+    const std::shared_ptr<ConstantValueNode> condition;
+    const std::shared_ptr<CompoundStatementNode> compound_stmt;
 
     void accept(AstNodeVisitor &p_visitor) override;
     void visitChildNodes(AstNodeVisitor &p_visitor) override;
-
-  private:
-    std::shared_ptr<DeclNode> declaration;
-    std::shared_ptr<AssignmentNode> assignment;
-    std::shared_ptr<ConstantValueNode> condition;
-    std::shared_ptr<CompoundStatementNode> compound_stmt;
 };
 
 #endif

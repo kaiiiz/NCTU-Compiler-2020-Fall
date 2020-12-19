@@ -729,6 +729,20 @@ void SemanticAnalyzer::visit(ForNode &p_for) {
     // 3. Travere child nodes of this node.
     p_for.visitChildNodes(*this);
     // 4. Perform semantic analyses of this node.
+    // The initial value of the loop variable and the constant value of the condition must be in the incremental order
+    auto initial_node = std::dynamic_pointer_cast<ConstIntValueNode>(p_for.assignment->expression);
+    auto end_node = std::dynamic_pointer_cast<ConstIntValueNode>(p_for.condition);
+    if (initial_node->getValue() > end_node->getValue()) {
+        fprintf(stderr, "<Error> Found in line %u, column %u: the lower bound and upper bound of iteration count must be in the incremental order\n"
+                        "    %s\n"
+                        "    %s\n",
+                        p_for.getLocation().line, p_for.getLocation().col,
+                        getSourceLine(p_for.getLocation().line).c_str(),
+                        getErrIndicator(p_for.getLocation().col).c_str());
+        recordError(p_for.getLocation().line, p_for.getLocation().col);
+        symbol_mgr.popScope();
+        return;
+    }
     // 5. Pop the symbol table pushed at the 1st step.
     symbol_mgr.popScope();
 }
@@ -750,7 +764,7 @@ void SemanticAnalyzer::visit(ReturnNode &p_return) {
 bool SemanticAnalyzer::insertWithCheck(std::shared_ptr<SymbolTable> sym_tab,
                                        std::shared_ptr<SymbolEntry> symbol) {
     auto symbol_name = symbol->getNameStr();
-    auto exist_symbol = sym_tab->lookup(symbol_name); 
+    auto exist_symbol = sym_tab->lookup(symbol_name);
     // normal symbol redeclaration check
     if (exist_symbol != nullptr && exist_symbol->getLevel() == symbol->getLevel()) {
         fprintf(stderr, "<Error> Found in line %u, column %u: symbol '%s' is redeclared\n"
