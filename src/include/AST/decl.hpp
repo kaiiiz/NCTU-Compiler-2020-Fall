@@ -14,12 +14,11 @@ class DeclNode : public AstNode {
   public:
     DeclNode(const uint32_t line, const uint32_t col,
              std::vector<std::shared_ptr<VariableNode>> var_list,
-             std::shared_ptr<TypeStruct> type);
+             const std::shared_ptr<TypeStruct> type);
 
     ~DeclNode() = default;
 
-    std::shared_ptr<TypeStruct> getType();
-    std::string getTypeStr();
+    const std::shared_ptr<TypeStruct> type;
     int32_t getVarNum();
 
     void accept(AstNodeVisitor &p_visitor) override;
@@ -27,7 +26,6 @@ class DeclNode : public AstNode {
 
   private:
     std::vector<std::shared_ptr<VariableNode>> var_list;
-    std::shared_ptr<TypeStruct> type;
 };
 
 #endif

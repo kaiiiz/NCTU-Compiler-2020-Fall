@@ -8,19 +8,15 @@
 
 class FunctionInvocationNode : public ExpressionBase {
   public:
-    FunctionInvocationNode(const uint32_t line, const uint32_t col,
-                           std::string name, std::vector<std::shared_ptr<ExpressionBase>> expressions);
+    FunctionInvocationNode(const uint32_t line, const uint32_t col, const std::string name,
+                           const std::vector<std::shared_ptr<ExpressionBase>> expressions);
     ~FunctionInvocationNode() = default;
 
-    std::string getFuncName();
-    std::vector<std::shared_ptr<ExpressionBase>> getExprs();
+    const std::string name;
+    const std::vector<std::shared_ptr<ExpressionBase>> expressions;
 
     void accept(AstNodeVisitor &p_visitor) override;
     void visitChildNodes(AstNodeVisitor &p_visitor) override;
-
-  private:
-    std::string name;
-    std::vector<std::shared_ptr<ExpressionBase>> expressions;
 };
 
 #endif

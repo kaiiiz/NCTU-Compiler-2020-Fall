@@ -15,7 +15,6 @@ class AssignmentNode : public StatementBase {
                    const std::shared_ptr<ExpressionBase> expression);
     ~AssignmentNode() = default;
 
-    std::string getVarStr();
     const std::shared_ptr<VariableReferenceNode> var_ref;
     const std::shared_ptr<ExpressionBase> expression;
 

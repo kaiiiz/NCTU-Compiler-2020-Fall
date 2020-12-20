@@ -210,8 +210,8 @@ void SemanticAnalyzer::visit(BinaryOperatorNode &p_bin_op) {
     // 3. Travere child nodes of this node.
     p_bin_op.visitChildNodes(*this);
     // 4. Perform semantic analyses of this node.
-    auto lexpr = p_bin_op.getLExpr();
-    auto rexpr = p_bin_op.getRExpr();
+    auto lexpr = p_bin_op.lexpr;
+    auto rexpr = p_bin_op.rexpr;
     auto lexpr_type = lexpr->getType();
     auto rexpr_type = rexpr->getType();
     // Skip the rest of semantic checks if there are any errors in the nodes of operands
@@ -221,7 +221,7 @@ void SemanticAnalyzer::visit(BinaryOperatorNode &p_bin_op) {
     }
     auto log_error = [this, &p_bin_op, &lexpr_type, &rexpr_type]() {
         err_handler.binOpInvalidOperand(p_bin_op.getLocation(),
-                                        p_bin_op.getOPString(),
+                                        getBinaryOPStr(p_bin_op.op),
                                         lexpr_type->getTypeStr(),
                                         rexpr_type->getTypeStr());
     };
@@ -314,7 +314,7 @@ void SemanticAnalyzer::visit(UnaryOperatorNode &p_un_op) {
     }
     auto log_error = [this, &p_un_op, &expr_type]() {
         err_handler.unaryOpInvalidOperand(p_un_op.getLocation(),
-                                          p_un_op.getOPString(),
+                                          getUnaryOPStr(p_un_op.op),
                                           expr_type->getTypeStr());
     };
     // expression must be non void, non array
@@ -350,30 +350,30 @@ void SemanticAnalyzer::visit(FunctionInvocationNode &p_func_invocation) {
     // 3. Travere child nodes of this node.
     p_func_invocation.visitChildNodes(*this);
     // 4. Perform semantic analyses of this node.
-    auto symbol = symTab->lookup(p_func_invocation.getFuncName());
+    auto symbol = symTab->lookup(p_func_invocation.name);
     // The identifier has to be in symbol tables.
     if (symbol == nullptr) {
         err_handler.useOfUndeclaredSymbol(p_func_invocation.getLocation(),
-                                          p_func_invocation.getFuncName());
+                                          p_func_invocation.name);
         return;
     }
     // The kind of symbol has to be function.
     else if (symbol->getKind() != SymbolEntryKind::Function) {
         err_handler.callNonFuncSymbol(p_func_invocation.getLocation(),
-                                      p_func_invocation.getFuncName());
+                                      p_func_invocation.name);
         return;
     }
     // Pointer cast to function symbol after checking symbol kind is function
     auto func_symbol = std::dynamic_pointer_cast<FunctionSymbolEntry>(symbol);
     // The number of arguments must be the same as one of the parameters.
-    if (func_symbol->getParamType().size() != p_func_invocation.getExprs().size()) {
+    if (func_symbol->getParamType().size() != p_func_invocation.expressions.size()) {
         err_handler.callArgsNumMismatch(p_func_invocation.getLocation(),
-                                     p_func_invocation.getFuncName());
+                                     p_func_invocation.name);
         return;
     }
     // Traverse arguments
     auto param_prototype = func_symbol->getParamType();
-    auto arg_exprs = p_func_invocation.getExprs();
+    auto arg_exprs = p_func_invocation.expressions;
     for (uint64_t i = 0; i < param_prototype.size(); i++) {
         if (!typeEq(param_prototype[i], arg_exprs[i]->getType())) {
             err_handler.callArgsTypeMismatch(p_func_invocation.getLocation(),
@@ -399,11 +399,11 @@ void SemanticAnalyzer::visit(VariableReferenceNode &p_variable_ref) {
     // 3. Travere child nodes of this node.
     p_variable_ref.visitChildNodes(*this);
     // 4. Perform semantic analyses of this node.
-    auto symbol = symTab->lookup(p_variable_ref.getNameStr());
+    auto symbol = symTab->lookup(p_variable_ref.name);
     // The identifier has to be in symbol tables.
     if (symbol == nullptr) {
         err_handler.useOfUndeclaredSymbol(p_variable_ref.getLocation(),
-                                          p_variable_ref.getNameStr());
+                                          p_variable_ref.name);
         return;
     }
     // The kind of symbol has to be a parameter, variable, loop_var, or constant.
@@ -412,7 +412,7 @@ void SemanticAnalyzer::visit(VariableReferenceNode &p_variable_ref) {
              symbol->getKind() != SymbolEntryKind::LoopVar &&
              symbol->getKind() != SymbolEntryKind::Constant) {
         err_handler.useOfNonVarSymbol(p_variable_ref.getLocation(),
-                                      p_variable_ref.getNameStr());
+                                      p_variable_ref.name);
         return;
     }
     // Skip the rest of semantic checks if there are any errors in the node of the declaration of the refered symbol
@@ -421,7 +421,7 @@ void SemanticAnalyzer::visit(VariableReferenceNode &p_variable_ref) {
         return;
     }
     // Each index of an array reference must be of the integer type.
-    for (auto &e : p_variable_ref.getExprs()) {
+    for (auto &e : p_variable_ref.expressions) {
         if (err_handler.hasErrorAt(e->getLocation())) {
             err_handler.recordError(p_variable_ref.getLocation());
             return;
@@ -432,12 +432,12 @@ void SemanticAnalyzer::visit(VariableReferenceNode &p_variable_ref) {
         }
     }
     // An over array subscript is forbidden, that is, the number of indices of an array reference cannot be greater than the one of dimensions in the declaration.
-    if (symbol->getType()->dim.size() < p_variable_ref.getExprs().size()) {
-        err_handler.arrayOverSubscript(p_variable_ref.getLocation(), p_variable_ref.getNameStr());
+    if (symbol->getType()->dim.size() < p_variable_ref.expressions.size()) {
+        err_handler.arrayOverSubscript(p_variable_ref.getLocation(), p_variable_ref.name);
         return;
     }
     // back propagate type information
-    p_variable_ref.fillAttribute(type_mgr.getType(symbol->getType(), p_variable_ref.getExprs().size()));
+    p_variable_ref.fillAttribute(type_mgr.getType(symbol->getType(), p_variable_ref.expressions.size()));
     // 5. Pop the symbol table pushed at the 1st step.
 }
 
@@ -461,11 +461,11 @@ void SemanticAnalyzer::visit(AssignmentNode &p_assignment) {
         return;
     }
     // The variable reference cannot be a reference to a constant variable
-    auto symbol = symTab->lookup(p_assignment.var_ref->getNameStr());
+    auto symbol = symTab->lookup(p_assignment.var_ref->name);
     if (symbol->getKind() == SymbolEntryKind::Constant) {
         err_handler.constAssignment(p_assignment.getLocation(),
                                     p_assignment.var_ref->getLocation(),
-                                    p_assignment.var_ref->getNameStr());
+                                    p_assignment.var_ref->name);
         return;
     }
     // The variable reference cannot be a reference to a loop variable when the context is within a loop body
@@ -515,7 +515,7 @@ void SemanticAnalyzer::visit(ReadNode &p_read) {
         return;
     }
     // The kind of symbol of the variable reference cannot be constant or loop_var
-    auto symbol = symTab->lookup(p_read.var_ref->getNameStr());
+    auto symbol = symTab->lookup(p_read.var_ref->name);
     if (symbol->getKind() == SymbolEntryKind::Constant || symbol->getKind() == SymbolEntryKind::LoopVar) {
         err_handler.readVarRefNoConstOrLoopVar(p_read.getLocation(), p_read.var_ref->getLocation());
         return;

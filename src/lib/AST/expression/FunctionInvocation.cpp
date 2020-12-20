@@ -3,12 +3,8 @@
 #include "visitor/AstDumper.hpp"
 
 FunctionInvocationNode::FunctionInvocationNode(const uint32_t line, const uint32_t col,
-                           std::string name, std::vector<std::shared_ptr<ExpressionBase>> expressions)
+            const std::string name, const std::vector<std::shared_ptr<ExpressionBase>> expressions)
     : ExpressionBase{line, col}, name(name), expressions(expressions) {}
-
-std::string FunctionInvocationNode::getFuncName() { return name; }
-
-std::vector<std::shared_ptr<ExpressionBase>> FunctionInvocationNode::getExprs() { return expressions; }
 
 void FunctionInvocationNode::accept(AstNodeVisitor &p_visitor) {
     p_visitor.visit(*this);

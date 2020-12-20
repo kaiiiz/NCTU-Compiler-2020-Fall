@@ -8,19 +8,15 @@
 
 class VariableReferenceNode : public ExpressionBase {
   public:
-    VariableReferenceNode(const uint32_t line, const uint32_t col,
-                          std::string name, std::vector<std::shared_ptr<ExpressionBase>> expressions);
+    VariableReferenceNode(const uint32_t line, const uint32_t col, const std::string name, 
+                          const std::vector<std::shared_ptr<ExpressionBase>> expressions);
     ~VariableReferenceNode() = default;
 
-    std::string getNameStr();
-    std::vector<std::shared_ptr<ExpressionBase>> getExprs();
+    const std::string name;
+    const std::vector<std::shared_ptr<ExpressionBase>> expressions;
 
     void accept(AstNodeVisitor &p_visitor) override;
     void visitChildNodes(AstNodeVisitor &p_visitor) override;
-
-  private:
-    std::string name;
-    std::vector<std::shared_ptr<ExpressionBase>> expressions;
 };
 
 #endif

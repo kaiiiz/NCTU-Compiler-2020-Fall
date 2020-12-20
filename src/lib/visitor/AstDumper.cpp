@@ -116,7 +116,7 @@ void AstDumper::visit(BinaryOperatorNode &p_bin_op) {
 
     std::printf("binary operator <line: %u, col: %u> %s\n",
                 p_bin_op.getLocation().line, p_bin_op.getLocation().col,
-                p_bin_op.getOPString().c_str());
+                getBinaryOPStr(p_bin_op.op).c_str());
 
     incrementIndentation();
     p_bin_op.visitChildNodes(*this);
@@ -128,7 +128,7 @@ void AstDumper::visit(UnaryOperatorNode &p_un_op) {
 
     std::printf("unary operator <line: %u, col: %u> %s\n",
                 p_un_op.getLocation().line, p_un_op.getLocation().col,
-                p_un_op.getOPString().c_str());
+                getUnaryOPStr(p_un_op.op).c_str());
 
     incrementIndentation();
     p_un_op.visitChildNodes(*this);
@@ -141,7 +141,7 @@ void AstDumper::visit(FunctionInvocationNode &p_func_invocation) {
     std::printf("function invocation <line: %u, col: %u> %s\n",
                 p_func_invocation.getLocation().line,
                 p_func_invocation.getLocation().col,
-                p_func_invocation.getFuncName().c_str());
+                p_func_invocation.name.c_str());
 
     incrementIndentation();
     p_func_invocation.visitChildNodes(*this);
@@ -158,7 +158,7 @@ void AstDumper::visit(VariableReferenceNode &p_variable_ref) {
     std::printf("variable reference <line: %u, col: %u> %s\n",
                 p_variable_ref.getLocation().line,
                 p_variable_ref.getLocation().col,
-                p_variable_ref.getNameStr().c_str());
+                p_variable_ref.name.c_str());
 
     incrementIndentation();
     p_variable_ref.visitChildNodes(*this);

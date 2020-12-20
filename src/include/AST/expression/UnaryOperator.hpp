@@ -8,6 +8,17 @@ enum class UnaryOP {
     NOT,
 };
 
+static inline std::string getUnaryOPStr(UnaryOP op) {
+    switch (op) {
+        case UnaryOP::NOT:
+            return "not";
+        case UnaryOP::MINUS:
+            return "neg";
+        default:
+            return "<not handled unary op>";
+    }
+}
+
 class UnaryOperatorNode : public ExpressionBase {
   public:
     UnaryOperatorNode(const uint32_t line, const uint32_t col, const UnaryOP op,
@@ -17,7 +28,6 @@ class UnaryOperatorNode : public ExpressionBase {
     const UnaryOP op;
     const std::shared_ptr<ExpressionBase> expr;
 
-    std::string getOPString();
     void accept(AstNodeVisitor &p_visitor) override;
     void visitChildNodes(AstNodeVisitor &p_visitor) override;
 };

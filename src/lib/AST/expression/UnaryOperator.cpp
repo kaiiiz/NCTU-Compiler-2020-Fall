@@ -6,17 +6,6 @@ UnaryOperatorNode::UnaryOperatorNode(const uint32_t line, const uint32_t col, co
                                      const std::shared_ptr<ExpressionBase> expr)
     : ExpressionBase{line, col}, op(op), expr(expr) {}
 
-std::string UnaryOperatorNode::getOPString() {
-    switch (op) {
-        case UnaryOP::NOT:
-            return "not";
-        case UnaryOP::MINUS:
-            return "neg";
-        default:
-            return "<not handled unary op>";
-    }
-}
-
 void UnaryOperatorNode::accept(AstNodeVisitor &p_visitor) {
     p_visitor.visit(*this);
 }
