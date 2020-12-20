@@ -6,10 +6,6 @@
 #include "AST/decl.hpp"
 #include "AST/expression/BinaryOperator.hpp"
 #include "AST/expression/ConstantValue.hpp"
-#include "AST/expression/ConstantValue/ConstBoolValue.hpp"
-#include "AST/expression/ConstantValue/ConstIntValue.hpp"
-#include "AST/expression/ConstantValue/ConstRealValue.hpp"
-#include "AST/expression/ConstantValue/ConstStrValue.hpp"
 #include "AST/expression/FunctionInvocation.hpp"
 #include "AST/expression/UnaryOperator.hpp"
 #include "AST/expression/VariableReference.hpp"
@@ -94,25 +90,25 @@ void SemanticAnalyzer::visit(VariableNode &p_variable) {
         case TypeKind::Boolean:
             symbol = std::make_shared<ConstBoolSymbolEntry>(
                 p_variable.getNameStr(), symTab->level, p_variable.getType(),
-                p_variable.getLiteralConst<ConstBoolValueNode>()->getValue(),
+                std::stoi(p_variable.getLiteralConst()->value_str),
                 p_variable.getLocation());
             break;
         case TypeKind::Integer:
             symbol = std::make_shared<ConstIntSymbolEntry>(
                 p_variable.getNameStr(), symTab->level, p_variable.getType(),
-                p_variable.getLiteralConst<ConstIntValueNode>()->getValue(),
+                std::stoi(p_variable.getLiteralConst()->value_str),
                 p_variable.getLocation());
             break;
         case TypeKind::Real:
             symbol = std::make_shared<ConstRealSymbolEntry>(
                 p_variable.getNameStr(), symTab->level, p_variable.getType(),
-                p_variable.getLiteralConst<ConstRealValueNode>()->getValue(),
+                std::stod(p_variable.getLiteralConst()->value_str),
                 p_variable.getLocation());
             break;
         case TypeKind::String:
             symbol = std::make_shared<ConstStrSymbolEntry>(
                 p_variable.getNameStr(), symTab->level, p_variable.getType(),
-                p_variable.getLiteralConst<ConstStrValueNode>()->getValue(),
+                p_variable.getLiteralConst()->value_str,
                 p_variable.getLocation());
             break;
         case TypeKind::Void:
@@ -604,9 +600,11 @@ void SemanticAnalyzer::visit(ForNode &p_for) {
     p_for.visitChildNodes(*this);
     // 4. Perform semantic analyses of this node.
     // The initial value of the loop variable and the constant value of the condition must be in the incremental order
-    auto initial_node = std::dynamic_pointer_cast<ConstIntValueNode>(p_for.assignment->expression);
-    auto end_node = std::dynamic_pointer_cast<ConstIntValueNode>(p_for.condition);
-    if (initial_node->getValue() > end_node->getValue()) {
+    auto initial_node = std::dynamic_pointer_cast<ConstantValueNode>(p_for.assignment->expression);
+    auto init_val = std::stoi(initial_node->value_str);
+    auto end_node = std::dynamic_pointer_cast<ConstantValueNode>(p_for.condition);
+    auto end_val = std::stoi(end_node->value_str);
+    if (init_val > end_val) {
         err_handler.forIterOrder(p_for.getLocation());
         symbol_mgr.popScope();
         return;

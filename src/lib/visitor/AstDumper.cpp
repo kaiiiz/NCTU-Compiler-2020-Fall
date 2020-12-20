@@ -73,7 +73,7 @@ void AstDumper::visit(ConstantValueNode &p_constant_value) {
     std::printf("constant <line: %u, col: %u> %s\n",
                 p_constant_value.getLocation().line,
                 p_constant_value.getLocation().col,
-                p_constant_value.getValueString().c_str());
+                p_constant_value.value_str.c_str());
 }
 
 void AstDumper::visit(FunctionNode &p_function) {

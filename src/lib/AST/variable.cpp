@@ -43,6 +43,10 @@ std::string VariableNode::getTypeStr() {
     return type->getTypeStr();
 }
 
+std::shared_ptr<ConstantValueNode> VariableNode::getLiteralConst() {
+    return literal_const;
+}
+
 VariableKind VariableNode::getVarKind() { return kind; }
 
 void VariableNode::accept(AstNodeVisitor &p_visitor) {

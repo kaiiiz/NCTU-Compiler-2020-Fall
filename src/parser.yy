@@ -22,10 +22,6 @@
 #include "AST/base/ExpressionBase.hpp"
 #include "AST/base/StatementBase.hpp"
 #include "AST/expression/ConstantValue.hpp"
-#include "AST/expression/ConstantValue/ConstBoolValue.hpp"
-#include "AST/expression/ConstantValue/ConstIntValue.hpp"
-#include "AST/expression/ConstantValue/ConstRealValue.hpp"
-#include "AST/expression/ConstantValue/ConstStrValue.hpp"
 #include "AST/expression/BinaryOperator.hpp"
 #include "AST/expression/UnaryOperator.hpp"
 #include "AST/expression/FunctionInvocation.hpp"
@@ -290,19 +286,17 @@ ArrDecl:
 
 LiteralConstant:
     NegOrNot INT_LITERAL {
-        auto node = ($1) ? 
-            std::make_shared<ConstIntValueNode>(@1.begin.line, @1.begin.column, $2 * (-1))
+        $$ = ($1) ? 
+            std::make_shared<ConstantValueNode>(@1.begin.line, @1.begin.column, $2 * (-1))
             :
-            std::make_shared<ConstIntValueNode>(@2.begin.line, @2.begin.column, $2);
-        $$ = std::dynamic_pointer_cast<ConstantValueNode>(node);
+            std::make_shared<ConstantValueNode>(@2.begin.line, @2.begin.column, $2);
     }
     |
     NegOrNot REAL_LITERAL {
-        auto node = ($1) ? 
-            std::make_shared<ConstRealValueNode>(@1.begin.line, @1.begin.column, $2 * (-1))
+        $$ = ($1) ? 
+            std::make_shared<ConstantValueNode>(@1.begin.line, @1.begin.column, $2 * (-1))
             :
-            std::make_shared<ConstRealValueNode>(@2.begin.line, @2.begin.column, $2);
-        $$ = std::dynamic_pointer_cast<ConstantValueNode>(node);
+            std::make_shared<ConstantValueNode>(@2.begin.line, @2.begin.column, $2);
     }
     |
     StringAndBoolean { $$ = $1; }
@@ -316,30 +310,25 @@ NegOrNot:
 
 StringAndBoolean:
     STRING_LITERAL {
-        auto node = std::make_shared<ConstStrValueNode>(@1.begin.line, @1.begin.column, $1);
-        $$ = std::dynamic_pointer_cast<ConstantValueNode>(node);
+        $$ = std::make_shared<ConstantValueNode>(@1.begin.line, @1.begin.column, $1);
     }
     |
     TRUE {
-        auto node = std::make_shared<ConstBoolValueNode>(@1.begin.line, @1.begin.column, true);
-        $$ = std::dynamic_pointer_cast<ConstantValueNode>(node);
+        $$ = std::make_shared<ConstantValueNode>(@1.begin.line, @1.begin.column, true);
     }
     |
     FALSE {
-        auto node = std::make_shared<ConstBoolValueNode>(@1.begin.line, @1.begin.column, false);
-        $$ = std::dynamic_pointer_cast<ConstantValueNode>(node);
+        $$ = std::make_shared<ConstantValueNode>(@1.begin.line, @1.begin.column, false);
     }
 ;
 
 IntegerAndReal:
     INT_LITERAL {
-        auto node = std::make_shared<ConstIntValueNode>(@1.begin.line, @1.begin.column, $1);
-        $$ = std::dynamic_pointer_cast<ConstantValueNode>(node);
+        $$ = std::make_shared<ConstantValueNode>(@1.begin.line, @1.begin.column, $1);
     }
     |
     REAL_LITERAL {
-        auto node = std::make_shared<ConstRealValueNode>(@1.begin.line, @1.begin.column, $1);
-        $$ = std::dynamic_pointer_cast<ConstantValueNode>(node);
+        $$ = std::make_shared<ConstantValueNode>(@1.begin.line, @1.begin.column, $1);
     }
 ;
 
@@ -451,12 +440,12 @@ For:
         auto var_list = std::vector<std::shared_ptr<VariableNode>>{var};
         auto decl = std::make_shared<DeclNode>(@2.begin.line, @2.begin.column, var_list, type);
         // make assignment
-        auto constant_init = std::make_shared<ConstIntValueNode>(@4.begin.line, @4.begin.column, $4);
+        auto constant_init = std::make_shared<ConstantValueNode>(@4.begin.line, @4.begin.column, $4);
         auto var_ref_indices = std::vector<std::shared_ptr<ExpressionBase>>();
         auto var_ref = std::make_shared<VariableReferenceNode>(@2.begin.line, @2.begin.column, $2, var_ref_indices);
         auto assignment = std::make_shared<AssignmentNode>(@3.begin.line, @3.begin.column, var_ref, constant_init);
         // make condition
-        auto condition = std::make_shared<ConstIntValueNode>(@6.begin.line, @6.begin.column, $6);
+        auto condition = std::make_shared<ConstantValueNode>(@6.begin.line, @6.begin.column, $6);
         $8->fillAttribute(CompoundKind::normal);
         $$ = std::make_shared<ForNode>(@1.begin.line, @1.begin.column, decl, assignment, condition, $8);
     }

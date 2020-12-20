@@ -10,15 +10,16 @@ class VariableNode;
 
 class ConstantValueNode : public ExpressionBase {
   public:
-    ConstantValueNode(const uint32_t line, const uint32_t col, std::shared_ptr<TypeStruct> type);
+    ConstantValueNode(const uint32_t line, const uint32_t col, const int64_t ival);
+    ConstantValueNode(const uint32_t line, const uint32_t col, const bool bval);
+    ConstantValueNode(const uint32_t line, const uint32_t col, const double rval);
+    ConstantValueNode(const uint32_t line, const uint32_t col, const std::string sval);
     ~ConstantValueNode() = default;
-
-    virtual std::string getValueString() = 0;
-    template<typename T>
-    std::shared_ptr<T> getConstValueNode();
 
     void accept(AstNodeVisitor &p_visitor) override;
     void visitChildNodes(AstNodeVisitor &p_visitor) override;
+
+    const std::string value_str;
 };
 
 #endif
