@@ -8,45 +8,13 @@
 
 class TypeStruct;
 
-class ConstIntSymbolEntry : public SymbolEntry {
+class ConstSymbolEntry : public SymbolEntry {
    public:
-    ConstIntSymbolEntry(std::string name, uint32_t level, std::shared_ptr<TypeStruct> type, int64_t ival, const Location &loc);
+    ConstSymbolEntry(std::string name, uint32_t level, std::shared_ptr<TypeStruct> type, const std::string value_str, const Location &loc);
 
     std::string getAttributeStr() override;
 
-   private:
-    int64_t ival;
+    const std::string value_str;
 };
-
-class ConstBoolSymbolEntry : public SymbolEntry {
-   public:
-    ConstBoolSymbolEntry(std::string name, uint32_t level, std::shared_ptr<TypeStruct> type, bool bval, const Location &loc);
-
-    std::string getAttributeStr() override;
-
-   private:
-    bool bval;
-};
-
-class ConstRealSymbolEntry : public SymbolEntry {
-   public:
-    ConstRealSymbolEntry(std::string name, uint32_t level, std::shared_ptr<TypeStruct> type, double rval, const Location &loc);
-
-    std::string getAttributeStr() override;
-
-   private:
-    double rval;
-};
-
-class ConstStrSymbolEntry : public SymbolEntry {
-   public:
-    ConstStrSymbolEntry(std::string name, uint32_t level, std::shared_ptr<TypeStruct> type, std::string sval, const Location &loc);
-
-    std::string getAttributeStr() override;
-
-   private:
-    std::string sval;
-};
-
 
 #endif

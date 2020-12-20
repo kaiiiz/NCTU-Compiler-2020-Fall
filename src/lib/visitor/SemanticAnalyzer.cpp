@@ -86,34 +86,11 @@ void SemanticAnalyzer::visit(VariableNode &p_variable) {
                                                     p_variable.getLocation());
         break;
     case VariableKind::Constant:
-        switch (p_variable.getType()->kind) {
-        case TypeKind::Boolean:
-            symbol = std::make_shared<ConstBoolSymbolEntry>(
-                p_variable.getNameStr(), symTab->level, p_variable.getType(),
-                std::stoi(p_variable.getLiteralConst()->value_str),
-                p_variable.getLocation());
-            break;
-        case TypeKind::Integer:
-            symbol = std::make_shared<ConstIntSymbolEntry>(
-                p_variable.getNameStr(), symTab->level, p_variable.getType(),
-                std::stoi(p_variable.getLiteralConst()->value_str),
-                p_variable.getLocation());
-            break;
-        case TypeKind::Real:
-            symbol = std::make_shared<ConstRealSymbolEntry>(
-                p_variable.getNameStr(), symTab->level, p_variable.getType(),
-                std::stod(p_variable.getLiteralConst()->value_str),
-                p_variable.getLocation());
-            break;
-        case TypeKind::String:
-            symbol = std::make_shared<ConstStrSymbolEntry>(
-                p_variable.getNameStr(), symTab->level, p_variable.getType(),
-                p_variable.getLiteralConst()->value_str,
-                p_variable.getLocation());
-            break;
-        case TypeKind::Void:
-            break;
-        }
+        symbol = std::make_shared<ConstSymbolEntry>(p_variable.getNameStr(),
+                                                    symTab->level,
+                                                    p_variable.getType(),
+                                                    p_variable.getLiteralConst()->value_str,
+                                                    p_variable.getLocation());
         break;
     case VariableKind::Variable:
         symbol = std::make_shared<VarSymbolEntry>(p_variable.getNameStr(),
