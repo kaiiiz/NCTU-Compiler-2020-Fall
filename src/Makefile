@@ -7,6 +7,7 @@ INCLUDE = -Iinclude -I.
 
 SCANNER = scanner
 PARSER = parser
+COMPILERNAME = compiler
 
 ASTDIR = lib/AST/
 AST := $(shell find $(ASTDIR) -name '*.cpp')
@@ -29,7 +30,7 @@ SRC := $(AST) \
 	   $(TYPE) \
        $(SEMANTIC)
 
-EXEC = $(PARSER)
+EXEC = $(COMPILERNAME)
 OBJS = $(PARSER:=.cpp) \
        $(SCANNER:=.cpp) \
        $(SRC)

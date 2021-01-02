@@ -2,6 +2,7 @@ parser.output
 parser.h
 parser.c*
 parser
+compiler
 scanner.c*
 *.hh
 docker/.history
