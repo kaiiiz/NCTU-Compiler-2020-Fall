@@ -18,7 +18,9 @@ void driver::parse_cmd_args(int argc, const char *argv[]) {
     if (argc < 4) {
         print_usage_and_exit();
     }
-    source_filename = argv[1];
+    // parse file name from path
+    in_file_path = argv[1];
+    in_file_name = in_file_path.substr(in_file_path.rfind("/") + 1);
 
     const char **opt_begin = argv + 2;
     const char **opt_end = argv + argc;
@@ -34,6 +36,20 @@ void driver::parse_cmd_args(int argc, const char *argv[]) {
         print_usage_and_exit();
     } else {
         save_path = *(arg_pos + 1);
+        // remove extension from in_file_name
+        auto dot = in_file_name.rfind(".p");
+        std::string in_file_name_without_ext;
+        if (dot != std::string::npos && dot == in_file_name.length() - 2) {
+            in_file_name_without_ext = in_file_name.substr(0, dot);
+        } else {
+            in_file_name_without_ext = in_file_name;
+        }
+        // concat save_path and file_name
+        if (*(save_path.end() - 1) != '/') {
+            out_file_path = save_path + "/" + in_file_name_without_ext + ".S";
+        } else {
+            out_file_path = save_path + in_file_name_without_ext + ".S";
+        }
     }
 
     if (cmd_exist("--dump-ast")) {

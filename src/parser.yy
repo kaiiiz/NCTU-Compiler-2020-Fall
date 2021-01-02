@@ -577,13 +577,13 @@ void yy::parser::error(const location_type &l, const std::string &m) {
 int main(int argc, const char *argv[]) {
     driver drv;
     drv.parse_cmd_args(argc, argv);
-    drv.parse(drv.source_filename);
+    drv.parse(drv.in_file_path);
 
     if (drv.opt_dump_ast) {
         AstDumper dp;
         drv.root->accept(dp);
     }
-    SemanticAnalyzer analyzer(drv.symbol_mgr, drv.line_head, drv.source_filename);
+    SemanticAnalyzer analyzer(drv.symbol_mgr, drv.line_head, drv.in_file_path);
     drv.root->accept(analyzer);
     if (drv.opt_dump_symtab) {
         drv.symbol_mgr.dumpSymTab();

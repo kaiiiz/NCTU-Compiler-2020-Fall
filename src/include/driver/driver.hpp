@@ -23,7 +23,9 @@ class driver {
     // Compiler Options
     bool opt_dump_ast = 0;
     std::string save_path;
-    std::string source_filename;
+    std::string in_file_path;
+    std::string in_file_name;
+    std::string out_file_path;
     void parse_cmd_args(int argc, const char *argv[]);
 
     // Scannar Context
