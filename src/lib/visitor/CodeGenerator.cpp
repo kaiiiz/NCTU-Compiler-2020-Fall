@@ -28,10 +28,22 @@ void CodeGenerator::visit(ProgramNode &p_program) {
 }
 
 void CodeGenerator::visit(DeclNode &p_decl) {
-
+    p_decl.visitChildNodes(*this);
 }
 
 void CodeGenerator::visit(VariableNode &p_variable) {
+    auto symTab = symbol_mgr.currentSymTab();
+    auto varName = p_variable.getNameStr();
+    auto symbol = symTab->lookup(varName);
+    if (symbol->getLevel() == 0) { // global var decl
+        if (symbol->getKind() == SymbolEntryKind::Constant) {
+
+        } else {
+            genGlobalVarDecl(varName, 4, 4);
+        }
+    } else { // local var decl
+
+    }
 
 }
 
@@ -137,4 +149,8 @@ void CodeGenerator::genFunctionEpilogue(std::string func_name) {
                 << "    addi sp, sp, 128\n"
                 << "    jr ra\n"
                 << "    .size " << func_name << ", .-" << func_name << "\n";
+}
+
+void CodeGenerator::genGlobalVarDecl(std::string var_name, int size, int align) {
+    output_file << "    .comm " << var_name << ", " << size << ", " << align << "\n";
 }

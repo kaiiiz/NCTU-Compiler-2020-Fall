@@ -34,6 +34,7 @@ class CodeGenerator : public AstNodeVisitor {
    private:
     void genFunctionPrologue(std::string func_name);
     void genFunctionEpilogue(std::string func_name);
+    void genGlobalVarDecl(std::string var_name, int size, int align);
 
     const std::string &in_file_name;
     std::ofstream output_file;
