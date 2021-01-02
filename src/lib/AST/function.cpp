@@ -40,7 +40,9 @@ std::shared_ptr<TypeStruct> FunctionNode::getRetType() { return return_type; }
 std::vector<std::shared_ptr<TypeStruct>> FunctionNode::getParamTypeList() {
     std::vector<std::shared_ptr<TypeStruct>> param_type;
     for (auto &p : parameters) {
-        param_type.push_back(p->type);
+        for (auto i = 0; i < p->getVarNum(); i++) {
+            param_type.push_back(p->type);
+        }
     }
     return param_type;
 }
