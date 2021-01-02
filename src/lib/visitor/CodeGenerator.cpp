@@ -42,10 +42,13 @@ void CodeGenerator::visit(VariableNode &p_variable) {
         } else { // .bss
             genGlobalVarDecl(varName, 4, 4);
         }
-    } else { // local var decl
-
+    } else {
+        if (symbol->getKind() == SymbolEntryKind::Constant) { // local var const
+            genLocalVarLoad(symbol);
+            p_variable.visitChildNodes(*this); // push constant value to stack
+            genAssign();
+        }
     }
-
 }
 
 void CodeGenerator::visit(ConstantValueNode &p_constant_value) {
@@ -105,18 +108,7 @@ void CodeGenerator::visit(VariableReferenceNode &p_variable_ref) {
     if (symbol->getLevel() == 0) { // global var ref
         genGlobalVarLoad(varName);
     } else { // local var ref
-        auto symbolKind = symbol->getKind();
-        uint32_t fp_offset;
-        if (symbolKind == SymbolEntryKind::Parameter) {
-            fp_offset = std::dynamic_pointer_cast<ParamSymbolEntry>(symbol)->fp_offset;
-        } else if (symbolKind == SymbolEntryKind::Constant) {
-            fp_offset = std::dynamic_pointer_cast<ConstSymbolEntry>(symbol)->fp_offset;
-        } else if (symbolKind == SymbolEntryKind::LoopVar) {
-            fp_offset = std::dynamic_pointer_cast<LoopVarSymbolEntry>(symbol)->fp_offset;
-        } else if (symbolKind == SymbolEntryKind::Variable) {
-            fp_offset = std::dynamic_pointer_cast<VarSymbolEntry>(symbol)->fp_offset;
-        }
-        genLocalVarLoad(fp_offset);
+        genLocalVarLoad(symbol);
     }
 }
 
@@ -183,7 +175,19 @@ void CodeGenerator::genGlobalVarLoad(std::string var_name) {
                 << "    sw t0, 0(sp)\n";
 }
 
-void CodeGenerator::genLocalVarLoad(uint32_t fp_offset) {
+void CodeGenerator::genLocalVarLoad(std::shared_ptr<SymbolEntry> symbol) {
+    auto symbolKind = symbol->getKind();
+    uint32_t fp_offset;
+    if (symbolKind == SymbolEntryKind::Parameter) {
+        fp_offset = std::dynamic_pointer_cast<ParamSymbolEntry>(symbol)->fp_offset;
+    } else if (symbolKind == SymbolEntryKind::Constant) {
+        fp_offset = std::dynamic_pointer_cast<ConstSymbolEntry>(symbol)->fp_offset;
+    } else if (symbolKind == SymbolEntryKind::LoopVar) {
+        fp_offset = std::dynamic_pointer_cast<LoopVarSymbolEntry>(symbol)->fp_offset;
+    } else if (symbolKind == SymbolEntryKind::Variable) {
+        fp_offset = std::dynamic_pointer_cast<VarSymbolEntry>(symbol)->fp_offset;
+    }
+
     output_file << "    # local var load\n"
                 << "    addi t0, s0, -" << fp_offset << "\n"
                 << "    addi sp, sp, -4\n"
