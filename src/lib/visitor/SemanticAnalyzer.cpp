@@ -59,7 +59,7 @@ void SemanticAnalyzer::visit(VariableNode &p_variable) {
                                                     symTab->level,
                                                     var_type,
                                                     p_variable.getLocation(),
-                                                    symTab->getFpOffset(var_type->getDataSize()));
+                                                    symTab->getFpOffset());
         break;
     case VariableKind::Constant:
         symbol = std::make_shared<ConstSymbolEntry>(p_variable.getNameStr(),
@@ -67,21 +67,21 @@ void SemanticAnalyzer::visit(VariableNode &p_variable) {
                                                     p_variable.getType(),
                                                     p_variable.getLiteralConst()->value_str,
                                                     p_variable.getLocation(),
-                                                    symTab->getFpOffset(var_type->getDataSize()));
+                                                    symTab->getFpOffset());
         break;
     case VariableKind::Variable:
         symbol = std::make_shared<VarSymbolEntry>(p_variable.getNameStr(),
                                                   symTab->level,
                                                   p_variable.getType(),
                                                   p_variable.getLocation(),
-                                                  symTab->getFpOffset(var_type->getDataSize()));
+                                                  symTab->getFpOffset());
         break;
     case VariableKind::LoopVar:
         symbol = std::make_shared<LoopVarSymbolEntry>(p_variable.getNameStr(),
                                                       symTab->level,
                                                       p_variable.getType(),
                                                       p_variable.getLocation(),
-                                                      symTab->getFpOffset(var_type->getDataSize()));
+                                                      symTab->getFpOffset());
         break;
     }
     insertWithCheck(symTab, symbol);

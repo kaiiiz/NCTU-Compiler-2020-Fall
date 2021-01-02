@@ -36,9 +36,10 @@ void CodeGenerator::visit(VariableNode &p_variable) {
     auto varName = p_variable.getNameStr();
     auto symbol = symTab->lookup(varName);
     if (symbol->getLevel() == 0) { // global var decl
-        if (symbol->getKind() == SymbolEntryKind::Constant) {
-
-        } else {
+        if (symbol->getKind() == SymbolEntryKind::Constant) { // .rodata
+            auto constSymbol = std::dynamic_pointer_cast<ConstSymbolEntry>(symbol);
+            genGlobalVarConst(varName, constSymbol->value_str);
+        } else { // .bss
             genGlobalVarDecl(varName, 4, 4);
         }
     } else { // local var decl
@@ -48,17 +49,7 @@ void CodeGenerator::visit(VariableNode &p_variable) {
 }
 
 void CodeGenerator::visit(ConstantValueNode &p_constant_value) {
-    switch (p_constant_value.getType()->kind) {
-        case TypeKind::Integer:
-            genConstIntLoad(std::stoi(p_constant_value.value_str));
-            break;
-        case TypeKind::Boolean:
-        case TypeKind::Real:
-        case TypeKind::String:
-        case TypeKind::Void:
-            std::cerr << "[CodeGenerator] Unimplemented constant load" << std::endl;
-            exit(EXIT_FAILURE);
-    }
+    genConstLoad(p_constant_value.value_str);
 }
 
 void CodeGenerator::visit(FunctionNode &p_function) {
@@ -115,19 +106,17 @@ void CodeGenerator::visit(VariableReferenceNode &p_variable_ref) {
         genGlobalVarLoad(varName);
     } else { // local var ref
         auto symbolKind = symbol->getKind();
+        uint32_t fp_offset;
         if (symbolKind == SymbolEntryKind::Parameter) {
-            auto paramSymbol = std::dynamic_pointer_cast<ParamSymbolEntry>(symbol);
-            genLocalVarLoad(paramSymbol->fp_offset);
+            fp_offset = std::dynamic_pointer_cast<ParamSymbolEntry>(symbol)->fp_offset;
         } else if (symbolKind == SymbolEntryKind::Constant) {
-            auto constSymbol = std::dynamic_pointer_cast<ConstSymbolEntry>(symbol);
-            genLocalVarLoad(constSymbol->fp_offset);
+            fp_offset = std::dynamic_pointer_cast<ConstSymbolEntry>(symbol)->fp_offset;
         } else if (symbolKind == SymbolEntryKind::LoopVar) {
-            auto loopVarSymbol = std::dynamic_pointer_cast<LoopVarSymbolEntry>(symbol);
-            genLocalVarLoad(loopVarSymbol->fp_offset);
+            fp_offset = std::dynamic_pointer_cast<LoopVarSymbolEntry>(symbol)->fp_offset;
         } else if (symbolKind == SymbolEntryKind::Variable) {
-            auto varSymbol = std::dynamic_pointer_cast<VarSymbolEntry>(symbol);
-            genLocalVarLoad(varSymbol->fp_offset);
+            fp_offset = std::dynamic_pointer_cast<VarSymbolEntry>(symbol)->fp_offset;
         }
+        genLocalVarLoad(fp_offset);
     }
 }
 
@@ -201,7 +190,8 @@ void CodeGenerator::genLocalVarLoad(uint32_t fp_offset) {
                 << "    sw t0, 0(sp)\n";
 }
 
-void CodeGenerator::genConstIntLoad(int val) {
+void CodeGenerator::genConstLoad(std::string val) {
+    // TODO: for non integer constant
     output_file << "    # const int load\n"
                 << "    li t0, " << val << "\n"
                 << "    addi sp, sp, -4\n"
@@ -215,4 +205,14 @@ void CodeGenerator::genAssign() {
                 << "    lw t1, 0(sp)\n"
                 << "    addi sp, sp, 4\n"
                 << "    sw t0, 0(t1)\n";
+}
+
+void CodeGenerator::genGlobalVarConst(std::string var_name, std::string val_str) {
+    // TODO: for non integer constant
+    output_file << ".section    .rodata\n"
+                << "    .align 2\n"
+                << "    .globl " << var_name << "\n"
+                << "    .type " << var_name << ", @object\n"
+                << var_name << ":\n"
+                << "    .word " << val_str << "\n";
 }

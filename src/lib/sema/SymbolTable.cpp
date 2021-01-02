@@ -28,8 +28,8 @@ std::shared_ptr<SymbolEntry> SymbolTable::lookup(std::string name) {
     return nullptr;
 }
 
-uint32_t SymbolTable::getFpOffset(uint32_t data_size) {
-    fp_offset += data_size;
+uint32_t SymbolTable::getFpOffset() {
+    fp_offset += 4;
     return fp_offset;
 }
 

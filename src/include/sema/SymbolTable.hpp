@@ -23,7 +23,7 @@ class SymbolTable : public std::enable_shared_from_this<SymbolTable> {
     void insert(std::shared_ptr<SymbolEntry> symbol);
     std::shared_ptr<SymbolEntry> lookup(std::string name);
     void addChild(std::shared_ptr<SymbolTable>);
-    uint32_t getFpOffset(uint32_t data_size);
+    uint32_t getFpOffset();
 
     void dump();
 
