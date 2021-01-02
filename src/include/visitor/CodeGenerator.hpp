@@ -36,6 +36,7 @@ class CodeGenerator : public AstNodeVisitor {
     void genFunctionEpilogue(std::string func_name);
     void genGlobalVarDecl(std::string var_name, int size, int align);
     void genGlobalVarLoad(std::string var_name);
+    void genLocalVarLoad(uint32_t fp_offset);
     void genConstIntLoad(int val);
     void genAssign();
 

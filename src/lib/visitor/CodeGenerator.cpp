@@ -113,8 +113,21 @@ void CodeGenerator::visit(VariableReferenceNode &p_variable_ref) {
     auto symbol = symTab->lookup(varName);
     if (symbol->getLevel() == 0) { // global var ref
         genGlobalVarLoad(varName);
-    } else {
-
+    } else { // local var ref
+        auto symbolKind = symbol->getKind();
+        if (symbolKind == SymbolEntryKind::Parameter) {
+            auto paramSymbol = std::dynamic_pointer_cast<ParamSymbolEntry>(symbol);
+            genLocalVarLoad(paramSymbol->fp_offset);
+        } else if (symbolKind == SymbolEntryKind::Constant) {
+            auto constSymbol = std::dynamic_pointer_cast<ConstSymbolEntry>(symbol);
+            genLocalVarLoad(constSymbol->fp_offset);
+        } else if (symbolKind == SymbolEntryKind::LoopVar) {
+            auto loopVarSymbol = std::dynamic_pointer_cast<LoopVarSymbolEntry>(symbol);
+            genLocalVarLoad(loopVarSymbol->fp_offset);
+        } else if (symbolKind == SymbolEntryKind::Variable) {
+            auto varSymbol = std::dynamic_pointer_cast<VarSymbolEntry>(symbol);
+            genLocalVarLoad(varSymbol->fp_offset);
+        }
     }
 }
 
@@ -177,6 +190,13 @@ void CodeGenerator::genGlobalVarDecl(std::string var_name, int size, int align) 
 void CodeGenerator::genGlobalVarLoad(std::string var_name) {
     output_file << "    # global var load\n"
                 << "    la t0, " << var_name << "\n"
+                << "    addi sp, sp, -4\n"
+                << "    sw t0, 0(sp)\n";
+}
+
+void CodeGenerator::genLocalVarLoad(uint32_t fp_offset) {
+    output_file << "    # local var load\n"
+                << "    addi t0, s0, -" << fp_offset << "\n"
                 << "    addi sp, sp, -4\n"
                 << "    sw t0, 0(sp)\n";
 }

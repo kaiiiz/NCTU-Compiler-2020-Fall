@@ -52,38 +52,42 @@ void SemanticAnalyzer::visit(VariableNode &p_variable) {
     // 2. Insert the symbol into current symbol table if this node is related to
     //    declaration (ProgramNode, VariableNode, FunctionNode).
     std::shared_ptr<SymbolEntry> symbol;
+    auto var_type = p_variable.getType();
     switch (p_variable.getVarKind()) {
     case VariableKind::Parameter:
         symbol = std::make_shared<ParamSymbolEntry>(p_variable.getNameStr(),
                                                     symTab->level,
-                                                    p_variable.getType(),
-                                                    p_variable.getLocation());
+                                                    var_type,
+                                                    p_variable.getLocation(),
+                                                    symTab->getFpOffset(var_type->getDataSize()));
         break;
     case VariableKind::Constant:
         symbol = std::make_shared<ConstSymbolEntry>(p_variable.getNameStr(),
                                                     symTab->level,
                                                     p_variable.getType(),
                                                     p_variable.getLiteralConst()->value_str,
-                                                    p_variable.getLocation());
+                                                    p_variable.getLocation(),
+                                                    symTab->getFpOffset(var_type->getDataSize()));
         break;
     case VariableKind::Variable:
         symbol = std::make_shared<VarSymbolEntry>(p_variable.getNameStr(),
                                                   symTab->level,
                                                   p_variable.getType(),
-                                                  p_variable.getLocation());
+                                                  p_variable.getLocation(),
+                                                  symTab->getFpOffset(var_type->getDataSize()));
         break;
     case VariableKind::LoopVar:
         symbol = std::make_shared<LoopVarSymbolEntry>(p_variable.getNameStr(),
                                                       symTab->level,
                                                       p_variable.getType(),
-                                                      p_variable.getLocation());
+                                                      p_variable.getLocation(),
+                                                      symTab->getFpOffset(var_type->getDataSize()));
         break;
     }
     insertWithCheck(symTab, symbol);
     // 3. Travere child nodes of this node.
     p_variable.visitChildNodes(*this);
     // 4. Perform semantic analyses of this node.
-    auto var_type = p_variable.getType();
     if (var_type->isArray()) {
         for (auto &d : var_type->dim) {
             if (d <= 0) {

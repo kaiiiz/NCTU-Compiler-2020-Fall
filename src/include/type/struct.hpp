@@ -36,6 +36,7 @@ class TypeStruct {
     ~TypeStruct() = default;
 
     std::string getTypeStr();
+    uint32_t getDataSize();
     bool isArray();
 
     const TypeKind kind;

@@ -10,9 +10,10 @@ class TypeStruct;
 
 class ParamSymbolEntry : public SymbolEntry {
    public:
-    ParamSymbolEntry(std::string name, uint32_t level, std::shared_ptr<TypeStruct> type, const Location &loc);
+    ParamSymbolEntry(std::string name, uint32_t level, std::shared_ptr<TypeStruct> type, const Location &loc, const uint32_t fp_offset);
 
     std::string getAttributeStr() override;
+    const uint32_t fp_offset;
 };
 
 #endif

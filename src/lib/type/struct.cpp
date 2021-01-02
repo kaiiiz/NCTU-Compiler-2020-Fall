@@ -1,5 +1,6 @@
 #include <string>
 #include <memory>
+#include <iostream>
 
 #include "type/struct.hpp"
 
@@ -16,6 +17,21 @@ std::string TypeStruct::getTypeStr() {
         }
     }
     return s;
+}
+
+uint32_t TypeStruct::getDataSize() {
+    switch (kind) {
+        case TypeKind::Integer:
+            return 4;
+        case TypeKind::String:
+        case TypeKind::Boolean:
+        case TypeKind::Real:
+        case TypeKind::Void:
+        default:
+            break;
+    }
+    std::cerr << "[TypeStruct] Unimplemented get data size" << std::endl;
+    exit(EXIT_FAILURE);
 }
 
 bool TypeStruct::isArray() { return !dim.empty(); }

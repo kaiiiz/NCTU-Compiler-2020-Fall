@@ -28,6 +28,11 @@ std::shared_ptr<SymbolEntry> SymbolTable::lookup(std::string name) {
     return nullptr;
 }
 
+uint32_t SymbolTable::getFpOffset(uint32_t data_size) {
+    fp_offset += data_size;
+    return fp_offset;
+}
+
 void SymbolTable::dumpDemarcation(const char chr) {
     for (size_t i = 0; i < 110; ++i) {
         printf("%c", chr);

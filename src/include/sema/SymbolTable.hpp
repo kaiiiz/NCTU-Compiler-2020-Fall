@@ -23,6 +23,7 @@ class SymbolTable : public std::enable_shared_from_this<SymbolTable> {
     void insert(std::shared_ptr<SymbolEntry> symbol);
     std::shared_ptr<SymbolEntry> lookup(std::string name);
     void addChild(std::shared_ptr<SymbolTable>);
+    uint32_t getFpOffset(uint32_t data_size);
 
     void dump();
 
@@ -33,6 +34,7 @@ class SymbolTable : public std::enable_shared_from_this<SymbolTable> {
    private:
     void dumpDemarcation(const char chr);
 
+    uint32_t fp_offset = 8; // 0-3: pc, 4-7: fp
     std::shared_ptr<SymbolTable> parent;
     std::vector<std::shared_ptr<SymbolTable>> childs;
     std::vector<std::string> entries; // order list
