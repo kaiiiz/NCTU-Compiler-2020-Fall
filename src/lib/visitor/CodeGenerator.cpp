@@ -48,7 +48,17 @@ void CodeGenerator::visit(VariableNode &p_variable) {
 }
 
 void CodeGenerator::visit(ConstantValueNode &p_constant_value) {
-
+    switch (p_constant_value.getType()->kind) {
+        case TypeKind::Integer:
+            genConstIntLoad(std::stoi(p_constant_value.value_str));
+            break;
+        case TypeKind::Boolean:
+        case TypeKind::Real:
+        case TypeKind::String:
+        case TypeKind::Void:
+            std::cerr << "[CodeGenerator] Unimplemented constant load" << std::endl;
+            exit(EXIT_FAILURE);
+    }
 }
 
 void CodeGenerator::visit(FunctionNode &p_function) {
@@ -98,11 +108,19 @@ void CodeGenerator::visit(FunctionCallNode &p_func_call) {
 }
 
 void CodeGenerator::visit(VariableReferenceNode &p_variable_ref) {
+    auto symTab = symbol_mgr.currentSymTab();
+    auto varName = p_variable_ref.name;
+    auto symbol = symTab->lookup(varName);
+    if (symbol->getLevel() == 0) { // global var ref
+        genGlobalVarLoad(varName);
+    } else {
 
+    }
 }
 
 void CodeGenerator::visit(AssignmentNode &p_assignment) {
-
+    p_assignment.visitChildNodes(*this);
+    genAssign();
 }
 
 void CodeGenerator::visit(ReadNode &p_read) {
@@ -139,7 +157,8 @@ void CodeGenerator::genFunctionPrologue(std::string func_name) {
                 << "    addi sp, sp, -128\n"
                 << "    sw ra, 124(sp)\n"
                 << "    sw s0, 120(sp)\n"
-                << "    addi s0, sp, 128\n";
+                << "    addi s0, sp, 128\n"
+                << "    # in the function body\n";
 }
 
 void CodeGenerator::genFunctionEpilogue(std::string func_name) {
@@ -153,4 +172,27 @@ void CodeGenerator::genFunctionEpilogue(std::string func_name) {
 
 void CodeGenerator::genGlobalVarDecl(std::string var_name, int size, int align) {
     output_file << "    .comm " << var_name << ", " << size << ", " << align << "\n";
+}
+
+void CodeGenerator::genGlobalVarLoad(std::string var_name) {
+    output_file << "    # global var load\n"
+                << "    la t0, " << var_name << "\n"
+                << "    addi sp, sp, -4\n"
+                << "    sw t0, 0(sp)\n";
+}
+
+void CodeGenerator::genConstIntLoad(int val) {
+    output_file << "    # const int load\n"
+                << "    li t0, " << val << "\n"
+                << "    addi sp, sp, -4\n"
+                << "    sw t0, 0(sp)\n";
+}
+
+void CodeGenerator::genAssign() {
+    output_file << "    # var assign\n"
+                << "    lw t0, 0(sp)\n"
+                << "    addi sp, sp, 4\n"
+                << "    lw t1, 0(sp)\n"
+                << "    addi sp, sp, 4\n"
+                << "    sw t0, 0(t1)\n";
 }
