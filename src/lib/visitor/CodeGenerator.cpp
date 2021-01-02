@@ -257,35 +257,65 @@ void CodeGenerator::genRead() {
 }
 
 void CodeGenerator::genBinaryOperation(BinaryOP op) {
-    std::string bin_op_str;
-    switch (op) {
-        case BinaryOP::PLUS:
-            bin_op_str = "add";
-            break;
-        case BinaryOP::MINUS:
-            bin_op_str = "sub";
-            break;
-        case BinaryOP::MULTIPLY:
-            bin_op_str = "mul";
-            break;
-        case BinaryOP::DIVIDE:
-            bin_op_str = "div";
-            break;
-        case BinaryOP::MOD:
-            bin_op_str = "rem";
-            break;
-        default:
-            std::cerr << "[CodeGenerator] Unimplemented binary operation" << std::endl;
-            exit(EXIT_FAILURE);
-    }
-
     output_file << "    # binary operation\n"
                 << "    lw t0, 0(sp)\n"
                 << "    addi sp, sp, 4\n"
                 << "    lw t1, 0(sp)\n"
-                << "    addi sp, sp, 4\n"
-                << "    " << bin_op_str << " t0, t1, t0\n"
-                << "    addi sp, sp, -4\n"
+                << "    addi sp, sp, 4\n";
+
+    switch (op) {
+        case BinaryOP::PLUS:
+            output_file << "    add t0, t1, t0\n";
+            break;
+        case BinaryOP::MINUS:
+            output_file << "    sub t0, t1, t0\n";
+            break;
+        case BinaryOP::MULTIPLY:
+            output_file << "    mul t0, t1, t0\n";
+            break;
+        case BinaryOP::DIVIDE:
+            output_file << "    div t0, t1, t0\n";
+            break;
+        case BinaryOP::MOD:
+            output_file << "    rem t0, t1, t0\n";
+            break;
+        case BinaryOP::AND:
+            output_file << "    and t0, t1, t0\n";
+            break;
+        case BinaryOP::OR:
+            output_file << "    or t0, t1, t0\n";
+            break;
+        case BinaryOP::LESS:
+            output_file << "    slt t0, t1, t0\n"
+	                    << "    andi t0, t0, 0xff\n";
+            break;
+        case BinaryOP::LESS_OR_EQUAL:
+            output_file << "    sgt t0, t1, t0\n"
+                        << "    xori t0, t0, 1\n"
+	                    << "    andi t0, t0, 0xff\n";
+            break;
+        case BinaryOP::GREATER:
+            output_file << "    sgt t0, t1, t0\n"
+	                    << "    andi t0, t0, 0xff\n";
+            break;
+        case BinaryOP::GREATER_OR_EQUAL:
+            output_file << "    slt t0, t1, t0\n"
+                        << "    xori t0, t0, 1\n"
+	                    << "    andi t0, t0, 0xff\n";
+            break;
+        case BinaryOP::EQUAL:
+            output_file << "    sub t0, t1, t0\n"
+                        << "    seqz t0, t0\n"
+	                    << "    andi t0, t0, 0xff\n";
+            break;
+        case BinaryOP::NOT_EQUAL:
+            output_file << "    sub t0, t1, t0\n"
+                        << "    snez t0, t0\n"
+	                    << "    andi t0, t0, 0xff\n";
+            break;
+    }
+
+    output_file << "    addi sp, sp, -4\n"
                 << "    sw t0, 0(sp)\n";
 }
 
