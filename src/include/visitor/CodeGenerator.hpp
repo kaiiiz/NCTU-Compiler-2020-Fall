@@ -37,9 +37,9 @@ class CodeGenerator : public AstNodeVisitor {
     void genGlobalVarDecl(std::string var_name, int size, int align);
     void genGlobalVarConst(std::string var_name, std::string val_str);
     void genGlobalVarAddrStore(std::string var_name);
-    void genLocalVarAddrStore(std::shared_ptr<SymbolEntry> symbol);
+    void genLocalVarAddrStore(uint32_t fp_offset);
     void genGlobalVarLoad(std::string var_name);
-    void genLocalVarLoad(std::shared_ptr<SymbolEntry> symbol);
+    void genLocalVarLoad(uint32_t fp_offset);
     void genConstStore(std::string val);
     void genAssign();
     void genPrint();

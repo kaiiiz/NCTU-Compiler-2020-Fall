@@ -17,7 +17,7 @@ enum class SymbolEntryKind {
     Constant,
 };
 
-class SymbolEntry {
+class SymbolEntry : public std::enable_shared_from_this<SymbolEntry> {
    public:
     SymbolEntry(std::string name, SymbolEntryKind kind, uint32_t level, std::shared_ptr<TypeStruct> type, const Location &loc);
 
@@ -29,6 +29,7 @@ class SymbolEntry {
     std::string getTypeStr();
     virtual std::string getAttributeStr() = 0;
     const Location &getLocation() const;
+    uint32_t getFpOffset();
 
    protected:
     const Location &location;
