@@ -337,6 +337,7 @@ CompoundStatement:
 
 Simple:
     VariableReference ASSIGN Expression SEMICOLON {
+        $1->fillSide(Side::LHS);
         $$ = std::dynamic_pointer_cast<StatementBase>(
                 std::make_shared<AssignmentNode>(@2.begin.line, @2.begin.column, $1, $3)
              );
@@ -349,6 +350,7 @@ Simple:
     }
     |
     READ VariableReference SEMICOLON {
+        $2->fillSide(Side::RHS);
         $$ = std::dynamic_pointer_cast<StatementBase>(
                 std::make_shared<ReadNode>(@1.begin.line, @1.begin.column, $2)
              );
@@ -529,7 +531,7 @@ Expression:
     |
     StringAndBoolean { $$ = std::dynamic_pointer_cast<ExpressionBase>($1); }
     |
-    VariableReference { $$ = std::dynamic_pointer_cast<ExpressionBase>($1); }
+    VariableReference { $1->fillSide(Side::RHS); $$ = std::dynamic_pointer_cast<ExpressionBase>($1); }
     |
     FunctionInvocation { $$ = std::dynamic_pointer_cast<ExpressionBase>($1); }
 ;

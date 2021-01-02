@@ -36,10 +36,13 @@ class CodeGenerator : public AstNodeVisitor {
     void genFunctionEpilogue(std::string func_name);
     void genGlobalVarDecl(std::string var_name, int size, int align);
     void genGlobalVarConst(std::string var_name, std::string val_str);
+    void genGlobalVarAddrStore(std::string var_name);
+    void genLocalVarAddrStore(std::shared_ptr<SymbolEntry> symbol);
     void genGlobalVarLoad(std::string var_name);
     void genLocalVarLoad(std::shared_ptr<SymbolEntry> symbol);
-    void genConstLoad(std::string val);
+    void genConstStore(std::string val);
     void genAssign();
+    void genPrint();
 
     const std::string &in_file_name;
     std::ofstream output_file;
