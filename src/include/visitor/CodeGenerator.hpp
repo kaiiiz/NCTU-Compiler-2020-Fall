@@ -5,6 +5,8 @@
 #include "sema/SemaInclude.hpp"
 #include "visitor/AstNodeVisitor.hpp"
 
+enum class BinaryOP;
+
 class CodeGenerator : public AstNodeVisitor {
    public:
     CodeGenerator(SymbolManager &symbol_mgr, const std::string &in_file_name, const std::string &out_file_path);
@@ -43,6 +45,7 @@ class CodeGenerator : public AstNodeVisitor {
     void genConstStore(std::string val);
     void genAssign();
     void genPrint();
+    void genBinaryOperation(BinaryOP op);
 
     const std::string &in_file_name;
     std::ofstream output_file;

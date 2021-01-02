@@ -87,7 +87,8 @@ void CodeGenerator::visit(PrintNode &p_print) {
 }
 
 void CodeGenerator::visit(BinaryOperatorNode &p_bin_op) {
-
+    p_bin_op.visitChildNodes(*this);
+    genBinaryOperation(p_bin_op.op);
 }
 
 void CodeGenerator::visit(UnaryOperatorNode &p_un_op) {
@@ -226,19 +227,54 @@ void CodeGenerator::genGlobalVarLoad(std::string var_name) {
     output_file << "    # global var load\n"
                 << "    la t0, " << var_name << "\n"
                 << "    lw t1, 0(t0)\n"
-                << "    mv t0, t1\n";
+                << "    mv t0, t1\n"
+                << "    addi sp, sp, -4\n"
+                << "    sw t0, 0(sp)\n";
 }
 
 void CodeGenerator::genLocalVarLoad(uint32_t fp_offset) {
     output_file << "    # local var load\n"
-                << "    lw t0, -" << fp_offset << "(s0)\n";
+                << "    lw t0, -" << fp_offset << "(s0)\n"
+                << "    addi sp, sp, -4\n"
+                << "    sw t0, 0(sp)\n";
 }
 
 void CodeGenerator::genPrint() {
     output_file << "    # print\n"
-                << "    addi sp, sp, -4\n"
-                << "    sw t0, 0(sp)\n"
                 << "    lw a0, 0(sp)\n"
                 << "    addi sp, sp, 4\n"
                 << "    jal ra, printInt\n";
+}
+
+void CodeGenerator::genBinaryOperation(BinaryOP op) {
+    std::string bin_op_str;
+    switch (op) {
+        case BinaryOP::PLUS:
+            bin_op_str = "add";
+            break;
+        case BinaryOP::MINUS:
+            bin_op_str = "sub";
+            break;
+        case BinaryOP::MULTIPLY:
+            bin_op_str = "mul";
+            break;
+        case BinaryOP::DIVIDE:
+            bin_op_str = "div";
+            break;
+        case BinaryOP::MOD:
+            bin_op_str = "rem";
+            break;
+        default:
+            std::cerr << "[CodeGenerator] Unimplemented binary operation" << std::endl;
+            exit(EXIT_FAILURE);
+    }
+
+    output_file << "    # binary operation\n"
+                << "    lw t0, 0(sp)\n"
+                << "    addi sp, sp, 4\n"
+                << "    lw t1, 0(sp)\n"
+                << "    addi sp, sp, 4\n"
+                << "    " << bin_op_str << " t0, t1, t0\n"
+                << "    addi sp, sp, -4\n"
+                << "    sw t0, 0(sp)\n";
 }
