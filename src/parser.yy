@@ -13,28 +13,7 @@
 #include <memory>
 
 #include "type/struct.hpp"
-
-#include "AST/ast.hpp"
-#include "AST/program.hpp"
-#include "AST/decl.hpp"
-#include "AST/variable.hpp"
-#include "AST/function.hpp"
-#include "AST/base/ExpressionBase.hpp"
-#include "AST/base/StatementBase.hpp"
-#include "AST/expression/ConstantValue.hpp"
-#include "AST/expression/BinaryOperator.hpp"
-#include "AST/expression/UnaryOperator.hpp"
-#include "AST/expression/FunctionInvocation.hpp"
-#include "AST/expression/VariableReference.hpp"
-#include "AST/statement/CompoundStatement.hpp"
-#include "AST/statement/print.hpp"
-#include "AST/statement/assignment.hpp"
-#include "AST/statement/read.hpp"
-#include "AST/statement/if.hpp"
-#include "AST/statement/while.hpp"
-#include "AST/statement/for.hpp"
-#include "AST/statement/return.hpp"
-#include "AST/statement/FunctionCall.hpp"
+#include "visitor/AstNodeInclude.hpp"
 
 class driver;
 }
@@ -45,18 +24,10 @@ class driver;
 #include "driver/driver.hpp"
 #include "visitor/AstDumper.hpp"
 #include "visitor/SemanticAnalyzer.hpp"
+#include "visitor/CodeGenerator.hpp"
 
 #include "type/manager.hpp"
-#include "sema/SymbolEntry.hpp"
-#include "sema/SymbolManager.hpp"
-#include "sema/SymbolTable.hpp"
-#include "sema/SymbolEntry/ConstSymbolEntry.hpp"
-#include "sema/SymbolEntry/FunctionSymbolEntry.hpp"
-#include "sema/SymbolEntry/LoopVarSymbolEntry.hpp"
-#include "sema/SymbolEntry/ParamSymbolEntry.hpp"
-#include "sema/SymbolEntry/ProgramSymbolEntry.hpp"
-#include "sema/SymbolEntry/VarSymbolEntry.hpp"
-#include "sema/SemaErrHandler.hpp"
+#include "sema/SemaInclude.hpp"
 
 #include <cassert>
 #include <cstdlib>
@@ -594,6 +565,8 @@ int main(int argc, const char *argv[]) {
             "|---------------------------------------------------|\n"
             "|  There is no syntactic error and semantic error!  |\n"
             "|---------------------------------------------------|\n");
+        CodeGenerator cg(drv.symbol_mgr, drv.in_file_name, drv.out_file_path);
+        drv.root->accept(cg);
     }
 
     return 0;
