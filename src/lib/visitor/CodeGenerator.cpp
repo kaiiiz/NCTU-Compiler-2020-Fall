@@ -133,7 +133,8 @@ void CodeGenerator::visit(AssignmentNode &p_assignment) {
 }
 
 void CodeGenerator::visit(ReadNode &p_read) {
-
+    p_read.visitChildNodes(*this);
+    genRead();
 }
 
 void CodeGenerator::visit(IfNode &p_if) {
@@ -245,6 +246,14 @@ void CodeGenerator::genPrint() {
                 << "    lw a0, 0(sp)\n"
                 << "    addi sp, sp, 4\n"
                 << "    jal ra, printInt\n";
+}
+
+void CodeGenerator::genRead() {
+    output_file << "    # read\n"
+                << "    jal ra, readInt\n"
+                << "    lw t0, 0(sp)\n"
+                << "    addi sp, sp, 4\n"
+                << "    sw a0, 0(t0)\n";
 }
 
 void CodeGenerator::genBinaryOperation(BinaryOP op) {

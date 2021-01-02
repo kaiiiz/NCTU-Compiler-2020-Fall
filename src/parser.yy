@@ -350,7 +350,7 @@ Simple:
     }
     |
     READ VariableReference SEMICOLON {
-        $2->fillSide(Side::RHS);
+        $2->fillSide(Side::LHS);
         $$ = std::dynamic_pointer_cast<StatementBase>(
                 std::make_shared<ReadNode>(@1.begin.line, @1.begin.column, $2)
              );

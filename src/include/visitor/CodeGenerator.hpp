@@ -46,6 +46,7 @@ class CodeGenerator : public AstNodeVisitor {
     void genConstStore(std::string val);
     void genAssign();
     void genPrint();
+    void genRead();
     void genBinaryOperation(BinaryOP op);
     void genUnaryOperation(UnaryOP op);
 
