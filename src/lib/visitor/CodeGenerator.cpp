@@ -92,7 +92,8 @@ void CodeGenerator::visit(BinaryOperatorNode &p_bin_op) {
 }
 
 void CodeGenerator::visit(UnaryOperatorNode &p_un_op) {
-
+    p_un_op.visitChildNodes(*this);
+    genUnaryOperation(p_un_op.op);
 }
 
 void CodeGenerator::visit(FunctionInvocationNode &p_func_invocation) {
@@ -278,3 +279,23 @@ void CodeGenerator::genBinaryOperation(BinaryOP op) {
                 << "    addi sp, sp, -4\n"
                 << "    sw t0, 0(sp)\n";
 }
+
+void CodeGenerator::genUnaryOperation(UnaryOP op) {
+    std::string unary_op_str;
+    switch (op) {
+        case UnaryOP::MINUS:
+            unary_op_str = "neg";
+            break;
+        default:
+            std::cerr << "[CodeGenerator] Unimplemented unary operation" << std::endl;
+            exit(EXIT_FAILURE);
+    }
+
+    output_file << "    # unary operation\n"
+                << "    lw t0, 0(sp)\n"
+                << "    addi sp, sp, 4\n"
+                << "    " << unary_op_str << " t0, t0\n"
+                << "    addi sp, sp, -4\n"
+                << "    sw t0, 0(sp)\n";
+}
+

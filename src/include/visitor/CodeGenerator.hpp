@@ -6,6 +6,7 @@
 #include "visitor/AstNodeVisitor.hpp"
 
 enum class BinaryOP;
+enum class UnaryOP;
 
 class CodeGenerator : public AstNodeVisitor {
    public:
@@ -46,6 +47,7 @@ class CodeGenerator : public AstNodeVisitor {
     void genAssign();
     void genPrint();
     void genBinaryOperation(BinaryOP op);
+    void genUnaryOperation(UnaryOP op);
 
     const std::string &in_file_name;
     std::ofstream output_file;
