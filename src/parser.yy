@@ -109,7 +109,7 @@ Program:
     DeclarationList FunctionList CompoundStatement
     /* End of ProgramBody */
     END {
-        $5->fillAttribute(CompoundKind::normal);
+        $5->fillAttribute(CompoundKind::Main);
         drv.root = std::make_shared<ProgramNode>(@1.begin.line, @1.begin.column, $1, type_mgr.getType(TypeKind::Void), $3, $4, $5);
     }
 ;
@@ -158,7 +158,7 @@ FunctionDefinition:
     FunctionName L_PARENTHESIS FormalArgList R_PARENTHESIS ReturnType
     CompoundStatement
     END {
-        $6->fillAttribute(CompoundKind::function);
+        $6->fillAttribute(CompoundKind::Function);
         $$ = std::make_shared<FunctionNode>(@1.begin.line, @1.begin.column, $1, $3, $5, $6);
     }
 ;
@@ -309,7 +309,7 @@ IntegerAndReal:
 
 Statement:
     CompoundStatement { 
-        $1->fillAttribute(CompoundKind::normal);
+        $1->fillAttribute(CompoundKind::Normal);
         $$ = std::dynamic_pointer_cast<StatementBase>($1);
     }
     |
@@ -376,7 +376,7 @@ Condition:
     CompoundStatement
     ElseOrNot
     END IF {
-        $4->fillAttribute(CompoundKind::normal);
+        $4->fillAttribute(CompoundKind::Normal);
         $$ = std::make_shared<IfNode>(@1.begin.line, @1.begin.column, $2, $4, $5);
     }
 ;
@@ -384,7 +384,7 @@ Condition:
 ElseOrNot:
     ELSE
     CompoundStatement { 
-        $2->fillAttribute(CompoundKind::normal);
+        $2->fillAttribute(CompoundKind::Normal);
         $$ = $2;
     }
     |
@@ -395,7 +395,7 @@ While:
     WHILE Expression DO
     CompoundStatement
     END DO {
-        $4->fillAttribute(CompoundKind::normal);
+        $4->fillAttribute(CompoundKind::Normal);
         $$ = std::make_shared<WhileNode>(@1.begin.line, @1.begin.column, $2, $4);
     }
 ;
@@ -417,7 +417,7 @@ For:
         auto assignment = std::make_shared<AssignmentNode>(@3.begin.line, @3.begin.column, var_ref, constant_init);
         // make condition
         auto condition = std::make_shared<ConstantValueNode>(@6.begin.line, @6.begin.column, $6);
-        $8->fillAttribute(CompoundKind::normal);
+        $8->fillAttribute(CompoundKind::Normal);
         $$ = std::make_shared<ForNode>(@1.begin.line, @1.begin.column, decl, assignment, condition, $8);
     }
 ;

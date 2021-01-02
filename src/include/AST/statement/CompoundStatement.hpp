@@ -5,15 +5,17 @@
 #include <vector>
 
 #include "AST/base/StatementBase.hpp"
+#include "AST/base/AstNodeWithSymTab.hpp"
 
 class DeclNode;
 
 enum CompoundKind {
-    function,
-    normal,
+    Main,
+    Function,
+    Normal,
 };
 
-class CompoundStatementNode : public StatementBase {
+class CompoundStatementNode : public StatementBase, public AstNodeWithSymTab {
    public:
     CompoundStatementNode(const uint32_t line, const uint32_t col,
                           std::vector<std::shared_ptr<DeclNode>> declarations,

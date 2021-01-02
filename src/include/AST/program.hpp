@@ -5,6 +5,7 @@
 #include <memory>
 
 #include "AST/ast.hpp"
+#include "AST/base/AstNodeWithSymTab.hpp"
 
 class AstDumper;
 class DeclNode;
@@ -12,7 +13,7 @@ class FunctionNode;
 class CompoundStatementNode;
 class TypeStruct;
 
-class ProgramNode : public AstNode {
+class ProgramNode : public AstNode, public AstNodeWithSymTab {
   public:
     ProgramNode(const uint32_t line, const uint32_t col,
                 const std::string p_name, std::shared_ptr<TypeStruct> ret_type,

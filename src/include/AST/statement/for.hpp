@@ -4,13 +4,14 @@
 #include <memory>
 
 #include "AST/base/StatementBase.hpp"
+#include "AST/base/AstNodeWithSymTab.hpp"
 
 class DeclNode;
 class AssignmentNode;
 class ConstantValueNode;
 class CompoundStatementNode;
 
-class ForNode : public StatementBase {
+class ForNode : public StatementBase, public AstNodeWithSymTab {
   public:
     ForNode(const uint32_t line, const uint32_t col,
             const std::shared_ptr<DeclNode> declaration,

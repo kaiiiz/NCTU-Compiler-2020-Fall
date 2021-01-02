@@ -6,12 +6,13 @@
 #include <memory>
 
 #include "AST/ast.hpp"
+#include "AST/base/AstNodeWithSymTab.hpp"
 #include "type/struct.hpp"
 
 class DeclNode;
 class CompoundStatementNode;
 
-class FunctionNode : public AstNode {
+class FunctionNode : public AstNode, public AstNodeWithSymTab {
   public:
     FunctionNode(const uint32_t line, const uint32_t col,
                  std::string name, std::vector<std::shared_ptr<DeclNode>> parameters,

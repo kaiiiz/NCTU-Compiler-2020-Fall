@@ -22,6 +22,7 @@ SemanticAnalyzer::SemanticAnalyzer(SymbolManager &symbol_mgr, std::vector<long> 
 void SemanticAnalyzer::visit(ProgramNode &p_program) {
     // 1. Push a new symbol table if this node forms a scope.
     auto globalSymTab = symbol_mgr.currentSymTab();
+    p_program.fillSymTab(globalSymTab);
     // 2. Insert the symbol into current symbol table if this node is related to
     //    declaration (ProgramNode, VariableNode, FunctionNode).
     auto symbol = std::make_shared<ProgramSymbolEntry>(p_program.getProgramName(),
@@ -126,6 +127,7 @@ void SemanticAnalyzer::visit(FunctionNode &p_function) {
     else {
         newSymTab = std::make_shared<SymbolTable>(symTab, symTab->level + 1, ContextKind::Function, p_function.getRetType());
     }
+    p_function.fillSymTab(newSymTab);
     symTab->addChild(newSymTab);
     insertWithCheck(symTab, symbol);
     symbol_mgr.pushScope(newSymTab);
@@ -138,9 +140,10 @@ void SemanticAnalyzer::visit(FunctionNode &p_function) {
 
 void SemanticAnalyzer::visit(CompoundStatementNode &p_compound_statement) {
     // 1. Push a new symbol table if this node forms a scope.
-    if (p_compound_statement.getKind() == CompoundKind::normal) {
+    if (p_compound_statement.getKind() != CompoundKind::Function) {
         auto curSymTab = symbol_mgr.currentSymTab();
         auto symTab = std::make_shared<SymbolTable>(curSymTab, curSymTab->level + 1, curSymTab->ctx_kind, curSymTab->ctx_type);
+        p_compound_statement.fillSymTab(symTab);
         curSymTab->addChild(symTab);
         symbol_mgr.pushScope(symTab);
     }
@@ -150,7 +153,7 @@ void SemanticAnalyzer::visit(CompoundStatementNode &p_compound_statement) {
     p_compound_statement.visitChildNodes(*this);
     // 4. Perform semantic analyses of this node.
     // 5. Pop the symbol table pushed at the 1st step.
-    if (p_compound_statement.getKind() == CompoundKind::normal) {
+    if (p_compound_statement.getKind() != CompoundKind::Function) {
         symbol_mgr.popScope();
     }
 }
@@ -542,6 +545,7 @@ void SemanticAnalyzer::visit(ForNode &p_for) {
     // 1. Push a new symbol table if this node forms a scope.
     auto curSymTab = symbol_mgr.currentSymTab();
     auto symTab = std::make_shared<SymbolTable>(curSymTab, curSymTab->level + 1, curSymTab->ctx_kind, curSymTab->ctx_type);
+    p_for.fillSymTab(symTab);
     curSymTab->addChild(symTab);
     symbol_mgr.pushScope(symTab);
     // 2. Insert the symbol into current symbol table if this node is related to

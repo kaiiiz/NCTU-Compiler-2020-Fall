@@ -21,20 +21,10 @@ CodeGenerator::~CodeGenerator() {
 }
 
 void CodeGenerator::visit(ProgramNode &p_program) {
-    // Reconstruct the hash table for looking up the symbol entry
-    // Hint: Use symbol_manager->lookup(symbol_name) to get the symbol entry.
-    // symbol_manager->reconstructHashTableFromSymbolTable(p_program.getSymbolTable());
+    output_file << "    .file \"" << in_file_name << "\"\n"
+                << "    .option nopic\n";
 
-    // // Generate RISC-V instructions for program header
-    // dumpInstrs("%s%s%s%s", 
-    //     "   .file ", this->in_file_name, "\n",
-    //     "   .option nopic\n"
-    // );
-
-    // p_program.visitChildNodes(*this);
-
-    // // Remove the entries in the hash table
-    // symbol_manager->removeSymbolsFromHashTable(p_program.getSymbolTable());
+    p_program.visitChildNodes(*this);
 }
 
 void CodeGenerator::visit(DeclNode &p_decl) {
@@ -58,11 +48,21 @@ void CodeGenerator::visit(FunctionNode &p_function) {
 }
 
 void CodeGenerator::visit(CompoundStatementNode &p_compound_statement) {
-    // // Reconstruct the hash table for looking up the symbol entry
-    // symbol_manager->reconstructHashTableFromSymbolTable(p_compound_statement.getSymbolTable());
+    if (p_compound_statement.getKind() != CompoundKind::Function) {
+        symbol_mgr.pushScope(p_compound_statement.getSymTab());
+    }
 
-    // // Remove the entries in the hash table
-    // symbol_manager->removeSymbolsFromHashTable(p_compound_statement.getSymbolTable());
+    if (p_compound_statement.getKind() == CompoundKind::Main) { // main
+        genFunctionPrologue("main");
+    }
+    p_compound_statement.visitChildNodes(*this);
+    if (p_compound_statement.getKind() == CompoundKind::Main) { // main
+        genFunctionEpilogue("main");
+    }
+
+    if (p_compound_statement.getKind() != CompoundKind::Function) {
+        symbol_mgr.popScope();
+    }
 }
 
 void CodeGenerator::visit(PrintNode &p_print) {
@@ -116,3 +116,25 @@ void CodeGenerator::visit(ForNode &p_for) {
 void CodeGenerator::visit(ReturnNode &p_return) {
 
 } 
+
+void CodeGenerator::genFunctionPrologue(std::string func_name) {
+    output_file << ".section    .text\n"
+                << "    .align 2\n"
+                << "    .globl " << func_name << "\n"
+                << "    .type " << func_name << ", @function\n"
+                << func_name << ":\n"
+                << "    # in the function prologue\n"
+                << "    addi sp, sp, -128\n"
+                << "    sw ra, 124(sp)\n"
+                << "    sw s0, 120(sp)\n"
+                << "    addi s0, sp, 128\n";
+}
+
+void CodeGenerator::genFunctionEpilogue(std::string func_name) {
+    output_file << "    # in the function epilogue\n"
+                << "    lw ra, 124(sp)\n"
+                << "    lw s0, 120(sp)\n"
+                << "    addi sp, sp, 128\n"
+                << "    jr ra\n"
+                << "    .size " << func_name << ", .-" << func_name << "\n";
+}

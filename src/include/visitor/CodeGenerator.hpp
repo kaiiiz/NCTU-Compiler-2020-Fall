@@ -32,6 +32,9 @@ class CodeGenerator : public AstNodeVisitor {
     void visit(ReturnNode &p_return) override;
 
    private:
+    void genFunctionPrologue(std::string func_name);
+    void genFunctionEpilogue(std::string func_name);
+
     const std::string &in_file_name;
     std::ofstream output_file;
     SymbolManager &symbol_mgr;
