@@ -20,6 +20,12 @@ class driver {
     driver();
     virtual ~driver();
 
+    // Compiler Options
+    bool opt_dump_ast = 0;
+    std::string save_path;
+    std::string source_filename;
+    void parse_cmd_args(int argc, const char *argv[]);
+
     // Scannar Context
     void scan_begin();
     void scan_list(std::string str);

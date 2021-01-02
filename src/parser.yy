@@ -575,19 +575,15 @@ void yy::parser::error(const location_type &l, const std::string &m) {
 }
 
 int main(int argc, const char *argv[]) {
-    if (argc < 2) {
-        fprintf(stderr, "Usage: ./parser <filename> [--dump-ast]\n");
-        exit(-1);
-    }
-
     driver drv;
-    drv.parse(argv[1]);
+    drv.parse_cmd_args(argc, argv);
+    drv.parse(drv.source_filename);
 
-    if (argc >= 3 && strcmp(argv[2], "--dump-ast") == 0) {
+    if (drv.opt_dump_ast) {
         AstDumper dp;
         drv.root->accept(dp);
     }
-    SemanticAnalyzer analyzer(drv.symbol_mgr, drv.line_head, argv[1]);
+    SemanticAnalyzer analyzer(drv.symbol_mgr, drv.line_head, drv.source_filename);
     drv.root->accept(analyzer);
     if (drv.opt_dump_symtab) {
         drv.symbol_mgr.dumpSymTab();
