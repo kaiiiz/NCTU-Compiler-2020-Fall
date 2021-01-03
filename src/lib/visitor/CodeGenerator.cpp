@@ -121,13 +121,13 @@ void CodeGenerator::visit(FunctionInvocationNode &p_func_invocation) {
     auto retType = symbol->getType();
 
     // push arguments from back
-    auto arg_len = p_func_invocation.expressions.size();
+    int arg_len = p_func_invocation.expressions.size();
     for (int i = arg_len - 1; i >= 0; i--) {
         p_func_invocation.expressions[i]->accept(*this);
     }
     // only pop first 8 arguments to register, the other will still stay in stack
     // so in callee context, use 0(fp) to get 9th args, 4(fp) to get 10th args, and so on.
-    for (int i = std::min(7UL, arg_len - 1); i >= 0; i--) {
+    for (int i = 0; i < std::min(8, arg_len); i++) {
         genParamStore(i);
     }
     genFuncCall(p_func_invocation.name);
@@ -450,21 +450,21 @@ void CodeGenerator::genBinaryOperation(BinaryOP op) {
 }
 
 void CodeGenerator::genUnaryOperation(UnaryOP op) {
-    std::string unary_op_str;
-    switch (op) {
-        case UnaryOP::MINUS:
-            unary_op_str = "neg";
-            break;
-        default:
-            std::cerr << "[CodeGenerator] Unimplemented unary operation" << std::endl;
-            exit(EXIT_FAILURE);
-    }
-
     output_file << "    # unary operation\n"
                 << "    lw t0, 0(sp)\n"
-                << "    addi sp, sp, 4\n"
-                << "    " << unary_op_str << " t0, t0\n"
-                << "    addi sp, sp, -4\n"
+                << "    addi sp, sp, 4\n";
+
+    switch (op) {
+        case UnaryOP::MINUS:
+            output_file << "    neg t0, t0\n";
+            break;
+        case UnaryOP::NOT:
+            output_file << "    seqz t0, t0\n"
+	                    << "    andi t0, t0, 0xff\n";
+            break;
+    }
+
+    output_file << "    addi sp, sp, -4\n"
                 << "    sw t0, 0(sp)\n";
 }
 
