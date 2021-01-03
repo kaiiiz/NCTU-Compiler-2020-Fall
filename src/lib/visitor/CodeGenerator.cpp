@@ -138,7 +138,20 @@ void CodeGenerator::visit(ReadNode &p_read) {
 }
 
 void CodeGenerator::visit(IfNode &p_if) {
+    int label_true = getLabel();
+    int label_false = getLabel();
+    int label_end = getLabel();
 
+    p_if.condition->accept(*this);
+    genIfFalseBranch(label_false);
+    genLabel(label_true);
+    p_if.body->accept(*this);
+    genJump(label_end);
+    genLabel(label_false);
+    if (p_if.body_else != nullptr) {
+        p_if.body_else->accept(*this);
+    }
+    genLabel(label_end);
 }
 
 void CodeGenerator::visit(WhileNode &p_while) {
@@ -338,3 +351,22 @@ void CodeGenerator::genUnaryOperation(UnaryOP op) {
                 << "    sw t0, 0(sp)\n";
 }
 
+void CodeGenerator::genIfFalseBranch(int label) {
+    output_file << "    # branch if false\n"
+                << "    lw t0, 0(sp)\n"
+                << "    addi sp, sp, 4\n"
+                << "    beqz t0, L" << label << "\n";
+}
+
+void CodeGenerator::genLabel(int label) {
+    output_file << "L" << label << ":\n";
+}
+
+void CodeGenerator::genJump(int label) {
+    output_file << "    j L" << label << "\n";
+}
+
+int CodeGenerator::getLabel() {
+    label += 1;
+    return label;
+}

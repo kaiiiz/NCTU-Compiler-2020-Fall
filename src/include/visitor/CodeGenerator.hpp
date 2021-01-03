@@ -49,10 +49,15 @@ class CodeGenerator : public AstNodeVisitor {
     void genRead();
     void genBinaryOperation(BinaryOP op);
     void genUnaryOperation(UnaryOP op);
+    void genIfFalseBranch(int label);
+    void genLabel(int label);
+    void genJump(int label);
 
+    int getLabel();
     const std::string &in_file_name;
     std::ofstream output_file;
     SymbolManager &symbol_mgr;
+    int label = 0;
 };
 
 #endif
