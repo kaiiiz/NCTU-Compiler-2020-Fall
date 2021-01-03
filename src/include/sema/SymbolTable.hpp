@@ -20,7 +20,7 @@ class SymbolFPManager {
    public:
     SymbolFPManager();
 
-    int getNextFpOffset();
+    int getNextFpOffset(int bytes);
     int getNextParamFpOffset();
 
    private:

@@ -604,20 +604,20 @@ std::shared_ptr<SymbolEntry> SemanticAnalyzer::buildVarSymbol(
         switch (kind) {
             case VariableKind::Parameter:
                 symbol = std::make_shared<ParamSymbolEntry>(var_name, sym_tab->level, type, loc,
-                                                            sym_tab->fp_mgr->getNextParamFpOffset());
+                                    sym_tab->fp_mgr->getNextParamFpOffset());
                 return symbol;
             case VariableKind::Constant:
                 symbol = std::make_shared<LocalConstSymbolEntry>(var_name, sym_tab->level, type,
-                                                                 const_node->value_str, loc,
-                                                                 sym_tab->fp_mgr->getNextFpOffset());
+                                    const_node->value_str, loc,
+                                    sym_tab->fp_mgr->getNextFpOffset(4));
                 return symbol;
             case VariableKind::Variable:
                 symbol = std::make_shared<LocalVarSymbolEntry>(var_name, sym_tab->level, type, loc,
-                                                               sym_tab->fp_mgr->getNextFpOffset());
+                                    sym_tab->fp_mgr->getNextFpOffset(type->getDimBytes()));
                 return symbol;
             case VariableKind::LoopVar:
                 symbol = std::make_shared<LoopVarSymbolEntry>(var_name, sym_tab->level, type, loc,
-                                                              sym_tab->fp_mgr->getNextFpOffset());
+                                    sym_tab->fp_mgr->getNextFpOffset(4));
                 return symbol;
             default:
                 assert(false && "Invalid local variable type");

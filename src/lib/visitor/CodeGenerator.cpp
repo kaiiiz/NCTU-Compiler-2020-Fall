@@ -35,16 +35,20 @@ void CodeGenerator::visit(VariableNode &p_variable) {
     auto symTab = symbol_mgr.currentSymTab();
     auto varName = p_variable.getNameStr();
     auto symbol = symTab->lookup(varName);
+
     if (symbol->getLevel() == 0) { // global var decl
         if (symbol->getKind() == SymbolEntryKind::Constant) { // .rodata
             auto constSymbol = std::dynamic_pointer_cast<ConstSymbolEntry>(symbol);
             genGlobalVarConst(varName, constSymbol->value_str);
         } else { // .bss
-            genGlobalVarDecl(varName, 4, 4);
+            genGlobalVarDecl(varName, symbol->getType()->getDimBytes(), 4);
         }
     } else {
         if (symbol->getKind() == SymbolEntryKind::Constant) { // local var const
-            genLocalVarAddrStore(symbol->getFpOffset());
+            genLocalVarAddrLoad(symbol->getFpOffset(),
+                                symbol->getKind(),
+                                symbol->getType(),
+                                std::vector<std::shared_ptr<ExpressionBase>>());
             p_variable.visitChildNodes(*this); // push constant value to stack
             genAssign();
         }
@@ -153,16 +157,22 @@ void CodeGenerator::visit(VariableReferenceNode &p_variable_ref) {
     switch (p_variable_ref.getSide()) {
         case Side::LHS:
             if (symbol->getLevel() == 0) { // global var ref
-                genGlobalVarAddrStore(varName);
+                genGlobalVarAddrLoad(varName, symbol->getType(), p_variable_ref.expressions);
             } else { // local var ref
-                genLocalVarAddrStore(symbol->getFpOffset());
+                genLocalVarAddrLoad(symbol->getFpOffset(),
+                                    symbol->getKind(),
+                                    symbol->getType(),
+                                    p_variable_ref.expressions);
             }
             break;
         case Side::RHS:
             if (symbol->getLevel() == 0) { // global var ref
-                genGlobalVarLoad(varName);
+                genGlobalVarLoad(varName, symbol->getType(), p_variable_ref.expressions);
             } else { // local var ref
-                genLocalVarLoad(symbol->getFpOffset());
+                genLocalVarLoad(symbol->getFpOffset(),
+                                symbol->getKind(),
+                                symbol->getType(),
+                                p_variable_ref.expressions);
             }
             break;
     }
@@ -222,7 +232,8 @@ void CodeGenerator::visit(ForNode &p_for) {
     p_for.assignment->accept(*this);
     genLabel(loop_head);
     // compare with condition constant
-    genLocalVarLoad(symbol->getFpOffset());
+    genLocalVarLoad(symbol->getFpOffset(), symbol->getKind(), symbol->getType(),
+                    std::vector<std::shared_ptr<ExpressionBase>>());
     p_for.condition->accept(*this);
     genBinaryOperation(BinaryOP::LESS);
     genIfFalseBranch(loop_end);
@@ -230,8 +241,10 @@ void CodeGenerator::visit(ForNode &p_for) {
     genLabel(loop_body);
     p_for.compound_stmt->accept(*this);
     // increment loop var
-    genLocalVarAddrStore(symbol->getFpOffset());
-    genLocalVarLoad(symbol->getFpOffset());
+    genLocalVarAddrLoad(symbol->getFpOffset(), symbol->getKind(), symbol->getType(),
+                        std::vector<std::shared_ptr<ExpressionBase>>());
+    genLocalVarLoad(symbol->getFpOffset(), symbol->getKind(), symbol->getType(),
+                    std::vector<std::shared_ptr<ExpressionBase>>());
     genConstStore("1");
     genBinaryOperation(BinaryOP::PLUS);
     genAssign();
@@ -275,21 +288,113 @@ void CodeGenerator::genFunctionEpilogue(std::string func_name) {
                 << "    .size " << func_name << ", .-" << func_name << "\n";
 }
 
-void CodeGenerator::genGlobalVarDecl(std::string var_name, int size, int align) {
-    output_file << "    .comm " << var_name << ", " << size << ", " << align << "\n";
+void CodeGenerator::genGlobalVarDecl(std::string var_name, int bytes, int align) {
+    output_file << "    .comm " << var_name << ", " << bytes << ", " << align << "\n";
 }
 
-void CodeGenerator::genGlobalVarAddrStore(std::string var_name) {
-    output_file << "    # global var addr store\n"
+void CodeGenerator::genGlobalVarAddrLoad(
+    std::string var_name,
+    const std::shared_ptr<TypeStruct> decl_type,
+    const std::vector<std::shared_ptr<ExpressionBase>> exprs) {
+
+    genPushGlobalVarAddr(var_name);
+    genCaclArrayOffset(decl_type, exprs);
+}
+
+void CodeGenerator::genGlobalVarLoad(
+    std::string var_name,
+    const std::shared_ptr<TypeStruct> decl_type,
+    const std::vector<std::shared_ptr<ExpressionBase>> exprs) {
+
+    genGlobalVarAddrLoad(var_name, decl_type, exprs);
+    genStackTopAddrToValue();
+}
+
+void CodeGenerator::genLocalVarAddrLoad(
+    int fp_offset,
+    SymbolEntryKind decl_kind,
+    const std::shared_ptr<TypeStruct> decl_type,
+    const std::vector<std::shared_ptr<ExpressionBase>> exprs) {
+
+    genPushLocalVarAddr(fp_offset);
+    // load array address if var decl is a param and array
+    if (decl_kind == SymbolEntryKind::Parameter && decl_type->isArray()) {
+        genStackTopAddrToValue();
+    }
+    genCaclArrayOffset(decl_type, exprs);
+}
+
+void CodeGenerator::genLocalVarLoad(
+    int fp_offset,
+    SymbolEntryKind decl_kind,
+    const std::shared_ptr<TypeStruct> decl_type,
+    const std::vector<std::shared_ptr<ExpressionBase>> exprs) {
+
+    genLocalVarAddrLoad(fp_offset, decl_kind, decl_type, exprs);
+    // load if not array after var ref
+    if (decl_type->dim.size() == exprs.size()) {
+        genStackTopAddrToValue();
+    }
+}
+
+void CodeGenerator::genStackTopAddrToValue() {
+    output_file << "    # stack top addr load\n"
+                << "    lw t0, 0(sp)\n"
+                << "    lw t1, 0(t0)\n"
+                << "    sw t1, 0(sp)\n";
+}
+
+void CodeGenerator::genPushGlobalVarAddr(std::string var_name) {
+    output_file << "    # push global var addr\n"
                 << "    la t0, " << var_name << "\n"
                 << "    addi sp, sp, -4\n"
                 << "    sw t0, 0(sp)\n";
 }
 
-void CodeGenerator::genLocalVarAddrStore(int fp_offset) {
-    output_file << "    # local var addr store\n"
+void CodeGenerator::genPushLocalVarAddr(int fp_offset) {
+    output_file << "    # push local var addr\n"
                 << "    addi t0, s0, " << fp_offset << "\n"
                 << "    addi sp, sp, -4\n"
+                << "    sw t0, 0(sp)\n";
+}
+
+void CodeGenerator::genCaclArrayOffset(
+    const std::shared_ptr<TypeStruct> decl_type,
+    const std::vector<std::shared_ptr<ExpressionBase>> exprs) {
+
+    if (!decl_type->isArray() || exprs.size() == 0) return;
+
+    for (auto i = 0UL; i < exprs.size(); i++) {
+        auto &e = exprs[i];
+        // is last dimension in declaration, no need to calculate offset
+        if (i == decl_type->dim.size() - 1) {
+            e->accept(*this); // push result of exprssion to stack
+        } else {
+            // calculate current dimension offset
+            auto dim_offset = 1;
+            for (auto j = i + 1; j < decl_type->dim.size(); j++) {
+                dim_offset *= decl_type->dim[j];
+            }
+            genConstStore(std::to_string(dim_offset));
+            // push result of exprssion to stack
+            e->accept(*this);
+            // multipy dimension offset and expression result
+            genBinaryOperation(BinaryOP::MULTIPLY);
+        }
+    }
+    // add all offset
+    for (auto i = 0UL; i < exprs.size() - 1; i++) {
+        genBinaryOperation(BinaryOP::PLUS);
+    }
+    // left shift the result 2 bits
+    genStackTopLeftShift(2);
+    // add offset and base
+    genBinaryOperation(BinaryOP::PLUS);
+}
+
+void CodeGenerator::genStackTopLeftShift(int bits) {
+    output_file << "    lw t0, 0(sp)\n"
+                << "    slli t0, t0, 2\n"
                 << "    sw t0, 0(sp)\n";
 }
 
@@ -318,22 +423,6 @@ void CodeGenerator::genGlobalVarConst(std::string var_name, std::string val_str)
                 << "    .type " << var_name << ", @object\n"
                 << var_name << ":\n"
                 << "    .word " << val_str << "\n";
-}
-
-void CodeGenerator::genGlobalVarLoad(std::string var_name) {
-    output_file << "    # global var load\n"
-                << "    la t0, " << var_name << "\n"
-                << "    lw t1, 0(t0)\n"
-                << "    mv t0, t1\n"
-                << "    addi sp, sp, -4\n"
-                << "    sw t0, 0(sp)\n";
-}
-
-void CodeGenerator::genLocalVarLoad(int fp_offset) {
-    output_file << "    # local var load\n"
-                << "    lw t0, " << fp_offset << "(s0)\n"
-                << "    addi sp, sp, -4\n"
-                << "    sw t0, 0(sp)\n";
 }
 
 void CodeGenerator::genParamLoad(int param_num, int fp_offset) {

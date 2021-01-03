@@ -1,6 +1,7 @@
 #include <string>
 #include <memory>
 #include <iostream>
+#include <cassert>
 
 #include "type/struct.hpp"
 
@@ -17,6 +18,17 @@ std::string TypeStruct::getTypeStr() {
         }
     }
     return s;
+}
+
+uint32_t TypeStruct::getDimBytes() {
+    assert(kind != TypeKind::String && kind != TypeKind::Void && "Invalid type");
+    int bytes = 4;
+    if (isArray()) {
+        for (auto &d : dim) {
+            bytes *= d;
+        }
+    }
+    return bytes;
 }
 
 bool TypeStruct::isArray() { return !dim.empty(); }

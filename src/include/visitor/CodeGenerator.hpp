@@ -7,6 +7,7 @@
 
 enum class BinaryOP;
 enum class UnaryOP;
+class ExpressionBase;
 
 class CodeGenerator : public AstNodeVisitor {
    public:
@@ -35,14 +36,31 @@ class CodeGenerator : public AstNodeVisitor {
     void visit(ReturnNode &p_return) override;
 
    private:
+    void genGlobalVarAddrLoad(std::string var_name,
+                              const std::shared_ptr<TypeStruct> decl_type,
+                              const std::vector<std::shared_ptr<ExpressionBase>> exprs);
+    void genGlobalVarLoad(std::string var_name,
+                          const std::shared_ptr<TypeStruct> decl_type,
+                          const std::vector<std::shared_ptr<ExpressionBase>> exprs);
+    void genLocalVarAddrLoad(int fp_offset,
+                             SymbolEntryKind decl_kind,
+                             const std::shared_ptr<TypeStruct> decl_type,
+                             const std::vector<std::shared_ptr<ExpressionBase>> exprs);
+    void genLocalVarLoad(int fp_offset,
+                         SymbolEntryKind decl_kind,
+                         const std::shared_ptr<TypeStruct> decl_type,
+                         const std::vector<std::shared_ptr<ExpressionBase>> exprs);
+    void genStackTopAddrToValue();
+    void genPushGlobalVarAddr(std::string var_name);
+    void genPushLocalVarAddr(int fp_offset);
+    void genCaclArrayOffset(const std::shared_ptr<TypeStruct> decl_type,
+                            const std::vector<std::shared_ptr<ExpressionBase>> exprs);
+    void genStackTopLeftShift(int bits);
+
     void genFunctionPrologue(std::string func_name);
     void genFunctionEpilogue(std::string func_name);
-    void genGlobalVarDecl(std::string var_name, int size, int align);
+    void genGlobalVarDecl(std::string var_name, int bytes, int align);
     void genGlobalVarConst(std::string var_name, std::string val_str);
-    void genGlobalVarAddrStore(std::string var_name);
-    void genLocalVarAddrStore(int fp_offset);
-    void genGlobalVarLoad(std::string var_name);
-    void genLocalVarLoad(int fp_offset);
     void genParamLoad(int param_num, int fp_offset);
     void genParamStore(int param_num);
     void genReturn();
