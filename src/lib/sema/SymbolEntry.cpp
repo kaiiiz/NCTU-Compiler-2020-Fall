@@ -1,6 +1,7 @@
 #include <memory>
 #include <string>
 #include <iostream>
+#include <cassert>
 
 #include "type/struct.hpp"
 #include "sema/SymbolEntry.hpp"
@@ -50,17 +51,18 @@ std::string SymbolEntry::getTypeStr() { return type->getTypeStr(); }
 const Location &SymbolEntry::getLocation() const { return location; }
 
 uint32_t SymbolEntry::getFpOffset() {
+    assert(level != 0 && "Cannot get fp offset from global symbol");
+
     switch (kind) {
         case SymbolEntryKind::Parameter:
             return std::dynamic_pointer_cast<ParamSymbolEntry>(shared_from_this())->fp_offset;
         case SymbolEntryKind::Constant:
-            return std::dynamic_pointer_cast<ConstSymbolEntry>(shared_from_this())->fp_offset;
+            return std::dynamic_pointer_cast<LocalConstSymbolEntry>(shared_from_this())->fp_offset;
         case SymbolEntryKind::LoopVar:
             return std::dynamic_pointer_cast<LoopVarSymbolEntry>(shared_from_this())->fp_offset;
         case SymbolEntryKind::Variable:
-            return std::dynamic_pointer_cast<VarSymbolEntry>(shared_from_this())->fp_offset;
+            return std::dynamic_pointer_cast<LocalVarSymbolEntry>(shared_from_this())->fp_offset;
         default:
-            std::cerr << "[SymbolEntry] Cannot get fp offset from non variable symbol" << std::endl;
-            exit(EXIT_FAILURE);
+            assert(false && "Cannot get fp offset from non variable symbol");
     }
 }

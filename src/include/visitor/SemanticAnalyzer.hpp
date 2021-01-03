@@ -10,6 +10,7 @@
 #include "type/struct.hpp"
 
 class SymbolEntry;
+enum class VariableKind;
 
 class SemanticAnalyzer : public AstNodeVisitor {
   public:
@@ -38,6 +39,11 @@ class SemanticAnalyzer : public AstNodeVisitor {
     bool hasError();
 
   private:
+    std::shared_ptr<SymbolEntry> buildVarSymbol(VariableKind kind, std::string var_name,
+                                                const Location &loc,
+                                                std::shared_ptr<SymbolTable> sym_tab,
+                                                std::shared_ptr<TypeStruct> type,
+                                                std::shared_ptr<ConstantValueNode> const_node);
     bool insertWithCheck(std::shared_ptr<SymbolTable> sym_tab, std::shared_ptr<SymbolEntry> symbol);
     bool typeEq(std::shared_ptr<TypeStruct> t1, std::shared_ptr<TypeStruct> t2);
     std::shared_ptr<TypeStruct> coerce(std::shared_ptr<TypeStruct> t1, std::shared_ptr<TypeStruct> t2);

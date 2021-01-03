@@ -4,6 +4,7 @@
 
 #include <iostream>
 #include <vector>
+#include <cassert>
 
 #include "type/struct.hpp"
 #include "type/manager.hpp"
@@ -51,39 +52,12 @@ void SemanticAnalyzer::visit(VariableNode &p_variable) {
     auto symTab = symbol_mgr.currentSymTab();
     // 2. Insert the symbol into current symbol table if this node is related to
     //    declaration (ProgramNode, VariableNode, FunctionNode).
-    std::shared_ptr<SymbolEntry> symbol;
     auto var_type = p_variable.getType();
-    switch (p_variable.getVarKind()) {
-    case VariableKind::Parameter:
-        symbol = std::make_shared<ParamSymbolEntry>(p_variable.getNameStr(),
-                                                    symTab->level,
-                                                    var_type,
-                                                    p_variable.getLocation(),
-                                                    symTab->getFpOffset());
-        break;
-    case VariableKind::Constant:
-        symbol = std::make_shared<ConstSymbolEntry>(p_variable.getNameStr(),
-                                                    symTab->level,
-                                                    p_variable.getType(),
-                                                    p_variable.getLiteralConst()->value_str,
-                                                    p_variable.getLocation(),
-                                                    symTab->getFpOffset());
-        break;
-    case VariableKind::Variable:
-        symbol = std::make_shared<VarSymbolEntry>(p_variable.getNameStr(),
-                                                  symTab->level,
-                                                  p_variable.getType(),
-                                                  p_variable.getLocation(),
-                                                  symTab->getFpOffset());
-        break;
-    case VariableKind::LoopVar:
-        symbol = std::make_shared<LoopVarSymbolEntry>(p_variable.getNameStr(),
-                                                      symTab->level,
-                                                      p_variable.getType(),
-                                                      p_variable.getLocation(),
-                                                      symTab->getFpOffset());
-        break;
-    }
+    std::shared_ptr<SymbolEntry> symbol = buildVarSymbol(p_variable.getVarKind(),
+                                                         p_variable.getNameStr(),
+                                                         p_variable.getLocation(),
+                                                         symTab, var_type,
+                                                         p_variable.getLiteralConst());
     insertWithCheck(symTab, symbol);
     // 3. Travere child nodes of this node.
     p_variable.visitChildNodes(*this);
@@ -125,11 +99,12 @@ void SemanticAnalyzer::visit(FunctionNode &p_function) {
                                                         p_function.getParamTypeList(),
                                                         p_function.getLocation());
     std::shared_ptr<SymbolTable> newSymTab;
+    auto fp_mgr = std::make_shared<SymbolFPManager>();
     if (p_function.getRetType()->kind == TypeKind::Void) {
-        newSymTab = std::make_shared<SymbolTable>(symTab, symTab->level + 1, ContextKind::Procedure, type_mgr.getType(TypeKind::Void));
+        newSymTab = std::make_shared<SymbolTable>(symTab, symTab->level + 1, ContextKind::Procedure, type_mgr.getType(TypeKind::Void), fp_mgr);
     }
     else {
-        newSymTab = std::make_shared<SymbolTable>(symTab, symTab->level + 1, ContextKind::Function, p_function.getRetType());
+        newSymTab = std::make_shared<SymbolTable>(symTab, symTab->level + 1, ContextKind::Function, p_function.getRetType(), fp_mgr);
     }
     p_function.fillSymTab(newSymTab);
     symTab->addChild(newSymTab);
@@ -146,7 +121,7 @@ void SemanticAnalyzer::visit(CompoundStatementNode &p_compound_statement) {
     // 1. Push a new symbol table if this node forms a scope.
     if (p_compound_statement.getKind() != CompoundKind::Function) {
         auto curSymTab = symbol_mgr.currentSymTab();
-        auto symTab = std::make_shared<SymbolTable>(curSymTab, curSymTab->level + 1, curSymTab->ctx_kind, curSymTab->ctx_type);
+        auto symTab = std::make_shared<SymbolTable>(curSymTab, curSymTab->level + 1, curSymTab->ctx_kind, curSymTab->ctx_type, curSymTab->fp_mgr);
         p_compound_statement.fillSymTab(symTab);
         curSymTab->addChild(symTab);
         symbol_mgr.pushScope(symTab);
@@ -548,7 +523,7 @@ void SemanticAnalyzer::visit(WhileNode &p_while) {
 void SemanticAnalyzer::visit(ForNode &p_for) {
     // 1. Push a new symbol table if this node forms a scope.
     auto curSymTab = symbol_mgr.currentSymTab();
-    auto symTab = std::make_shared<SymbolTable>(curSymTab, curSymTab->level + 1, curSymTab->ctx_kind, curSymTab->ctx_type);
+    auto symTab = std::make_shared<SymbolTable>(curSymTab, curSymTab->level + 1, curSymTab->ctx_kind, curSymTab->ctx_type, curSymTab->fp_mgr);
     p_for.fillSymTab(symTab);
     curSymTab->addChild(symTab);
     symbol_mgr.pushScope(symTab);
@@ -598,6 +573,58 @@ void SemanticAnalyzer::visit(ReturnNode &p_return) {
         return;
     }
     // 5. Pop the symbol table pushed at the 1st step.
+}
+
+std::shared_ptr<SymbolEntry> SemanticAnalyzer::buildVarSymbol(
+    VariableKind kind, std::string var_name, const Location &loc,
+    std::shared_ptr<SymbolTable> sym_tab, std::shared_ptr<TypeStruct> type,
+    std::shared_ptr<ConstantValueNode> const_node) {
+
+    auto buildGlobalVarSymbol = [&kind, &var_name, &loc, &sym_tab, &type, &const_node](){
+        std::shared_ptr<SymbolEntry> symbol;
+        switch (kind) {
+            case VariableKind::Constant:
+                symbol = std::make_shared<ConstSymbolEntry>(var_name, sym_tab->level, type,
+                                                            const_node->value_str, loc);
+                return symbol;
+            case VariableKind::Variable:
+                symbol = std::make_shared<VarSymbolEntry>(var_name, sym_tab->level, type, loc);
+                return symbol;
+            default:
+                assert(false && "Invalid global variable type");
+        }
+    };
+
+    auto buildLocalVarSymbol = [&kind, &var_name, &loc, &sym_tab, &type, &const_node](){
+        std::shared_ptr<SymbolEntry> symbol;
+        switch (kind) {
+            case VariableKind::Parameter:
+                symbol = std::make_shared<ParamSymbolEntry>(var_name, sym_tab->level, type, loc,
+                                                            sym_tab->fp_mgr->getNextFpOffset());
+                return symbol;
+            case VariableKind::Constant:
+                symbol = std::make_shared<LocalConstSymbolEntry>(var_name, sym_tab->level, type,
+                                                                 const_node->value_str, loc,
+                                                                 sym_tab->fp_mgr->getNextFpOffset());
+                return symbol;
+            case VariableKind::Variable:
+                symbol = std::make_shared<LocalVarSymbolEntry>(var_name, sym_tab->level, type, loc,
+                                                               sym_tab->fp_mgr->getNextFpOffset());
+                return symbol;
+            case VariableKind::LoopVar:
+                symbol = std::make_shared<LoopVarSymbolEntry>(var_name, sym_tab->level, type, loc,
+                                                              sym_tab->fp_mgr->getNextFpOffset());
+                return symbol;
+            default:
+                assert(false && "Invalid local variable type");
+        }
+    };
+
+    if (sym_tab->level == 0) { // global
+        return buildGlobalVarSymbol();
+    } else {
+        return buildLocalVarSymbol();
+    }
 }
 
 bool SemanticAnalyzer::insertWithCheck(std::shared_ptr<SymbolTable> sym_tab,

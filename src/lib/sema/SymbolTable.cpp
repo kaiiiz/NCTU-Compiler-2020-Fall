@@ -5,8 +5,8 @@
 
 #include "sema/SymbolEntry.hpp"
 
-SymbolTable::SymbolTable(std::shared_ptr<SymbolTable> parent, const std::uint32_t level, const ContextKind ctx_kind, const std::shared_ptr<TypeStruct> ctx_type)
-    : level(level), ctx_kind(ctx_kind), ctx_type(ctx_type), parent(parent) {}
+SymbolTable::SymbolTable(std::shared_ptr<SymbolTable> parent, const std::uint32_t level, const ContextKind ctx_kind, const std::shared_ptr<TypeStruct> ctx_type, const std::shared_ptr<SymbolFPManager> fp_mgr)
+    : level(level), ctx_kind(ctx_kind), ctx_type(ctx_type), fp_mgr(fp_mgr), parent(parent) {}
 
 void SymbolTable::addChild(std::shared_ptr<SymbolTable> child) {
     childs.push_back(child);
@@ -26,11 +26,6 @@ std::shared_ptr<SymbolEntry> SymbolTable::lookup(std::string name) {
         table = table->parent;
     }
     return nullptr;
-}
-
-uint32_t SymbolTable::getFpOffset() {
-    fp_offset += 4;
-    return fp_offset;
 }
 
 void SymbolTable::dumpDemarcation(const char chr) {
@@ -65,4 +60,13 @@ void SymbolTable::dump() {
         }
     }
     dumpDemarcation('-');
+}
+
+// ---------------
+
+SymbolFPManager::SymbolFPManager() : fp_offset(8) {}
+
+uint32_t SymbolFPManager::getNextFpOffset() {
+    fp_offset += 4;
+    return fp_offset;
 }

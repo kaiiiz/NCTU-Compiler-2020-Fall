@@ -16,25 +16,34 @@ enum class ContextKind {
     Procedure,
 };
 
+class SymbolFPManager {
+   public:
+    SymbolFPManager();
+
+    uint32_t getNextFpOffset();
+
+   private:
+    uint32_t fp_offset; // 0-3: pc, 4-7: fp
+};
+
 class SymbolTable : public std::enable_shared_from_this<SymbolTable> {
    public:
-    SymbolTable(std::shared_ptr<SymbolTable> parent, const std::uint32_t level, const ContextKind ctx_kind, const std::shared_ptr<TypeStruct> ctx_type);
+    SymbolTable(std::shared_ptr<SymbolTable> parent, const std::uint32_t level, const ContextKind ctx_kind, const std::shared_ptr<TypeStruct> ctx_type, const std::shared_ptr<SymbolFPManager> fp_mgr);
 
     void insert(std::shared_ptr<SymbolEntry> symbol);
     std::shared_ptr<SymbolEntry> lookup(std::string name);
     void addChild(std::shared_ptr<SymbolTable>);
-    uint32_t getFpOffset();
 
     void dump();
 
     const std::uint32_t level;
     const ContextKind ctx_kind;
     const std::shared_ptr<TypeStruct> ctx_type;
+    const std::shared_ptr<SymbolFPManager> fp_mgr;
 
    private:
     void dumpDemarcation(const char chr);
 
-    uint32_t fp_offset = 8; // 0-3: pc, 4-7: fp
     std::shared_ptr<SymbolTable> parent;
     std::vector<std::shared_ptr<SymbolTable>> childs;
     std::vector<std::string> entries; // order list
