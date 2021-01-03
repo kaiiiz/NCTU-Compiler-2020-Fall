@@ -43,6 +43,11 @@ class CodeGenerator : public AstNodeVisitor {
     void genLocalVarAddrStore(uint32_t fp_offset);
     void genGlobalVarLoad(std::string var_name);
     void genLocalVarLoad(uint32_t fp_offset);
+    void genParamLoad(int param_num, uint32_t fp_offset);
+    void genParamStore(int param_num);
+    void genReturn();
+    void genFuncCall(std::string func_name);
+    void genReturnValStore();
     void genConstStore(std::string val);
     void genAssign();
     void genPrint();

@@ -15,12 +15,12 @@ class CompoundStatementNode;
 class FunctionNode : public AstNode, public AstNodeWithSymTab {
   public:
     FunctionNode(const uint32_t line, const uint32_t col,
-                 std::string name, std::vector<std::shared_ptr<DeclNode>> parameters,
-                 std::shared_ptr<TypeStruct> return_type);
+                 std::string name, const std::vector<std::shared_ptr<DeclNode>> parameters,
+                 const std::shared_ptr<TypeStruct> return_type);
     FunctionNode(const uint32_t line, const uint32_t col,
-                 std::string name, std::vector<std::shared_ptr<DeclNode>> parameters,
-                 std::shared_ptr<TypeStruct> return_type,
-                 std::shared_ptr<CompoundStatementNode> compound_stmt);
+                 std::string name, const std::vector<std::shared_ptr<DeclNode>> parameters,
+                 const std::shared_ptr<TypeStruct> return_type,
+                 const std::shared_ptr<CompoundStatementNode> compound_stmt);
     ~FunctionNode() = default;
 
     std::string getNameStr();
@@ -31,11 +31,12 @@ class FunctionNode : public AstNode, public AstNodeWithSymTab {
     void accept(AstNodeVisitor &p_visitor) override;
     void visitChildNodes(AstNodeVisitor &p_visitor) override;
 
+    const std::vector<std::shared_ptr<DeclNode>> parameters;
+    const std::shared_ptr<TypeStruct> return_type;
+    const std::shared_ptr<CompoundStatementNode> compound_stmt;
+
   private:
     std::string name;
-    std::vector<std::shared_ptr<DeclNode>> parameters;
-    std::shared_ptr<TypeStruct> return_type;
-    std::shared_ptr<CompoundStatementNode> compound_stmt;
 };
 
 #endif

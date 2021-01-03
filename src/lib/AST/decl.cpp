@@ -7,7 +7,7 @@
 #include "type/struct.hpp"
 
 DeclNode::DeclNode(const uint32_t line, const uint32_t col,
-                   std::vector<std::shared_ptr<VariableNode>> var_list,
+                   const std::vector<std::shared_ptr<VariableNode>> var_list,
                    std::shared_ptr<TypeStruct> type)
     : AstNode{line, col}, type(type), var_list(var_list) {}
 

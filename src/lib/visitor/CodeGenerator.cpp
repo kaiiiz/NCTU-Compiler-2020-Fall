@@ -56,11 +56,29 @@ void CodeGenerator::visit(ConstantValueNode &p_constant_value) {
 }
 
 void CodeGenerator::visit(FunctionNode &p_function) {
-    // // Reconstruct the hash table for looking up the symbol entry
-    // symbol_manager->reconstructHashTableFromSymbolTable(p_function.getSymbolTable());
+    symbol_mgr.pushScope(p_function.getSymTab());
+    auto symTab = symbol_mgr.currentSymTab();
 
-    // // Remove the entries in the hash table
-    // symbol_manager->removeSymbolsFromHashTable(p_function.getSymbolTable());
+    genFunctionPrologue(p_function.getNameStr());
+    // push first 8 param from register to local stack
+    int total_param_num = 0;
+    for (auto &p : p_function.parameters) {
+        for (auto &var : p->var_list) {
+            auto symbol = symTab->lookup(var->getNameStr());
+            genParamLoad(total_param_num, symbol->getFpOffset());
+            total_param_num++;
+            if (total_param_num > 7) break;
+        }
+        if (total_param_num > 7) break;
+    }
+    p_function.compound_stmt->accept(*this);
+    // gen return if not procedure
+    if (p_function.return_type->kind != TypeKind::Void) {
+        genReturn();
+    }
+    genFunctionEpilogue(p_function.getNameStr());
+
+    symbol_mgr.popScope();
 }
 
 void CodeGenerator::visit(CompoundStatementNode &p_compound_statement) {
@@ -97,11 +115,26 @@ void CodeGenerator::visit(UnaryOperatorNode &p_un_op) {
 }
 
 void CodeGenerator::visit(FunctionInvocationNode &p_func_invocation) {
+    auto symTab = symbol_mgr.currentSymTab();
+    auto symbol = symTab->lookup(p_func_invocation.name);
+    assert(symbol->getKind() == SymbolEntryKind::Function && "Not call to function");
+    auto retType = symbol->getType();
 
+    for (auto &e : p_func_invocation.expressions) {
+        e->accept(*this);
+    }
+    // TODO: param more than 8
+    for (int i = p_func_invocation.expressions.size() - 1; i >= 0; i--) {
+        genParamStore(i);
+    }
+    genFuncCall(p_func_invocation.name);
+    if (retType->kind != TypeKind::Void) {
+        genReturnValStore();
+    }
 }
 
 void CodeGenerator::visit(FunctionCallNode &p_func_call) {
-
+    p_func_call.visitChildNodes(*this);
 }
 
 void CodeGenerator::visit(VariableReferenceNode &p_variable_ref) {
@@ -202,7 +235,7 @@ void CodeGenerator::visit(ForNode &p_for) {
 }
 
 void CodeGenerator::visit(ReturnNode &p_return) {
-
+    p_return.visitChildNodes(*this);
 } 
 
 void CodeGenerator::genFunctionPrologue(std::string func_name) {
@@ -291,6 +324,36 @@ void CodeGenerator::genGlobalVarLoad(std::string var_name) {
 void CodeGenerator::genLocalVarLoad(uint32_t fp_offset) {
     output_file << "    # local var load\n"
                 << "    lw t0, -" << fp_offset << "(s0)\n"
+                << "    addi sp, sp, -4\n"
+                << "    sw t0, 0(sp)\n";
+}
+
+void CodeGenerator::genParamLoad(int param_num, uint32_t fp_offset) {
+    output_file << "    # param load\n"
+                << "    sw a" << param_num << ", -" << fp_offset << "(s0)\n";
+}
+
+void CodeGenerator::genParamStore(int param_num) {
+    output_file << "    # param store\n"
+                << "    lw a" << param_num << ", 0(sp)\n"
+                << "    addi sp, sp, 4\n";
+}
+
+void CodeGenerator::genFuncCall(std::string func_name) {
+    output_file << "    # function call\n"
+                << "    jal ra, " << func_name << "\n";
+}
+
+void CodeGenerator::genReturn() {
+    output_file << "    # return\n"
+                << "    lw t0, 0(sp)\n"
+                << "    addi sp, sp, 4\n"
+                << "    mv a0, t0\n";
+}
+
+void CodeGenerator::genReturnValStore() {
+    output_file << "    # return val store\n"
+                << "    mv t0, a0\n"
                 << "    addi sp, sp, -4\n"
                 << "    sw t0, 0(sp)\n";
 }

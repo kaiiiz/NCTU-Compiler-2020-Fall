@@ -7,17 +7,17 @@
 #include "visitor/AstDumper.hpp"
 
 FunctionNode::FunctionNode(const uint32_t line, const uint32_t col,
-                           std::string name, std::vector<std::shared_ptr<DeclNode>> parameters,
-                           std::shared_ptr<TypeStruct> return_type)
-    : AstNode{line, col}, name(name), parameters(parameters), return_type(return_type) {}
+                           std::string name, const std::vector<std::shared_ptr<DeclNode>> parameters,
+                           const std::shared_ptr<TypeStruct> return_type)
+    : AstNode{line, col}, parameters(parameters), return_type(return_type), name(name) {}
 
 
 FunctionNode::FunctionNode(const uint32_t line, const uint32_t col,
-                           std::string name, std::vector<std::shared_ptr<DeclNode>> parameters,
-                           std::shared_ptr<TypeStruct> return_type,
-                           std::shared_ptr<CompoundStatementNode> compound_stmt)
-    : AstNode{line, col}, name(name), parameters(parameters),
-      return_type(return_type), compound_stmt(compound_stmt) {}
+                           std::string name, const std::vector<std::shared_ptr<DeclNode>> parameters,
+                           const std::shared_ptr<TypeStruct> return_type,
+                           const std::shared_ptr<CompoundStatementNode> compound_stmt)
+    : AstNode{line, col}, parameters(parameters),
+      return_type(return_type), compound_stmt(compound_stmt), name(name) {}
 
 std::string FunctionNode::getNameStr() { return name; }
 
