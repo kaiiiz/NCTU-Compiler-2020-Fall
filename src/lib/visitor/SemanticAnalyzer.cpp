@@ -330,6 +330,10 @@ void SemanticAnalyzer::visit(FunctionInvocationNode &p_func_invocation) {
     auto param_prototype = func_symbol->getParamType();
     auto arg_exprs = p_func_invocation.expressions;
     for (uint64_t i = 0; i < param_prototype.size(); i++) {
+        if (err_handler.hasErrorAt(arg_exprs[i]->getLocation())) {
+            err_handler.recordError(p_func_invocation.getLocation());
+            return;
+        }
         if (!typeEq(param_prototype[i], arg_exprs[i]->getType())) {
             err_handler.callArgsTypeMismatch(p_func_invocation.getLocation(),
                                              arg_exprs[i]->getLocation(),
