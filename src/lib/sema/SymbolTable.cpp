@@ -64,7 +64,7 @@ void SymbolTable::dump() {
 
 // ---------------
 
-SymbolFPManager::SymbolFPManager() : fp_offset(8) {}
+SymbolFPManager::SymbolFPManager() {}
 
 uint32_t SymbolFPManager::getNextFpOffset() {
     fp_offset += 4;

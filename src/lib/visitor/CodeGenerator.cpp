@@ -215,6 +215,9 @@ void CodeGenerator::genFunctionPrologue(std::string func_name) {
                 << "    addi sp, sp, -128\n"
                 << "    sw ra, 124(sp)\n"
                 << "    sw s0, 120(sp)\n"
+                << "    sw t0, 116(sp)\n"
+                << "    sw t1, 112(sp)\n"
+                << "    sw t2, 108(sp)\n"
                 << "    addi s0, sp, 128\n"
                 << "    # in the function body\n";
 }
@@ -223,6 +226,9 @@ void CodeGenerator::genFunctionEpilogue(std::string func_name) {
     output_file << "    # in the function epilogue\n"
                 << "    lw ra, 124(sp)\n"
                 << "    lw s0, 120(sp)\n"
+                << "    lw t0, 116(sp)\n"
+                << "    lw t1, 112(sp)\n"
+                << "    lw t2, 108(sp)\n"
                 << "    addi sp, sp, 128\n"
                 << "    jr ra\n"
                 << "    .size " << func_name << ", .-" << func_name << "\n";

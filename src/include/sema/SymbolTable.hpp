@@ -23,7 +23,7 @@ class SymbolFPManager {
     uint32_t getNextFpOffset();
 
    private:
-    uint32_t fp_offset; // 0-3: pc, 4-7: fp
+    uint32_t fp_offset = 20; // 0-3: pc, 4-7: fp, 8-11: t0, 12-15: t1, 16-19: t2
 };
 
 class SymbolTable : public std::enable_shared_from_this<SymbolTable> {
