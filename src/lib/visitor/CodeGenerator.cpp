@@ -155,15 +155,50 @@ void CodeGenerator::visit(IfNode &p_if) {
 }
 
 void CodeGenerator::visit(WhileNode &p_while) {
+    int loop_head = getLabel();
+    int loop_body = getLabel();
+    int loop_end = getLabel();
 
+    genLabel(loop_head);
+    p_while.condition->accept(*this);
+    genIfFalseBranch(loop_end);
+    genLabel(loop_body);
+    p_while.body->accept(*this);
+    genJump(loop_head);
+    genLabel(loop_end);
 }
 
 void CodeGenerator::visit(ForNode &p_for) {
-    // // Reconstruct the hash table for looking up the symbol entry
-    // symbol_manager->reconstructHashTableFromSymbolTable(p_for.getSymbolTable());
+    int loop_head = getLabel();
+    int loop_body = getLabel();
+    int loop_end = getLabel();
 
-    // // Remove the entries in the hash table
-    // symbol_manager->removeSymbolsFromHashTable(p_for.getSymbolTable());
+    symbol_mgr.pushScope(p_for.getSymTab());
+    auto symTab = symbol_mgr.currentSymTab();
+    auto symbol = symTab->lookup(p_for.assignment->var_ref->name);
+
+    p_for.declaration->accept(*this);
+    p_for.assignment->accept(*this);
+    genLabel(loop_head);
+    // compare with condition constant
+    genLocalVarLoad(symbol->getFpOffset());
+    p_for.condition->accept(*this);
+    genBinaryOperation(BinaryOP::LESS);
+    genIfFalseBranch(loop_end);
+    // loop body
+    genLabel(loop_body);
+    p_for.compound_stmt->accept(*this);
+    // increment loop var
+    genLocalVarAddrStore(symbol->getFpOffset());
+    genLocalVarLoad(symbol->getFpOffset());
+    genConstStore("1");
+    genBinaryOperation(BinaryOP::PLUS);
+    genAssign();
+    // loop end
+    genJump(loop_head);
+    genLabel(loop_end);
+
+    symbol_mgr.popScope();
 }
 
 void CodeGenerator::visit(ReturnNode &p_return) {
