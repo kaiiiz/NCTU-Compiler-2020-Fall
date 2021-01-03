@@ -40,10 +40,10 @@ class CodeGenerator : public AstNodeVisitor {
     void genGlobalVarDecl(std::string var_name, int size, int align);
     void genGlobalVarConst(std::string var_name, std::string val_str);
     void genGlobalVarAddrStore(std::string var_name);
-    void genLocalVarAddrStore(uint32_t fp_offset);
+    void genLocalVarAddrStore(int fp_offset);
     void genGlobalVarLoad(std::string var_name);
-    void genLocalVarLoad(uint32_t fp_offset);
-    void genParamLoad(int param_num, uint32_t fp_offset);
+    void genLocalVarLoad(int fp_offset);
+    void genParamLoad(int param_num, int fp_offset);
     void genParamStore(int param_num);
     void genReturn();
     void genFuncCall(std::string func_name);
@@ -57,6 +57,7 @@ class CodeGenerator : public AstNodeVisitor {
     void genIfFalseBranch(int label);
     void genLabel(int label);
     void genJump(int label);
+    void genStackPop(int bytes);
 
     int getLabel();
     const std::string &in_file_name;

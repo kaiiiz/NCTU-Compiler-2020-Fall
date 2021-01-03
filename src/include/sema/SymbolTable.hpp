@@ -20,10 +20,13 @@ class SymbolFPManager {
    public:
     SymbolFPManager();
 
-    uint32_t getNextFpOffset();
+    int getNextFpOffset();
+    int getNextParamFpOffset();
 
    private:
-    uint32_t fp_offset = 20; // 0-3: pc, 4-7: fp, 8-11: t0, 12-15: t1, 16-19: t2
+    int fp_offset = -20; // 0~-3: pc, -4~-7: fp, -8~-11: t0, -12~-15: t1, -16~-19: t2
+    int param_count = 0;
+    int param_spill_fp_offset = 0; // 1-4: param 9, 5-8: param 10
 };
 
 class SymbolTable : public std::enable_shared_from_this<SymbolTable> {

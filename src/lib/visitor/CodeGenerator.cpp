@@ -120,14 +120,22 @@ void CodeGenerator::visit(FunctionInvocationNode &p_func_invocation) {
     assert(symbol->getKind() == SymbolEntryKind::Function && "Not call to function");
     auto retType = symbol->getType();
 
-    for (auto &e : p_func_invocation.expressions) {
-        e->accept(*this);
+    // push arguments from back
+    auto arg_len = p_func_invocation.expressions.size();
+    for (int i = arg_len - 1; i >= 0; i--) {
+        p_func_invocation.expressions[i]->accept(*this);
     }
-    // TODO: param more than 8
-    for (int i = p_func_invocation.expressions.size() - 1; i >= 0; i--) {
+    // only pop first 8 arguments to register, the other will still stay in stack
+    // so in callee context, use 0(fp) to get 9th args, 4(fp) to get 10th args, and so on.
+    for (int i = std::min(7UL, arg_len - 1); i >= 0; i--) {
         genParamStore(i);
     }
     genFuncCall(p_func_invocation.name);
+    // clean the remaining arguments in stack
+    if (arg_len > 8) {
+        genStackPop(arg_len - 8);
+    }
+    // store return value from register to stack
     if (retType->kind != TypeKind::Void) {
         genReturnValStore();
     }
@@ -278,9 +286,9 @@ void CodeGenerator::genGlobalVarAddrStore(std::string var_name) {
                 << "    sw t0, 0(sp)\n";
 }
 
-void CodeGenerator::genLocalVarAddrStore(uint32_t fp_offset) {
+void CodeGenerator::genLocalVarAddrStore(int fp_offset) {
     output_file << "    # local var addr store\n"
-                << "    addi t0, s0, -" << fp_offset << "\n"
+                << "    addi t0, s0, " << fp_offset << "\n"
                 << "    addi sp, sp, -4\n"
                 << "    sw t0, 0(sp)\n";
 }
@@ -321,16 +329,16 @@ void CodeGenerator::genGlobalVarLoad(std::string var_name) {
                 << "    sw t0, 0(sp)\n";
 }
 
-void CodeGenerator::genLocalVarLoad(uint32_t fp_offset) {
+void CodeGenerator::genLocalVarLoad(int fp_offset) {
     output_file << "    # local var load\n"
-                << "    lw t0, -" << fp_offset << "(s0)\n"
+                << "    lw t0, " << fp_offset << "(s0)\n"
                 << "    addi sp, sp, -4\n"
                 << "    sw t0, 0(sp)\n";
 }
 
-void CodeGenerator::genParamLoad(int param_num, uint32_t fp_offset) {
+void CodeGenerator::genParamLoad(int param_num, int fp_offset) {
     output_file << "    # param load\n"
-                << "    sw a" << param_num << ", -" << fp_offset << "(s0)\n";
+                << "    sw a" << param_num << ", " << fp_offset << "(s0)\n";
 }
 
 void CodeGenerator::genParamStore(int param_num) {
@@ -371,6 +379,11 @@ void CodeGenerator::genRead() {
                 << "    lw t0, 0(sp)\n"
                 << "    addi sp, sp, 4\n"
                 << "    sw a0, 0(t0)\n";
+}
+
+void CodeGenerator::genStackPop(int bytes) {
+    output_file << "    # stack pop\n"
+                << "    addi sp, sp, " << 4 * bytes << "\n";
 }
 
 void CodeGenerator::genBinaryOperation(BinaryOP op) {

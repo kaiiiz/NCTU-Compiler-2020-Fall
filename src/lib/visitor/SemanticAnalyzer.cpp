@@ -604,7 +604,7 @@ std::shared_ptr<SymbolEntry> SemanticAnalyzer::buildVarSymbol(
         switch (kind) {
             case VariableKind::Parameter:
                 symbol = std::make_shared<ParamSymbolEntry>(var_name, sym_tab->level, type, loc,
-                                                            sym_tab->fp_mgr->getNextFpOffset());
+                                                            sym_tab->fp_mgr->getNextParamFpOffset());
                 return symbol;
             case VariableKind::Constant:
                 symbol = std::make_shared<LocalConstSymbolEntry>(var_name, sym_tab->level, type,
