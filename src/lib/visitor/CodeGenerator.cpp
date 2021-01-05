@@ -7,6 +7,11 @@
 #include <cstdarg>
 #include <cstdio>
 
+#include "type/struct.hpp"
+#include "type/manager.hpp"
+
+extern TypeManager type_mgr;
+
 CodeGenerator::CodeGenerator(SymbolManager &symbol_mgr, const std::string &in_file_name, const std::string &out_file_name) 
     : in_file_name(in_file_name), symbol_mgr(symbol_mgr) {
     output_file.open(out_file_name, std::ofstream::trunc | std::ofstream::out);
@@ -133,12 +138,12 @@ void CodeGenerator::visit(PrintNode &p_print) {
 
 void CodeGenerator::visit(BinaryOperatorNode &p_bin_op) {
     p_bin_op.visitChildNodes(*this);
-    genBinaryOperation(p_bin_op.op);
+    genBinaryOperation(p_bin_op.op, p_bin_op.lexpr->getType(), p_bin_op.rexpr->getType());
 }
 
 void CodeGenerator::visit(UnaryOperatorNode &p_un_op) {
     p_un_op.visitChildNodes(*this);
-    genUnaryOperation(p_un_op.op);
+    genUnaryOperation(p_un_op.op, p_un_op.expr->getType());
 }
 
 void CodeGenerator::visit(FunctionInvocationNode &p_func_invocation) {
@@ -261,7 +266,7 @@ void CodeGenerator::visit(ForNode &p_for) {
     genLocalVarLoad(symbol->getFpOffset(), symbol->getKind(), symbol->getType(),
                     std::vector<std::shared_ptr<ExpressionBase>>());
     p_for.condition->accept(*this);
-    genBinaryOperation(BinaryOP::LESS);
+    genBinaryOperation(BinaryOP::LESS, symbol->getType(), p_for.condition->getType());
     genIfFalseBranch(loop_end);
     // loop body
     genLabel(loop_body);
@@ -272,7 +277,7 @@ void CodeGenerator::visit(ForNode &p_for) {
     genLocalVarLoad(symbol->getFpOffset(), symbol->getKind(), symbol->getType(),
                     std::vector<std::shared_ptr<ExpressionBase>>());
     genConstStore(1);
-    genBinaryOperation(BinaryOP::PLUS);
+    genBinaryOperation(BinaryOP::PLUS, symbol->getType(), type_mgr.getType(TypeKind::Integer));
     genAssign(symbol->getType());
     // loop end
     genJump(loop_head);
@@ -397,6 +402,7 @@ void CodeGenerator::genCaclArrayOffset(
 
     if (!decl_type->isArray() || exprs.size() == 0) return;
 
+    auto int_type = type_mgr.getType(TypeKind::Integer);
     for (auto i = 0UL; i < exprs.size(); i++) {
         auto &e = exprs[i];
         // is last dimension in declaration, no need to calculate offset
@@ -412,17 +418,17 @@ void CodeGenerator::genCaclArrayOffset(
             // push result of exprssion to stack
             e->accept(*this);
             // multipy dimension offset and expression result
-            genBinaryOperation(BinaryOP::MULTIPLY);
+            genBinaryOperation(BinaryOP::MULTIPLY, int_type, int_type);
         }
     }
     // add all offset
     for (auto i = 0UL; i < exprs.size() - 1; i++) {
-        genBinaryOperation(BinaryOP::PLUS);
+        genBinaryOperation(BinaryOP::PLUS, int_type, int_type);
     }
     // left shift the result 2 bits
     genStackTopLeftShift(2);
     // add offset and base
-    genBinaryOperation(BinaryOP::PLUS);
+    genBinaryOperation(BinaryOP::PLUS, int_type, int_type);
 }
 
 void CodeGenerator::genStackTopLeftShift(int bits) {
@@ -575,86 +581,209 @@ void CodeGenerator::genStackPop(int bytes) {
                 << "    addi sp, sp, " << 4 * bytes << "\n";
 }
 
-void CodeGenerator::genBinaryOperation(BinaryOP op) {
-    output_file << "    # binary operation\n"
-                << "    lw t0, 0(sp)\n"
-                << "    addi sp, sp, 4\n"
-                << "    lw t1, 0(sp)\n"
-                << "    addi sp, sp, 4\n";
+void CodeGenerator::genBinaryOperation(
+    BinaryOP op,
+    std::shared_ptr<TypeStruct> ltype,
+    std::shared_ptr<TypeStruct> rtype) {
 
-    switch (op) {
-        case BinaryOP::PLUS:
-            output_file << "    add t0, t1, t0\n";
-            break;
-        case BinaryOP::MINUS:
-            output_file << "    sub t0, t1, t0\n";
-            break;
-        case BinaryOP::MULTIPLY:
-            output_file << "    mul t0, t1, t0\n";
-            break;
-        case BinaryOP::DIVIDE:
-            output_file << "    div t0, t1, t0\n";
-            break;
-        case BinaryOP::MOD:
-            output_file << "    rem t0, t1, t0\n";
-            break;
-        case BinaryOP::AND:
-            output_file << "    and t0, t1, t0\n";
-            break;
-        case BinaryOP::OR:
-            output_file << "    or t0, t1, t0\n";
-            break;
-        case BinaryOP::LESS:
-            output_file << "    slt t0, t1, t0\n"
-	                    << "    andi t0, t0, 0xff\n";
-            break;
-        case BinaryOP::LESS_OR_EQUAL:
-            output_file << "    sgt t0, t1, t0\n"
-                        << "    xori t0, t0, 1\n"
-	                    << "    andi t0, t0, 0xff\n";
-            break;
-        case BinaryOP::GREATER:
-            output_file << "    sgt t0, t1, t0\n"
-	                    << "    andi t0, t0, 0xff\n";
-            break;
-        case BinaryOP::GREATER_OR_EQUAL:
-            output_file << "    slt t0, t1, t0\n"
-                        << "    xori t0, t0, 1\n"
-	                    << "    andi t0, t0, 0xff\n";
-            break;
-        case BinaryOP::EQUAL:
-            output_file << "    sub t0, t1, t0\n"
-                        << "    seqz t0, t0\n"
-	                    << "    andi t0, t0, 0xff\n";
-            break;
-        case BinaryOP::NOT_EQUAL:
-            output_file << "    sub t0, t1, t0\n"
-                        << "    snez t0, t0\n"
-	                    << "    andi t0, t0, 0xff\n";
-            break;
+    auto genNormal = [this, &op](){
+        switch (op) {
+            case BinaryOP::PLUS:
+                output_file << "    add t0, t1, t0\n";
+                break;
+            case BinaryOP::MINUS:
+                output_file << "    sub t0, t1, t0\n";
+                break;
+            case BinaryOP::MULTIPLY:
+                output_file << "    mul t0, t1, t0\n";
+                break;
+            case BinaryOP::DIVIDE:
+                output_file << "    div t0, t1, t0\n";
+                break;
+            case BinaryOP::MOD:
+                output_file << "    rem t0, t1, t0\n";
+                break;
+            case BinaryOP::AND:
+                output_file << "    and t0, t1, t0\n";
+                break;
+            case BinaryOP::OR:
+                output_file << "    or t0, t1, t0\n";
+                break;
+            case BinaryOP::LESS:
+                output_file << "    slt t0, t1, t0\n"
+                            << "    andi t0, t0, 0xff\n";
+                break;
+            case BinaryOP::LESS_OR_EQUAL:
+                output_file << "    sgt t0, t1, t0\n"
+                            << "    xori t0, t0, 1\n"
+                            << "    andi t0, t0, 0xff\n";
+                break;
+            case BinaryOP::GREATER:
+                output_file << "    sgt t0, t1, t0\n"
+                            << "    andi t0, t0, 0xff\n";
+                break;
+            case BinaryOP::GREATER_OR_EQUAL:
+                output_file << "    slt t0, t1, t0\n"
+                            << "    xori t0, t0, 1\n"
+                            << "    andi t0, t0, 0xff\n";
+                break;
+            case BinaryOP::EQUAL:
+                output_file << "    sub t0, t1, t0\n"
+                            << "    seqz t0, t0\n"
+                            << "    andi t0, t0, 0xff\n";
+                break;
+            case BinaryOP::NOT_EQUAL:
+                output_file << "    sub t0, t1, t0\n"
+                            << "    snez t0, t0\n"
+                            << "    andi t0, t0, 0xff\n";
+                break;
+        }
+
+        output_file << "    addi sp, sp, -4\n"
+                    << "    sw t0, 0(sp)\n";
+    };
+
+    auto genReal = [this, &op](){
+        switch (op) {
+            case BinaryOP::PLUS:
+                output_file << "    fadd.s ft0, ft1, ft0\n"
+                            << "    addi sp, sp, -4\n"
+                            << "    fsw ft0, 0(sp)\n";
+                break;
+            case BinaryOP::MINUS:
+                output_file << "    fsub.s ft0, ft1, ft0\n"
+                            << "    addi sp, sp, -4\n"
+                            << "    fsw ft0, 0(sp)\n";
+                break;
+            case BinaryOP::MULTIPLY:
+                output_file << "    fmul.s ft0, ft1, ft0\n"
+                            << "    addi sp, sp, -4\n"
+                            << "    fsw ft0, 0(sp)\n";
+                break;
+            case BinaryOP::DIVIDE:
+                output_file << "    fdiv.s ft0, ft1, ft0\n"
+                            << "    addi sp, sp, -4\n"
+                            << "    fsw ft0, 0(sp)\n";
+                break;
+            case BinaryOP::LESS:
+                output_file << "    flt.s t0, ft1, ft0\n"
+                            << "    andi t0, t0, 0xff\n"
+                            << "    addi sp, sp, -4\n"
+                            << "    sw t0, 0(sp)\n";
+                break;
+            case BinaryOP::LESS_OR_EQUAL:
+                output_file << "    fle.s t0, ft1, ft0\n"
+                            << "    andi t0, t0, 0xff\n"
+                            << "    addi sp, sp, -4\n"
+                            << "    sw t0, 0(sp)\n";
+                break;
+            case BinaryOP::GREATER:
+                output_file << "    fle.s t0, ft1, ft0\n"
+                            << "    xori t0, t0, 1\n"
+                            << "    andi t0, t0, 0xff\n"
+                            << "    addi sp, sp, -4\n"
+                            << "    sw t0, 0(sp)\n";
+                break;
+            case BinaryOP::GREATER_OR_EQUAL:
+                output_file << "    flt.s t0, ft1, ft0\n"
+                            << "    xori t0, t0, 1\n"
+                            << "    andi t0, t0, 0xff\n"
+                            << "    addi sp, sp, -4\n"
+                            << "    sw t0, 0(sp)\n";
+                break;
+            case BinaryOP::EQUAL:
+                output_file << "    feq.s t0, ft1, ft0\n"
+                            << "    andi t0, t0, 0xff\n"
+                            << "    addi sp, sp, -4\n"
+                            << "    sw t0, 0(sp)\n";
+                break;
+            case BinaryOP::NOT_EQUAL:
+                output_file << "    feq.s t0, ft1, ft0\n"
+                            << "    xori t0, t0, 1\n"
+                            << "    andi t0, t0, 0xff\n"
+                            << "    addi sp, sp, -4\n"
+                            << "    sw t0, 0(sp)\n";
+                break;
+            case BinaryOP::MOD:
+            case BinaryOP::AND:
+            case BinaryOP::OR:
+                std::cerr << "Unsupported binary opeartion for floating-point\n";
+                break;
+        }
+    };
+
+    // prepare register
+    if (ltype->kind != rtype->kind) {
+        if (coerce(ltype, rtype) == ltype) { // coerce right type to left type
+            output_file << "    lw t0, 0(sp)\n"
+                        << "    addi sp, sp, 4\n"
+                        << "    fcvt.s.w ft0, t0\n"
+                        << "    flw ft1, 0(sp)\n"
+                        << "    addi sp, sp, 4\n";
+        } else { // coerce left type to right type
+            output_file << "    flw ft0, 0(sp)\n"
+                        << "    addi sp, sp, 4\n"
+                        << "    lw t1, 0(sp)\n"
+                        << "    addi sp, sp, 4\n"
+                        << "    fcvt.s.w ft1, t1\n";
+        }
+        genReal();
+    } else if (ltype->kind == TypeKind::Real) {
+        output_file << "    flw ft0, 0(sp)\n"
+                    << "    addi sp, sp, 4\n"
+                    << "    flw ft1, 0(sp)\n"
+                    << "    addi sp, sp, 4\n";
+        genReal();
+    } else {
+        output_file << "    lw t0, 0(sp)\n"
+                    << "    addi sp, sp, 4\n"
+                    << "    lw t1, 0(sp)\n"
+                    << "    addi sp, sp, 4\n";
+        genNormal();
     }
-
-    output_file << "    addi sp, sp, -4\n"
-                << "    sw t0, 0(sp)\n";
 }
 
-void CodeGenerator::genUnaryOperation(UnaryOP op) {
-    output_file << "    # unary operation\n"
-                << "    lw t0, 0(sp)\n"
-                << "    addi sp, sp, 4\n";
+void CodeGenerator::genUnaryOperation(UnaryOP op, std::shared_ptr<TypeStruct> type) {
+    auto genNormal = [this, &op](){
+        output_file << "    # unary operation\n"
+                    << "    lw t0, 0(sp)\n"
+                    << "    addi sp, sp, 4\n";
+        switch (op) {
+            case UnaryOP::MINUS:
+                output_file << "    neg t0, t0\n"
+                            << "    addi sp, sp, -4\n"
+                            << "    sw t0, 0(sp)\n";
+                break;
+            case UnaryOP::NOT:
+                output_file << "    seqz t0, t0\n"
+                            << "    andi t0, t0, 0xff\n"
+                            << "    addi sp, sp, -4\n"
+                            << "    sw t0, 0(sp)\n";
+                break;
+        }
+    };
 
-    switch (op) {
-        case UnaryOP::MINUS:
-            output_file << "    neg t0, t0\n";
-            break;
-        case UnaryOP::NOT:
-            output_file << "    seqz t0, t0\n"
-	                    << "    andi t0, t0, 0xff\n";
-            break;
+    auto genReal = [this, &op](){
+        output_file << "    # unary operation\n"
+                    << "    flw ft0, 0(sp)\n"
+                    << "    addi sp, sp, 4\n";
+        switch (op) {
+            case UnaryOP::MINUS:
+                output_file << "    fneg.s ft0, ft0\n"
+                            << "    addi sp, sp, -4\n"
+                            << "    fsw ft0, 0(sp)\n";
+                break;
+            case UnaryOP::NOT:
+                std::cerr << "Unsupported unary opeartion for floating-point\n";
+                break;
+        }
+    };
+
+    if (type->kind == TypeKind::Real) {
+        genReal();
+    } else {
+        genNormal();
     }
-
-    output_file << "    addi sp, sp, -4\n"
-                << "    sw t0, 0(sp)\n";
 }
 
 void CodeGenerator::genIfFalseBranch(int label) {

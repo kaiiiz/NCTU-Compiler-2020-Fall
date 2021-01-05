@@ -74,8 +74,8 @@ class CodeGenerator : public AstNodeVisitor {
     void genAssign(std::shared_ptr<TypeStruct> type);
     void genPrint(std::shared_ptr<TypeStruct> type);
     void genRead();
-    void genBinaryOperation(BinaryOP op);
-    void genUnaryOperation(UnaryOP op);
+    void genBinaryOperation(BinaryOP op, std::shared_ptr<TypeStruct> ltype, std::shared_ptr<TypeStruct> rtype);
+    void genUnaryOperation(UnaryOP op, std::shared_ptr<TypeStruct> type);
     void genIfFalseBranch(int label);
     void genLabel(int label);
     void genJump(int label);

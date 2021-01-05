@@ -11,12 +11,6 @@
 
 extern TypeManager type_mgr;
 
-static inline bool is_void(std::shared_ptr<TypeStruct> t) { return t->kind == TypeKind::Void; }
-static inline bool is_real(std::shared_ptr<TypeStruct> t) { return t->kind == TypeKind::Real; }
-static inline bool is_int(std::shared_ptr<TypeStruct> t) { return t->kind == TypeKind::Integer; }
-static inline bool is_bool(std::shared_ptr<TypeStruct> t) { return t->kind == TypeKind::Boolean; }
-static inline bool is_str(std::shared_ptr<TypeStruct> t) { return t->kind == TypeKind::String; }
-
 SemanticAnalyzer::SemanticAnalyzer(SymbolManager &symbol_mgr, std::vector<long> &line_head, std::string source_filename)
     : symbol_mgr(symbol_mgr), err_handler(line_head, source_filename) {}
 
@@ -669,18 +663,4 @@ bool SemanticAnalyzer::typeEq(std::shared_ptr<TypeStruct> t1, std::shared_ptr<Ty
         return false;
     }
     return true;
-}
-
-std::shared_ptr<TypeStruct> SemanticAnalyzer::coerce(std::shared_ptr<TypeStruct> t1,
-                                                     std::shared_ptr<TypeStruct> t2) {
-    // Type coercion is not permitted for array
-    if (t1->isArray() || t2->isArray()) return nullptr;
-
-    if (t1->kind == TypeKind::Real && t2->kind == TypeKind::Integer) {
-        return t1;
-    }
-    else if (t2->kind == TypeKind::Real && t1->kind == TypeKind::Integer) {
-        return t2;
-    }
-    return nullptr;
 }
