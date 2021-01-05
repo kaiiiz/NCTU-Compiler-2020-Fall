@@ -21,7 +21,7 @@ std::string TypeStruct::getTypeStr() {
 }
 
 uint32_t TypeStruct::getDimBytes() {
-    assert(kind != TypeKind::String && kind != TypeKind::Void && "Invalid type");
+    assert(kind != TypeKind::Void && "Invalid type");
     int bytes = 4;
     if (isArray()) {
         for (auto &d : dim) {

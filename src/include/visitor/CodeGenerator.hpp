@@ -50,7 +50,7 @@ class CodeGenerator : public AstNodeVisitor {
                          SymbolEntryKind decl_kind,
                          const std::shared_ptr<TypeStruct> decl_type,
                          const std::vector<std::shared_ptr<ExpressionBase>> exprs);
-    void genStackTopAddrToValue();
+    void genStackTopAddrToValue(std::shared_ptr<TypeStruct> type);
     void genPushGlobalVarAddr(std::string var_name);
     void genPushLocalVarAddr(int fp_offset);
     void genCaclArrayOffset(const std::shared_ptr<TypeStruct> decl_type,
@@ -61,14 +61,18 @@ class CodeGenerator : public AstNodeVisitor {
     void genFunctionEpilogue(std::string func_name);
     void genGlobalVarDecl(std::string var_name, int bytes, int align);
     void genGlobalVarConst(std::string var_name, std::string val_str);
-    void genParamLoad(int param_num, int fp_offset);
-    void genParamStore(int param_num);
+    void genRoData(std::string sval, std::string sval_id);
+    void genRoData(float rval, std::string rval_id);
+    void genParamLoad(int param_num, int fp_offset, std::shared_ptr<TypeStruct> param_type);
+    void genParamStore(int param_num, std::shared_ptr<TypeStruct> param_type);
     void genReturn();
     void genFuncCall(std::string func_name);
     void genReturnValStore();
+    void genConstStore(int val);
+    void genConstStore(float val);
     void genConstStore(std::string val);
-    void genAssign();
-    void genPrint();
+    void genAssign(std::shared_ptr<TypeStruct> type);
+    void genPrint(std::shared_ptr<TypeStruct> type);
     void genRead();
     void genBinaryOperation(BinaryOP op);
     void genUnaryOperation(UnaryOP op);

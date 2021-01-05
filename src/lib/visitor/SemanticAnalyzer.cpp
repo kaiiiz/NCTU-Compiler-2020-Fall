@@ -86,6 +86,13 @@ void SemanticAnalyzer::visit(ConstantValueNode &p_constant_value) {
      * 5. Pop the symbol table pushed at the 1st step.
      */
     p_constant_value.visitChildNodes(*this);
+    // record rodata if variable is constant
+    auto const_type = p_constant_value.getType();
+    if (const_type->kind == TypeKind::Real) {
+        symbol_mgr.addRoData(std::stof(p_constant_value.value_str));
+    } else if (const_type->kind == TypeKind::String) {
+        symbol_mgr.addRoData(p_constant_value.value_str);
+    }
 }
 
 void SemanticAnalyzer::visit(FunctionNode &p_function) {

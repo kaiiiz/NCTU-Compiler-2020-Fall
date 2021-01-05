@@ -24,6 +24,16 @@ void CodeGenerator::visit(ProgramNode &p_program) {
     output_file << "    .file \"" << in_file_name << "\"\n"
                 << "    .option nopic\n";
 
+    auto rodata_real = symbol_mgr.getRealRoData();
+    for (auto it = rodata_real.begin(); it != rodata_real.end(); it++) {
+        genRoData(std::stof(it->first), it->second);
+    }
+
+    auto rodata_str = symbol_mgr.getStrRoData();
+    for (auto it = rodata_str.begin(); it != rodata_str.end(); it++) {
+        genRoData(it->first, it->second);
+    }
+
     p_program.visitChildNodes(*this);
 }
 
@@ -50,13 +60,26 @@ void CodeGenerator::visit(VariableNode &p_variable) {
                                 symbol->getType(),
                                 std::vector<std::shared_ptr<ExpressionBase>>());
             p_variable.visitChildNodes(*this); // push constant value to stack
-            genAssign();
+            genAssign(symbol->getType());
         }
     }
 }
 
 void CodeGenerator::visit(ConstantValueNode &p_constant_value) {
-    genConstStore(p_constant_value.value_str);
+    switch (p_constant_value.getType()->kind) {
+        case TypeKind::Integer:
+        case TypeKind::Boolean:
+            genConstStore(std::stoi(p_constant_value.value_str));
+            break;
+        case TypeKind::Real:
+            genConstStore(std::stof(p_constant_value.value_str));
+            break;
+        case TypeKind::String:
+            genConstStore(p_constant_value.value_str);
+            break;
+        case TypeKind::Void:
+            break;
+    }
 }
 
 void CodeGenerator::visit(FunctionNode &p_function) {
@@ -69,7 +92,7 @@ void CodeGenerator::visit(FunctionNode &p_function) {
     for (auto &p : p_function.parameters) {
         for (auto &var : p->var_list) {
             auto symbol = symTab->lookup(var->getNameStr());
-            genParamLoad(total_param_num, symbol->getFpOffset());
+            genParamLoad(total_param_num, symbol->getFpOffset(), symbol->getType());
             total_param_num++;
             if (total_param_num > 7) break;
         }
@@ -105,7 +128,7 @@ void CodeGenerator::visit(CompoundStatementNode &p_compound_statement) {
 
 void CodeGenerator::visit(PrintNode &p_print) {
     p_print.visitChildNodes(*this);
-    genPrint();
+    genPrint(p_print.expr->getType());
 }
 
 void CodeGenerator::visit(BinaryOperatorNode &p_bin_op) {
@@ -132,7 +155,7 @@ void CodeGenerator::visit(FunctionInvocationNode &p_func_invocation) {
     // only pop first 8 arguments to register, the other will still stay in stack
     // so in callee context, use 0(fp) to get 9th args, 4(fp) to get 10th args, and so on.
     for (int i = 0; i < std::min(8, arg_len); i++) {
-        genParamStore(i);
+        genParamStore(i, p_func_invocation.expressions[i]->getType());
     }
     genFuncCall(p_func_invocation.name);
     // clean the remaining arguments in stack
@@ -180,7 +203,10 @@ void CodeGenerator::visit(VariableReferenceNode &p_variable_ref) {
 
 void CodeGenerator::visit(AssignmentNode &p_assignment) {
     p_assignment.visitChildNodes(*this);
-    genAssign();
+
+    auto symTab = symbol_mgr.currentSymTab();
+    auto symbol = symTab->lookup(p_assignment.var_ref->name);
+    genAssign(symbol->getType());
 }
 
 void CodeGenerator::visit(ReadNode &p_read) {
@@ -245,9 +271,9 @@ void CodeGenerator::visit(ForNode &p_for) {
                         std::vector<std::shared_ptr<ExpressionBase>>());
     genLocalVarLoad(symbol->getFpOffset(), symbol->getKind(), symbol->getType(),
                     std::vector<std::shared_ptr<ExpressionBase>>());
-    genConstStore("1");
+    genConstStore(1);
     genBinaryOperation(BinaryOP::PLUS);
-    genAssign();
+    genAssign(symbol->getType());
     // loop end
     genJump(loop_head);
     genLabel(loop_end);
@@ -307,7 +333,7 @@ void CodeGenerator::genGlobalVarLoad(
     const std::vector<std::shared_ptr<ExpressionBase>> exprs) {
 
     genGlobalVarAddrLoad(var_name, decl_type, exprs);
-    genStackTopAddrToValue();
+    genStackTopAddrToValue(decl_type);
 }
 
 void CodeGenerator::genLocalVarAddrLoad(
@@ -319,7 +345,7 @@ void CodeGenerator::genLocalVarAddrLoad(
     genPushLocalVarAddr(fp_offset);
     // load array address if var decl is a param and array
     if (decl_kind == SymbolEntryKind::Parameter && decl_type->isArray()) {
-        genStackTopAddrToValue();
+        genStackTopAddrToValue(decl_type);
     }
     genCaclArrayOffset(decl_type, exprs);
 }
@@ -333,15 +359,22 @@ void CodeGenerator::genLocalVarLoad(
     genLocalVarAddrLoad(fp_offset, decl_kind, decl_type, exprs);
     // load if not array after var ref
     if (decl_type->dim.size() == exprs.size()) {
-        genStackTopAddrToValue();
+        genStackTopAddrToValue(decl_type);
     }
 }
 
-void CodeGenerator::genStackTopAddrToValue() {
+void CodeGenerator::genStackTopAddrToValue(std::shared_ptr<TypeStruct> type) {
     output_file << "    # stack top addr load\n"
-                << "    lw t0, 0(sp)\n"
-                << "    lw t1, 0(t0)\n"
-                << "    sw t1, 0(sp)\n";
+                << "    lw t0, 0(sp)\n";
+
+    if (type->kind == TypeKind::Real) {
+        output_file << "    flw ft1, 0(t0)\n"
+                    << "    fsw ft1, 0(sp)\n";
+    } else {
+        output_file << "    lw t1, 0(t0)\n"
+                    << "    sw t1, 0(sp)\n";
+    }
+
 }
 
 void CodeGenerator::genPushGlobalVarAddr(std::string var_name) {
@@ -375,7 +408,7 @@ void CodeGenerator::genCaclArrayOffset(
             for (auto j = i + 1; j < decl_type->dim.size(); j++) {
                 dim_offset *= decl_type->dim[j];
             }
-            genConstStore(std::to_string(dim_offset));
+            genConstStore(dim_offset);
             // push result of exprssion to stack
             e->accept(*this);
             // multipy dimension offset and expression result
@@ -398,25 +431,51 @@ void CodeGenerator::genStackTopLeftShift(int bits) {
                 << "    sw t0, 0(sp)\n";
 }
 
-void CodeGenerator::genConstStore(std::string val) {
-    // TODO: for non integer constant
+void CodeGenerator::genConstStore(int val) {
     output_file << "    # const int store\n"
                 << "    li t0, " << val << "\n"
                 << "    addi sp, sp, -4\n"
                 << "    sw t0, 0(sp)\n";
 }
 
-void CodeGenerator::genAssign() {
-    output_file << "    # var assign\n"
-                << "    lw t0, 0(sp)\n"
-                << "    addi sp, sp, 4\n"
+void CodeGenerator::genConstStore(float val) {
+    auto val_id = symbol_mgr.getRoDataIdentifier(val);
+
+    output_file << "    # const float store\n"
+                << "    lui t0, %hi(" << val_id << ")\n"
+                << "    flw ft0, %lo(" << val_id << ")(t0)\n"
+                << "    addi sp, sp, -4\n"
+                << "    fsw ft0, 0(sp)\n";
+}
+
+void CodeGenerator::genConstStore(std::string val) {
+    auto val_id = symbol_mgr.getRoDataIdentifier(val);
+
+    output_file << "    # const string store\n"
+                << "    lui t0, %hi(" << val_id << ")\n"
+                << "    addi t1, t0, %lo(" << val_id << ")\n"
+                << "    addi sp, sp, -4\n"
+                << "    sw t1, 0(sp)\n";
+}
+
+void CodeGenerator::genAssign(std::shared_ptr<TypeStruct> type) {
+    output_file << "    # var assign\n";
+    if (type->kind == TypeKind::Real) {
+        output_file << "    flw ft0, 0(sp)\n";
+    } else {
+        output_file << "    lw t0, 0(sp)\n";
+    }
+    output_file << "    addi sp, sp, 4\n"
                 << "    lw t1, 0(sp)\n"
-                << "    addi sp, sp, 4\n"
-                << "    sw t0, 0(t1)\n";
+                << "    addi sp, sp, 4\n";
+    if (type->kind == TypeKind::Real) {
+        output_file << "    fsw ft0, 0(t1)\n";
+    } else {
+        output_file << "    sw t0, 0(t1)\n";
+    }
 }
 
 void CodeGenerator::genGlobalVarConst(std::string var_name, std::string val_str) {
-    // TODO: for non integer constant
     output_file << ".section    .rodata\n"
                 << "    .align 2\n"
                 << "    .globl " << var_name << "\n"
@@ -425,15 +484,39 @@ void CodeGenerator::genGlobalVarConst(std::string var_name, std::string val_str)
                 << "    .word " << val_str << "\n";
 }
 
-void CodeGenerator::genParamLoad(int param_num, int fp_offset) {
-    output_file << "    # param load\n"
-                << "    sw a" << param_num << ", " << fp_offset << "(s0)\n";
+void CodeGenerator::genRoData(std::string sval, std::string sval_id) {
+    output_file << ".section    .rodata\n"
+                << "    .align 2\n"
+                << sval_id << ":\n"
+                << "    .string \"" << sval << "\"\n";
 }
 
-void CodeGenerator::genParamStore(int param_num) {
-    output_file << "    # param store\n"
-                << "    lw a" << param_num << ", 0(sp)\n"
-                << "    addi sp, sp, 4\n";
+void CodeGenerator::genRoData(float rval, std::string rval_id) {
+    output_file << ".section    .rodata\n"
+                << "    .align 2\n"
+                << rval_id << ":\n"
+                << "    .float " << rval << "\n";
+}
+
+
+void CodeGenerator::genParamLoad(int param_num, int fp_offset, std::shared_ptr<TypeStruct> param_type) {
+    output_file << "    # param load\n";
+    if (param_type->kind == TypeKind::Real) {
+        output_file << "    fsw fa" << param_num << ", " << fp_offset << "(s0)\n";
+    } else {
+        output_file << "    sw a" << param_num << ", " << fp_offset << "(s0)\n";
+    }
+
+}
+
+void CodeGenerator::genParamStore(int param_num, std::shared_ptr<TypeStruct> param_type) {
+    output_file << "    # param store\n";
+    if (param_type->kind == TypeKind::Real) {
+        output_file << "    flw fa" << param_num << ", 0(sp)\n";
+    } else {
+        output_file << "    lw a" << param_num << ", 0(sp)\n";
+    }
+    output_file << "    addi sp, sp, 4\n";
 }
 
 void CodeGenerator::genFuncCall(std::string func_name) {
@@ -455,11 +538,28 @@ void CodeGenerator::genReturnValStore() {
                 << "    sw t0, 0(sp)\n";
 }
 
-void CodeGenerator::genPrint() {
-    output_file << "    # print\n"
-                << "    lw a0, 0(sp)\n"
-                << "    addi sp, sp, 4\n"
-                << "    jal ra, printInt\n";
+void CodeGenerator::genPrint(std::shared_ptr<TypeStruct> type) {
+    output_file << "    # print\n";
+    if (type->kind == TypeKind::Real) {
+        output_file << "    flw fa0, 0(sp)\n";
+    } else {
+        output_file << "    lw a0, 0(sp)\n";
+    }
+    output_file << "    addi sp, sp, 4\n";
+    switch (type->kind) {
+        case TypeKind::Boolean:
+        case TypeKind::Integer:
+            output_file << "    jal ra, printInt\n";
+            break;
+        case TypeKind::Real:
+            output_file << "    jal ra, printReal\n";
+            break;
+        case TypeKind::String:
+            output_file << "    jal ra, printString\n";
+            break;
+        case TypeKind::Void:
+            break;
+    }
 }
 
 void CodeGenerator::genRead() {
