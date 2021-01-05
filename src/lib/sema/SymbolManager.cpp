@@ -26,12 +26,6 @@ std::shared_ptr<SymbolTable> SymbolManager::currentSymTab() { return tables.top(
 
 void SymbolManager::dumpSymTab() {
     global->dump();
-    for (auto it = rodata_real.begin(); it != rodata_real.end(); it++) {
-        std::cout << it->first << " " << it->second << "\n";
-    }
-    for (auto it = rodata_string.begin(); it != rodata_string.end(); it++) {
-        std::cout << it->first << " " << it->second << "\n";
-    }
 }
 
 void SymbolManager::addRoData(float rval) {
